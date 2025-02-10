@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ charity });
-  } catch (_error) {
+  } catch {
     return NextResponse.json(
       { error: "Database query failed" },
       { status: 500 }
