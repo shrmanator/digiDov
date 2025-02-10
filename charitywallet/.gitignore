@@ -416,3 +416,4 @@ build/
 
 # Optional: Test coverage reports
 coverage/
+.vercel
