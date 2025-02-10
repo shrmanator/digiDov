@@ -1,0 +1,21 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Charities {
+    id                  String   @id @default(uuid())
+    legal_name          String
+    registered_address  String
+    registration_number String
+    contact_name        String
+    contact_email       String
+    contact_phone       String
+    wallet_address      String   @unique
+    createdAt           DateTime @default(now())
+}
