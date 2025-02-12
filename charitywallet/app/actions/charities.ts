@@ -18,23 +18,23 @@ export async function upsertCharity(data: CharityInput) {
   return prisma.charities.upsert({
     where: { wallet_address: walletAddress },
     update: {
-      charity_name: data.charity_name,
-      registered_address: data.registered_address,
-      registration_number: data.registration_number,
-      contact_name: data.contact_name,
-      contact_email: data.contact_email,
-      contact_phone: data.contact_phone,
-      isProfileComplete: true, // Mark profile as complete on update
+      charity_name: data.charity_name ?? undefined,
+      registered_address: data.registered_address ?? undefined,
+      registration_number: data.registration_number ?? undefined,
+      contact_name: data.contact_name ?? undefined,
+      contact_email: data.contact_email ?? undefined,
+      contact_phone: data.contact_phone ?? undefined,
+      isProfileComplete: data.isProfileComplete ?? false,
     },
     create: {
-      charity_name: data.charity_name,
-      registered_address: data.registered_address,
-      registration_number: data.registration_number,
-      contact_name: data.contact_name,
-      contact_email: data.contact_email,
-      contact_phone: data.contact_phone,
+      charity_name: data.charity_name ?? null,
+      registered_address: data.registered_address ?? null,
+      registration_number: data.registration_number ?? null,
+      contact_name: data.contact_name ?? null,
+      contact_email: data.contact_email ?? null,
+      contact_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
-      isProfileComplete: true, // Mark profile as complete on creation
+      isProfileComplete: data.isProfileComplete ?? false,
     },
   });
 }
