@@ -20,7 +20,6 @@ export async function login(payload: VerifyLoginPayloadParams) {
     console.log("wallet addr", walletAddress);
     await upsertCharity({
       wallet_address: walletAddress,
-      isProfileComplete: false, // Minimal record: not complete yet.
     });
   }
 }

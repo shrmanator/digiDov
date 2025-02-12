@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/prisma";
 
+const defaultIsProfileComplete = false;
+
 export interface CharityInput {
   charity_name?: string | null;
   registered_address?: string | null;
@@ -24,7 +26,10 @@ export async function upsertCharity(data: CharityInput) {
       contact_name: data.contact_name ?? undefined,
       contact_email: data.contact_email ?? undefined,
       contact_phone: data.contact_phone ?? undefined,
-      isProfileComplete: data.isProfileComplete ?? false,
+      // Only update isProfileComplete if it is explicitly provided.
+      ...(typeof data.isProfileComplete !== "undefined"
+        ? { isProfileComplete: data.isProfileComplete }
+        : {}),
     },
     create: {
       charity_name: data.charity_name ?? null,
@@ -34,6 +39,7 @@ export async function upsertCharity(data: CharityInput) {
       contact_email: data.contact_email ?? null,
       contact_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
+      // When creating a new record, default to false if not provided.
       isProfileComplete: data.isProfileComplete ?? false,
     },
   });

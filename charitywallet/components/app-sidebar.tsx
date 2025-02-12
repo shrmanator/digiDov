@@ -22,7 +22,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   // Create dynamic nav data using the charity info (with fallbacks).
   const navData = {
     user: {
-      name: charity?.charity.charity_name || "Default Charity Name",
+      name: charity?.charity_name || "Default Charity Name",
       email: charity?.contact_email || "default@example.com",
       avatar: charity?.avatar || "/avatars/default.jpg",
     },
