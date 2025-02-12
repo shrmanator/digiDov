@@ -35,7 +35,6 @@ export default function CharitySetupModal({
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<"form" | "confirmation">("form");
 
-  // Form state.
   const [formData, setFormData] = useState({
     charity_name: "",
     registered_address: "",
@@ -70,7 +69,7 @@ export default function CharitySetupModal({
         contact_name: formData.contact_name,
         contact_email: formData.contact_email,
         contact_phone: formData.contact_phone,
-        isProfileComplete: true,
+        // isProfileComplete: true,
       });
       setStep("confirmation");
     } catch (err) {

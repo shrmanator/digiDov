@@ -8,7 +8,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Copy, Check } from "lucide-react";
-// Adjust the import path to your toast hook implementation.
 import { useToast } from "@/hooks/use-toast";
 
 interface WalletAddressStepProps {
@@ -23,7 +22,8 @@ export function WalletAddressStep({
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
-  const handleCopy = async () => {
+  const handleCopy = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     try {
       await navigator.clipboard.writeText(walletAddress);
       setCopied(true);
@@ -44,33 +44,27 @@ export function WalletAddressStep({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       <DialogHeader>
-        <DialogTitle>Organization Setup Complete</DialogTitle>
+        <DialogTitle>Your Donation Wallet</DialogTitle>
         <DialogDescription>
-          This is your wallet address. Please add this to your organization
-          site.
+          This is your Ethereum wallet address for receiving donations. Display
+          it on your donation page. More currencies coming soon.
         </DialogDescription>
       </DialogHeader>
-      {/* The container is clickable */}
+      {/* Clickable container for copying the wallet address */}
       <div
-        className="flex items-center justify-center p-2 border rounded-md bg-muted cursor-pointer"
+        className="flex items-center justify-between p-2 border rounded-md bg-muted cursor-pointer select-all break-words"
         onClick={handleCopy}
       >
-        <span className="text-sm font-mono select-all break-words">
-          {walletAddress}
-        </span>
-        {/* The copy button stops propagation so that clicking it doesn't trigger the container's onClick twice */}
+        <span className="text-sm font-mono">{walletAddress}</span>
         <Button
           variant="outline"
           className="ml-2 h-8 w-8 p-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCopy();
-          }}
+          onClick={(e) => handleCopy(e)}
         >
           {copied ? (
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4" />
           ) : (
             <Copy className="h-4 w-4" />
           )}
