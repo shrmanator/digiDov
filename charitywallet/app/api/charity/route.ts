@@ -14,7 +14,8 @@ export async function GET() {
         { status: 404 }
       );
     }
-    return NextResponse.json({ charity });
+    // Return the charity object directly.
+    return NextResponse.json(charity);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 401 });
   }

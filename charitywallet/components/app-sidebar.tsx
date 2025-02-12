@@ -11,19 +11,19 @@ import {
   SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useCharity } from "@/hooks/use-charity";
 
-// Assume useCharity is a custom hook that returns dynamic charity details.
-// For example, it might fetch the charity record from your API or use a global state.
-import { useCharity } from "@/hooks/useCharity";
+// Import the custom hook that fetches charity details via your API.
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const charity = useCharity(); // Returns an object { name, email, avatar } or similar
+  // Fetch the charity record for the authenticated user.
+  const { charity } = useCharity();
 
-  // Create dynamic nav data using the charity info (falling back to defaults if needed)
+  // Create dynamic nav data using the charity info (with fallbacks).
   const navData = {
     user: {
-      name: charity?.name || "Default Charity Name",
-      email: charity?.email || "default@example.com",
+      name: charity?.charity.charity_name || "Default Charity Name",
+      email: charity?.contact_email || "default@example.com",
       avatar: charity?.avatar || "/avatars/default.jpg",
     },
     navMain: [
@@ -32,14 +32,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         url: "#",
         icon: Settings2,
         items: [
-          {
-            title: "Your Info",
-            url: "#",
-          },
-          {
-            title: "Billing",
-            url: "#",
-          },
+          { title: "Your Info", url: "#" },
+          { title: "Billing", url: "#" },
         ],
       },
     ],
