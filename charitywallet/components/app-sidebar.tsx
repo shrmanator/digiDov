@@ -114,12 +114,12 @@ const data = {
     //   ],
     // },
     {
-      title: "Settings",
+      title: "Your Info",
       url: "#",
       icon: Settings2,
       items: [
         {
-          title: "General",
+          title: "Your Info",
           url: "#",
         },
         // {

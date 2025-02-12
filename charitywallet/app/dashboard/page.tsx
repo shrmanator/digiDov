@@ -1,8 +1,8 @@
+// app/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -18,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import ProfileModal from "@/components/new-user-modal";
 
 export default async function Page() {
   const user = await getAuthenticatedUser();
@@ -41,24 +42,20 @@ export default async function Page() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>Overview</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {/* Replacing the aspect-video grid with Dashboard content */}
           <div className="container mx-auto p-6">
             {charity ? (
               <div className="space-y-6">
-                {/* Charity Information Section */}
                 <div>
                   <h1 className="text-3xl font-bold">{charity.charity_name}</h1>
                   <div className="mt-4 space-y-2 text-sm">
@@ -91,7 +88,11 @@ export default async function Page() {
                   </div>
                 </div>
 
-                {/* Tabs Section for Normal and Audit Views */}
+                {/* Conditionally render the modal if the profile is incomplete */}
+                {charity && !charity.isProfileComplete && (
+                  <ProfileModal walletAddress={charity.wallet_address!} />
+                )}
+
                 <Tabs defaultValue="normal" className="mt-6">
                   <TabsList className="mb-4">
                     <TabsTrigger value="normal">Normal View</TabsTrigger>
@@ -133,7 +134,6 @@ export default async function Page() {
               </div>
             )}
           </div>
-          {/* Optional: Retain other content if needed */}
           <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
         </div>
       </SidebarInset>

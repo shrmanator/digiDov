@@ -19,7 +19,7 @@ export async function login(payload: VerifyLoginPayloadParams) {
     const walletAddress = verifiedPayload.payload.address.toLowerCase();
     console.log("wallet addr", walletAddress);
     await upsertCharity({
-      legal_name: "Default Legal Name",
+      charity_name: "Default Legal Name",
       registered_address: "Default Registered Address",
       registration_number: "Default Registration Number",
       contact_name: "Default Contact Name",

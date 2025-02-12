@@ -16,7 +16,7 @@ model Charities {
     contact_name        String?
     contact_email       String?
     contact_phone       String?
-    wallet_address      String?  @unique
+    wallet_address      String   @unique // Removed the ? to make it required
     isProfileComplete   Boolean  @default(false)
     createdAt           DateTime @default(now())
 }
