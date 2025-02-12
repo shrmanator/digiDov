@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Bell,
@@ -25,6 +26,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { logout } from "@/app/actions/auth";
+import { useDisconnect, useActiveWallet } from "thirdweb/react";
 
 export function NavUser({
   user,
@@ -36,6 +39,17 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+  const { disconnect } = useDisconnect();
+  const wallet = useActiveWallet();
+
+  const handleLogout = async () => {
+    await logout();
+    if (wallet) {
+      disconnect(wallet);
+    }
+    router.push("/login");
+  };
 
   return (
     <SidebarMenu>
@@ -76,7 +90,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

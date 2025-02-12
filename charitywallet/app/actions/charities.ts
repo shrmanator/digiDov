@@ -38,3 +38,16 @@ export async function upsertCharity(data: CharityInput) {
     },
   });
 }
+
+export async function updateCharityEmail(params: {
+  walletAddress: string;
+  email: string;
+}) {
+  const walletAddress = params.walletAddress.toLowerCase();
+  return await prisma.charities.update({
+    where: { wallet_address: walletAddress },
+    data: {
+      contact_email: params.email,
+    },
+  });
+}

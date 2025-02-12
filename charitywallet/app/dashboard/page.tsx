@@ -1,4 +1,3 @@
-// app/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
