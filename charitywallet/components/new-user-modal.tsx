@@ -63,6 +63,7 @@ export default function CharityProfileModal({
     setIsLoadingForm(true);
     setErrorMessage(null);
     try {
+      // In your CharityProfileModal component's handleSubmit:
       await upsertCharity({
         wallet_address: walletAddress,
         charity_name: formData.charity_name,
@@ -71,6 +72,7 @@ export default function CharityProfileModal({
         contact_name: formData.contact_name,
         contact_email: formData.contact_email,
         contact_phone: formData.contact_phone,
+        isProfileComplete: true, // Now the profile is complete.
       });
       setFormSubmitted(true);
       // Allow closing only after successful submission.
