@@ -22,23 +22,20 @@ interface CharityProfileModalProps {
 export default function CharityProfileModal({
   walletAddress,
 }: CharityProfileModalProps) {
-  // useProfiles will return linked profiles if available.
-  const { data: profiles, isLoading: profilesLoading } = useProfiles({
-    client,
-  });
+  // Retrieve linked profiles from Thirdweb.
+  const { data: profiles } = useProfiles({ client });
 
-  console.log("profiles", profiles);
-
-  // Determine a default email from profiles, if available.
+  // Extract a default email from profiles if available.
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
       : "";
 
-  // Modal open state.
+  // Modal open state and flag to track successful submission.
   const [open, setOpen] = useState(true);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  // Form state. Pre-populate contact_email if we already have it.
+  // Form state – pre-populate contact_email if available.
   const [formData, setFormData] = useState({
     charity_name: "",
     registered_address: "",
@@ -50,7 +47,7 @@ export default function CharityProfileModal({
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // When the profiles load and provide an email, update the form state if needed.
+  // Update the email field when profiles load.
   useEffect(() => {
     if (defaultEmail && !formData.contact_email) {
       setFormData((prev) => ({ ...prev, contact_email: defaultEmail }));
@@ -66,7 +63,6 @@ export default function CharityProfileModal({
     setIsLoadingForm(true);
     setErrorMessage(null);
     try {
-      // Call the server action to upsert (create/update) the charity record.
       await upsertCharity({
         wallet_address: walletAddress,
         charity_name: formData.charity_name,
@@ -76,7 +72,8 @@ export default function CharityProfileModal({
         contact_email: formData.contact_email,
         contact_phone: formData.contact_phone,
       });
-      // Optionally close the modal on success.
+      setFormSubmitted(true);
+      // Allow closing only after successful submission.
       setOpen(false);
     } catch (err) {
       console.error("Error upserting charity:", err);
@@ -89,12 +86,24 @@ export default function CharityProfileModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        // Prevent closing the modal until the form is successfully submitted.
+        if (!formSubmitted && value === false) {
+          setOpen(true);
+        } else {
+          setOpen(value);
+        }
+      }}
+    >
+      {/* Hide any close button using Tailwind utility */}
+      <DialogContent className="[&>button]:hidden">
         <DialogHeader>
           <DialogTitle>Complete Your Charity Profile</DialogTitle>
           <DialogDescription>
-            Please fill in your charity details.
+            We need your charity details to issue tax receipts for your
+            donations. Please provide the following information.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -139,18 +148,6 @@ export default function CharityProfileModal({
               value={formData.contact_name}
               onChange={handleChange}
               placeholder="Contact Name"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="contact_email">Contact Email</Label>
-            <Input
-              id="contact_email"
-              name="contact_email"
-              type="email"
-              value={formData.contact_email}
-              onChange={handleChange}
-              placeholder="Contact Email"
               required
             />
           </div>

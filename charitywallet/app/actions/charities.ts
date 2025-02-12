@@ -1,4 +1,3 @@
-// app/actions/charities.ts
 "use server";
 
 import prisma from "@/lib/prisma";
@@ -11,30 +10,31 @@ export interface CharityInput {
   contact_email?: string | null;
   contact_phone?: string | null;
   wallet_address: string;
+  isProfileComplete?: boolean;
 }
 
 export async function upsertCharity(data: CharityInput) {
-  // Normalize the wallet address to ensure consistency (e.g., all lowercase)
   const walletAddress = data.wallet_address.toLowerCase();
-
   return prisma.charities.upsert({
     where: { wallet_address: walletAddress },
     update: {
-      charity_name: data.charity_name ?? null,
-      registered_address: data.registered_address ?? null,
-      registration_number: data.registration_number ?? null,
-      contact_name: data.contact_name ?? null,
-      contact_email: data.contact_email ?? null,
-      contact_phone: data.contact_phone ?? null,
+      charity_name: data.charity_name,
+      registered_address: data.registered_address,
+      registration_number: data.registration_number,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email,
+      contact_phone: data.contact_phone,
+      isProfileComplete: true, // Mark profile as complete on update
     },
     create: {
-      charity_name: data.charity_name ?? null,
-      registered_address: data.registered_address ?? null,
-      registration_number: data.registration_number ?? null,
-      contact_name: data.contact_name ?? null,
-      contact_email: data.contact_email ?? null,
-      contact_phone: data.contact_phone ?? null,
+      charity_name: data.charity_name,
+      registered_address: data.registered_address,
+      registration_number: data.registration_number,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email,
+      contact_phone: data.contact_phone,
       wallet_address: walletAddress,
+      isProfileComplete: true, // Mark profile as complete on creation
     },
   });
 }
