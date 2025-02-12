@@ -31,11 +31,8 @@ export default function CharityProfileModal({
       ? profiles[0].details.email
       : "";
 
-  // Modal open state and flag to track successful submission.
   const [open, setOpen] = useState(true);
   const [formSubmitted, setFormSubmitted] = useState(false);
-
-  // Form state – pre-populate contact_email if available.
   const [formData, setFormData] = useState({
     charity_name: "",
     registered_address: "",
@@ -47,7 +44,6 @@ export default function CharityProfileModal({
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Update the email field when profiles load.
   useEffect(() => {
     if (defaultEmail && !formData.contact_email) {
       setFormData((prev) => ({ ...prev, contact_email: defaultEmail }));
@@ -63,7 +59,6 @@ export default function CharityProfileModal({
     setIsLoadingForm(true);
     setErrorMessage(null);
     try {
-      // In your CharityProfileModal component's handleSubmit:
       await upsertCharity({
         wallet_address: walletAddress,
         charity_name: formData.charity_name,
@@ -91,7 +86,6 @@ export default function CharityProfileModal({
     <Dialog
       open={open}
       onOpenChange={(value) => {
-        // Prevent closing the modal until the form is successfully submitted.
         if (!formSubmitted && value === false) {
           setOpen(true);
         } else {
