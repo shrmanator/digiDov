@@ -96,26 +96,23 @@ export default function CharityProfileModal({
       {/* Hide any close button using Tailwind utility */}
       <DialogContent className="[&>button]:hidden">
         <DialogHeader>
-          <DialogTitle>Complete Your Charity Profile</DialogTitle>
+          <DialogTitle>Complete Your Organization Profile</DialogTitle>
           <DialogDescription>
-            We need your charity details to issue tax receipts for your
-            donations. Please provide the following information.
+            We need this information to generate tax receipts.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="charity_name">Charity Name</Label>
             <Input
               id="charity_name"
               name="charity_name"
               value={formData.charity_name}
               onChange={handleChange}
-              placeholder="Enter your charity name"
+              placeholder="Organization Name"
               required
             />
           </div>
           <div>
-            <Label htmlFor="registered_address">Registered Address</Label>
             <Input
               id="registered_address"
               name="registered_address"
@@ -126,7 +123,6 @@ export default function CharityProfileModal({
             />
           </div>
           <div>
-            <Label htmlFor="registration_number">Registration Number</Label>
             <Input
               id="registration_number"
               name="registration_number"
@@ -137,7 +133,6 @@ export default function CharityProfileModal({
             />
           </div>
           <div>
-            <Label htmlFor="contact_name">Contact Name</Label>
             <Input
               id="contact_name"
               name="contact_name"
@@ -148,7 +143,6 @@ export default function CharityProfileModal({
             />
           </div>
           <div>
-            <Label htmlFor="contact_phone">Contact Phone</Label>
             <Input
               id="contact_phone"
               name="contact_phone"

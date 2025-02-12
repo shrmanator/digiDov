@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Settings2 } from "lucide-react";
-
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -13,10 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useCharity } from "@/hooks/use-charity";
 
-// Import the custom hook that fetches charity details via your API.
-
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  // Fetch the charity record for the authenticated user.
   const { charity } = useCharity();
 
   // Create dynamic nav data using the charity info (with fallbacks).
@@ -24,7 +20,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     user: {
       name: charity?.charity_name || "Default Charity Name",
       email: charity?.contact_email || "default@example.com",
-      avatar: charity?.avatar || "/avatars/default.jpg",
+      avatar: charity?.avatar || "avatar",
     },
     navMain: [
       {
