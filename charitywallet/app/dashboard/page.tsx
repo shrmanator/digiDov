@@ -17,7 +17,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import ProfileModal from "@/components/new-user-modal";
+import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
 
 export default async function Page() {
   const user = await getAuthenticatedUser();
@@ -89,7 +89,7 @@ export default async function Page() {
 
                 {/* Conditionally render the modal if the profile is incomplete */}
                 {charity && !charity.isProfileComplete && (
-                  <ProfileModal walletAddress={charity.wallet_address!} />
+                  <CharitySetupModal walletAddress={charity.wallet_address!} />
                 )}
 
                 <Tabs defaultValue="normal" className="mt-6">
