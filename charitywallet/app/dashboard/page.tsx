@@ -1,4 +1,3 @@
-// app/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -18,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { polygon } from "thirdweb/chains";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
 
 export default async function Page() {
@@ -34,7 +34,6 @@ export default async function Page() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      {/* Force the SidebarInset to be full height */}
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
           <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
@@ -54,26 +53,36 @@ export default async function Page() {
               </Breadcrumb>
             </div>
             {charity && (
-              <div className="hidden md:block">
+              <div>
                 <WalletCopyButton walletAddress={charity.wallet_address} />
               </div>
             )}
           </header>
-          {/* Main area takes the remaining space and centers its content */}
-          <main className="flex flex-1 items-center justify-center">
-            {charity ? (
-              <div>
-                <TransactionHistory
-                  walletAddress={charity.wallet_address}
-                  chainId="1"
-                />
-              </div>
-            ) : (
-              <p className="text-center">
-                No charity record found. Please complete your charity
-                registration.
-              </p>
-            )}
+          <main className="flex flex-1 p-6">
+            <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
+              {/* Transaction History Header */}
+              <header className="mb-8 text-center">
+                <h1 className="text-3xl font-bold">Transaction History</h1>
+                <p className="text-sm text-muted-foreground">
+                  View your Polygon transactions
+                </p>
+              </header>
+              {charity ? (
+                <div className="w-full flex justify-center">
+                  <div className="w-full max-w-2xl mx-auto">
+                    <TransactionHistory
+                      walletAddress={charity.wallet_address}
+                      chainId={polygon.id.toString()}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center">
+                  No charity record found. Please complete your charity
+                  registration.
+                </p>
+              )}
+            </div>
           </main>
         </div>
       </SidebarInset>

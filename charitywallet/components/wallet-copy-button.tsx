@@ -9,6 +9,15 @@ interface WalletCopyProps {
   walletAddress: string;
 }
 
+function truncateWalletAddress(
+  address: string,
+  startLength = 6,
+  endLength = 4
+) {
+  if (address.length <= startLength + endLength) return address;
+  return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
+}
+
 export function WalletCopyButton({ walletAddress }: WalletCopyProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -36,13 +45,15 @@ export function WalletCopyButton({ walletAddress }: WalletCopyProps) {
 
   return (
     <div
-      className="flex items-center justify-between p-2 border rounded-md bg-muted cursor-pointer select-all break-words"
       onClick={handleCopy}
+      className="flex items-center gap-2 cursor-pointer"
     >
-      <span className="text-sm font-mono">{walletAddress}</span>
+      <span className="text-sm font-mono">
+        {truncateWalletAddress(walletAddress)}
+      </span>
       <Button
         variant="outline"
-        className="ml-2 h-8 w-8 p-0"
+        className="h-8 w-8 p-0"
         onClick={(e) => handleCopy(e)}
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

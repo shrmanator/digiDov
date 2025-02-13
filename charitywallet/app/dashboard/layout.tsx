@@ -8,7 +8,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="w-full">
-        <main className="flex items-center justify-center">{children}</main>
+        <main className="w-full flex-1">{children}</main>
       </div>
     </SidebarProvider>
   );
