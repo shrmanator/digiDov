@@ -69,7 +69,7 @@ export default function CharitySetupModal({
         contact_name: formData.contact_name,
         contact_email: formData.contact_email,
         contact_phone: formData.contact_phone,
-        // isProfileComplete: true,
+        isProfileComplete: true,
       });
       setStep("confirmation");
     } catch (err) {
