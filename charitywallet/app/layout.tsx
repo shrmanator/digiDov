@@ -39,13 +39,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <div className="min-h-screen flex flex-col">
-              {/* 
-                The main element now uses flex to center its children both vertically and horizontally.
-                This will center the content of pages (or nested layouts) regardless of their internal layout.
-              */}
-              <main className="flex-1 flex items-center justify-center">
-                {children}
-              </main>
+              <main className="flex-1">{children}</main>
             </div>
             <div className="fixed bottom-4 right-4 z-50">
               <Footer />

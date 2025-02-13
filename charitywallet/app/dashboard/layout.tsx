@@ -1,4 +1,3 @@
-// components/DashboardLayout.tsx
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function DashboardLayout({
@@ -8,7 +7,6 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      {/* Remove any conflicting centering classes here */}
       <div className="w-full">
         <main className="flex items-center justify-center">{children}</main>
       </div>
