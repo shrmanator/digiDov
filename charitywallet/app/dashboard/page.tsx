@@ -72,7 +72,6 @@ export default async function Page() {
                   <div className="w-full max-w-2xl mx-auto">
                     <TransactionHistory
                       walletAddress={charity.wallet_address}
-                      chainId={polygon.id.toString()}
                     />
                   </div>
                 </div>
