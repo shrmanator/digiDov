@@ -1,7 +1,9 @@
+// components/TransactionHistory.tsx
 import React from "react";
 import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatEther } from "ethers";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { WalletCopyButton } from "./wallet-copy-button";
 
 interface Transaction {
@@ -76,9 +78,9 @@ export default async function TransactionHistory({
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex items-center space-x-3">
                       {tx.type === "Received" ? (
-                        <span className="text-green-500 text-2xl">➕</span>
+                        <ArrowDown className="text-green-500 h-6 w-6" />
                       ) : (
-                        <span className="text-red-500 text-2xl">➖</span>
+                        <ArrowUp className="text-red-500 h-6 w-6" />
                       )}
                       <span className="text-xl font-semibold">
                         {tx.type === "Received"
