@@ -18,6 +18,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { WalletCopyButton } from "@/components/wallet-copy-button";
 
 export default async function Page() {
   const user = await getAuthenticatedUser();
@@ -36,8 +37,8 @@ export default async function Page() {
       {/* Force the SidebarInset to be full height */}
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
-            <div className="flex items-center gap-2 px-4">
+          <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
+            <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
@@ -52,6 +53,11 @@ export default async function Page() {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
+            {charity && (
+              <div className="hidden md:block">
+                <WalletCopyButton walletAddress={charity.wallet_address} />
+              </div>
+            )}
           </header>
           {/* Main area takes the remaining space and centers its content */}
           <main className="flex flex-1 items-center justify-center">
