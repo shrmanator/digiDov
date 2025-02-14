@@ -50,6 +50,9 @@ importers:
       '@types/next':
         specifier: ^9.0.0
         version: 9.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@vercel/analytics':
+        specifier: ^1.5.0
+        version: 1.5.0(next@15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -1446,6 +1449,32 @@ packages:
   '@typescript-eslint/visitor-keys@8.23.0':
     resolution: {integrity: sha512-oWWhcWDLwDfu++BGTZcmXWqpwtkwb5o7fxUIGksMQQDSdPW9prsSnfIOZMlsj4vBOSrcnjIUZMiIjODgGosFhQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@vercel/analytics@1.5.0':
+    resolution: {integrity: sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@walletconnect/core@2.17.5':
     resolution: {integrity: sha512-m4rcW7QbO7pTV1C+UwOlTpUT9sjGxMs3DcFQ/QmayGPh1MYCC2S42ZTRswMWWqoHIhRjfxlNpO14UD3j0ya6sg==}
@@ -5334,6 +5363,11 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.23.0
       eslint-visitor-keys: 4.2.0
+
+  '@vercel/analytics@1.5.0(next@15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+    optionalDependencies:
+      next: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
 
   '@walletconnect/core@2.17.5':
     dependencies:
