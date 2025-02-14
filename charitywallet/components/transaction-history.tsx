@@ -33,7 +33,6 @@ function convertWeiToEth(wei: number | string): string {
 }
 
 async function fetchTransactions(walletAddress: string, clientId: string) {
-  // Supported chains: Ethereum (1) and Polygon (137)
   const supportedChains = ["1", "137"];
   const chainQuery = supportedChains.map((chain) => `chain=${chain}`).join("&");
 
@@ -65,11 +64,11 @@ async function fetchTransactions(walletAddress: string, clientId: string) {
 
     allTransactions.sort(
       (a, b) =>
-        new Date(b.block_timestamp).getTime() -
-        new Date(a.block_timestamp).getTime()
+        new Date(Number(b.block_timestamp) * 1000).getTime() -
+        new Date(Number(a.block_timestamp) * 1000).getTime()
     );
 
-    console.log("Fetched transactions:", allTransactions);
+    console.log("Fetched transactions:", allTransactions[0].block_timestamp);
 
     return allTransactions;
   } catch (error) {
@@ -110,7 +109,7 @@ export default async function TransactionHistory({
               const addressToCopy =
                 tx.type === "Received" ? tx.from_address : tx.to_address;
               const formattedDate = new Date(
-                tx.block_timestamp
+                Number(tx.block_timestamp) * 1000
               ).toLocaleString();
 
               return (
@@ -118,19 +117,27 @@ export default async function TransactionHistory({
                   key={tx.hash}
                   className="w-full rounded-xl border border-border bg-background hover:shadow-xl transition"
                 >
-                  <CardContent className="flex items-center justify-between p-4">
+                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between p-4">
+                    {/* Left Section: Transaction Details */}
                     <div className="flex items-center space-x-3">
                       {tx.type === "Received" ? (
                         <ArrowDown className="text-green-500 h-6 w-6" />
                       ) : (
                         <ArrowUp className="text-red-500 h-6 w-6" />
                       )}
-                      <span className="text-xl font-semibold">
-                        {ethValue} POL
-                      </span>
+                      <div>
+                        <span className="text-xl font-semibold">
+                          {ethValue} POL
+                        </span>
+                        <p className="text-sm text-muted-foreground md:hidden">
+                          {formattedDate}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">
+
+                    {/* Right Section: Date & Copy Button */}
+                    <div className="flex flex-col items-end md:items-center">
+                      <p className="hidden md:block text-sm text-muted-foreground">
                         {formattedDate}
                       </p>
                       <WalletCopyButton walletAddress={addressToCopy} />
