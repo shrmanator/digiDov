@@ -25,14 +25,6 @@ export const metadata: Metadata = {
   description: "The simplest way to accept crypto donations.",
 };
 
-const wallets = [inAppWallet()];
-
-const appMetadata = {
-  name: "Organization Wallet",
-  iconURL: "https://myapp.com/icon.png",
-  logoURL: "https://myapp.com/logo.png",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -44,7 +36,6 @@ export default function RootLayout({
       >
         <ThirdwebProvider>
           <ThirdwebAutoConnect />
-
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

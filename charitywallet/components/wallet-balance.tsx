@@ -59,7 +59,6 @@ export default function CombinedWalletBalance() {
     chain: polygon,
   });
 
-  // Show a skeleton if any data is loading
   if (ethLoading || polyLoading || ratesLoading) {
     return (
       <div className="text-sm font-mono mr-2.5">
@@ -68,7 +67,6 @@ export default function CombinedWalletBalance() {
     );
   }
 
-  // Parse balance strings to numbers
   const ethVal = parseFloat(ethBalance?.displayValue || "0");
   const polyVal = parseFloat(polyBalance?.displayValue || "0");
 
