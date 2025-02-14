@@ -13,7 +13,7 @@ interface Transaction {
   to_address: string;
   block_number: string;
   block_timestamp: string;
-  chain_id: number; // Ensure this is included
+  chain_id: number;
 }
 
 interface TransactionWithType extends Transaction {
