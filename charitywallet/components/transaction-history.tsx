@@ -3,7 +3,7 @@ import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatEther } from "ethers";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { WalletCopyButton } from "./wallet-copy-button";
 
 interface Transaction {
@@ -13,6 +13,7 @@ interface Transaction {
   to_address: string;
   block_number: string;
   block_timestamp: string;
+  chain_id: number; // Ensure this is included
 }
 
 interface TransactionWithType extends Transaction {
@@ -30,6 +31,10 @@ function convertWeiToEth(wei: number | string): string {
     console.error("Error converting wei to eth:", error);
     return "0";
   }
+}
+
+function formatDate(timestamp: string | number): string {
+  return new Date(Number(timestamp) * 1000).toISOString().split("T")[0]; // Extract YYYY-MM-DD
 }
 
 async function fetchTransactions(walletAddress: string, clientId: string) {
@@ -68,14 +73,18 @@ async function fetchTransactions(walletAddress: string, clientId: string) {
         new Date(Number(a.block_timestamp) * 1000).getTime()
     );
 
-    console.log("Fetched transactions:", allTransactions[0].block_timestamp);
-
     return allTransactions;
   } catch (error) {
     console.error("Failed to fetch transactions:", error);
     throw new Error("Failed to load transaction history.");
   }
 }
+
+const chainIdToSymbol: { [key: number]: string } = {
+  1: "ETH",
+  137: "POL",
+  // Add other chain IDs and their symbols as needed
+};
 
 export default async function TransactionHistory({
   walletAddress,
@@ -88,6 +97,7 @@ export default async function TransactionHistory({
 
   let transactions: TransactionWithType[] = [];
   try {
+    // Test this with 0x21a31ee1afc51d94c2efccaa2092ad1028285549 (Binance "8" wallet)
     transactions = await fetchTransactions(walletAddress, clientId);
   } catch (error) {
     return (
@@ -108,36 +118,29 @@ export default async function TransactionHistory({
               const ethValue = convertWeiToEth(tx.value);
               const addressToCopy =
                 tx.type === "Received" ? tx.from_address : tx.to_address;
-              const formattedDate = new Date(
-                Number(tx.block_timestamp) * 1000
-              ).toLocaleString();
+              const formattedDate = formatDate(tx.block_timestamp); // Truncated time
+              const symbol = chainIdToSymbol[tx.chain_id] || "Unknown";
 
               return (
                 <Card
                   key={tx.hash}
                   className="w-full rounded-xl border border-border bg-background hover:shadow-xl transition"
                 >
-                  <CardContent className="flex flex-col md:flex-row md:items-center justify-between p-4">
-                    {/* Left Section: Transaction Details */}
+                  <CardContent className="flex flex-col p-4">
                     <div className="flex items-center space-x-3">
+                      <span className="text-xl font-semibold">
+                        {ethValue} {symbol}
+                      </span>
                       {tx.type === "Received" ? (
-                        <ArrowDown className="text-green-500 h-6 w-6" />
+                        <ArrowDownLeft className="text-green-500 h-6 w-6" />
                       ) : (
-                        <ArrowUp className="text-red-500 h-6 w-6" />
+                        <ArrowUpRight className="text-red-500 h-6 w-6" />
                       )}
-                      <div>
-                        <span className="text-xl font-semibold">
-                          {ethValue} POL
-                        </span>
-                        <p className="text-sm text-muted-foreground md:hidden">
-                          {formattedDate}
-                        </p>
-                      </div>
                     </div>
 
-                    {/* Right Section: Date & Copy Button */}
-                    <div className="flex flex-col items-end md:items-center">
-                      <p className="hidden md:block text-sm text-muted-foreground">
+                    {/* Date and Wallet (Now Responsive) */}
+                    <div className="flex flex-wrap justify-between items-center gap-2 mt-2">
+                      <p className="text-sm text-muted-foreground">
                         {formattedDate}
                       </p>
                       <WalletCopyButton walletAddress={addressToCopy} />
