@@ -113,7 +113,7 @@ export default async function TransactionHistory({
     <div className="w-full">
       {transactions.length ? (
         <ScrollArea style={{ height: "70vh" }} className="w-full">
-          <div className="flex flex-col space-y-4 p-4">
+          <div className="flex flex-col space-y-4">
             {transactions.map((tx) => {
               const ethValue = convertWeiToEth(tx.value);
               const addressToCopy =

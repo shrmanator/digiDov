@@ -64,7 +64,6 @@ export default async function Page() {
           </header>
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
-              {/* Transaction History Header */}
               <header className="mb-8 text-center">
                 <h1 className="text-3xl font-bold">Transactions</h1>
               </header>
