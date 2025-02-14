@@ -14,9 +14,12 @@ export async function GET() {
         { status: 404 }
       );
     }
-    // Return the charity object directly.
     return NextResponse.json(charity);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  } catch (error: unknown) {
+    let errorMessage = "An unexpected error occurred.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: errorMessage }, { status: 401 });
   }
 }

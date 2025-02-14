@@ -2,8 +2,6 @@
 
 import prisma from "@/lib/prisma";
 
-const defaultIsProfileComplete = false;
-
 export interface CharityInput {
   charity_name?: string | null;
   registered_address?: string | null;
