@@ -3,9 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Footer from "./footer";
-import { ThirdwebProvider } from "thirdweb/react";
+import { AutoConnect, ThirdwebProvider } from "thirdweb/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
+import { client } from "@/lib/thirdwebClient";
+import { inAppWallet } from "thirdweb/wallets";
+import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +25,14 @@ export const metadata: Metadata = {
   description: "The simplest way to accept crypto donations.",
 };
 
+const wallets = [inAppWallet()];
+
+const appMetadata = {
+  name: "Organization Wallet",
+  iconURL: "https://myapp.com/icon.png",
+  logoURL: "https://myapp.com/logo.png",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -32,6 +43,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThirdwebProvider>
+          <ThirdwebAutoConnect />
+
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

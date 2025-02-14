@@ -19,6 +19,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
+import CombinedWalletBalance from "@/components/wallet-balance";
 
 export default async function Page() {
   const user = await getAuthenticatedUser();
@@ -55,8 +56,9 @@ export default async function Page() {
               </Breadcrumb>
             </div>
             {charity && (
-              <div>
+              <div className="flex flex-col items-end gap-1 mt-5">
                 <WalletCopyButton walletAddress={charity.wallet_address} />
+                <CombinedWalletBalance />
               </div>
             )}
           </header>
