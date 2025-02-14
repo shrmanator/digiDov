@@ -48,8 +48,14 @@ export function WalletAddressStep({
       <DialogHeader>
         <DialogTitle>Your Donation Wallet</DialogTitle>
         <DialogDescription>
-          This is your Ethereum wallet address for receiving donations. Display
-          it on your donation page. More currencies coming soon.
+          This is your Ethereum wallet address for receiving donations. You can
+          display it anywhere—on flyers, websites, or social media. As long as
+          the wallet address is visible, donors can send Ethereum directly to
+          it.
+          <br />
+          <br />
+          Currently, we only support tax receipts for POL, but we will be adding
+          support for ETH and many other currencies soon.
         </DialogDescription>
       </DialogHeader>
       {/* Clickable container for copying the wallet address */}

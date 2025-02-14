@@ -1,4 +1,3 @@
-// components/CharityProfileModal/CharityProfileModal.tsx
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";

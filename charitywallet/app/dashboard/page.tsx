@@ -17,8 +17,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { polygon } from "thirdweb/chains";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
+import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
 
 export default async function Page() {
   const user = await getAuthenticatedUser();
@@ -30,6 +30,8 @@ export default async function Page() {
   const charity = await prisma.charities.findUnique({
     where: { wallet_address: user.walletAddress },
   });
+
+  const isCharityComplete = charity?.isProfileComplete ?? false;
 
   return (
     <SidebarProvider>
@@ -62,24 +64,21 @@ export default async function Page() {
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
               {/* Transaction History Header */}
               <header className="mb-8 text-center">
-                <h1 className="text-3xl font-bold">Transaction History</h1>
-                <p className="text-sm text-muted-foreground">
-                  View your Polygon transactions
-                </p>
+                <h1 className="text-3xl font-bold">Transactions</h1>
               </header>
-              {charity ? (
+              {isCharityComplete ? (
                 <div className="w-full flex justify-center">
                   <div className="w-full max-w-2xl mx-auto">
                     <TransactionHistory
-                      walletAddress={charity.wallet_address}
+                      walletAddress={charity!.wallet_address}
                     />
                   </div>
                 </div>
               ) : (
-                <p className="text-center">
-                  No charity record found. Please complete your charity
-                  registration.
-                </p>
+                <>
+                  <p className="text-center">No transactions found.</p>
+                  <CharitySetupModal walletAddress={user.walletAddress} />
+                </>
               )}
             </div>
           </main>
