@@ -1,7 +1,6 @@
 import { Alchemy, Network } from "alchemy-sdk";
 
 export async function updateWebhookAddresses(
-  webhookId: string,
   addAddresses: string[],
   removeAddresses: string[],
   network: Network
@@ -17,6 +16,11 @@ export async function updateWebhookAddresses(
   };
 
   const alchemy = new Alchemy(settings);
+  const webhookId = process.env.ALCHEMY_WEBHOOK_ID;
+  if (!webhookId) {
+    throw new Error("Missing ALCHEMY_WEBHOOK_ID environment variable");
+  }
+
   await alchemy.notify.updateWebhook(webhookId, {
     addAddresses,
     removeAddresses,
