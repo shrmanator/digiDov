@@ -13,6 +13,6 @@ export async function getAuthenticatedWallet(): Promise<string> {
     throw new Error("Invalid token");
   }
 
-  // Assuming the wallet address is stored in the 'sub' field
+  // The wallet address is stored in the 'sub' field
   return authResult.parsedJWT.sub.toLowerCase();
 }

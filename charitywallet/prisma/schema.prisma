@@ -9,14 +9,28 @@ generator client {
 }
 
 model Charities {
-    id                  String   @id @default(uuid())
+    id                  String            @id @default(uuid())
     charity_name        String? // ie "legal_name"
     registered_address  String?
     registration_number String?
     contact_name        String?
     contact_email       String?
     contact_phone       String?
-    wallet_address      String   @unique // Removed the ? to make it required
-    isProfileComplete   Boolean  @default(false)
-    createdAt           DateTime @default(now())
+    wallet_address      String            @unique // Removed the ? to make it required
+    isProfileComplete   Boolean           @default(false)
+    createdAt           DateTime          @default(now())
+    DonationReceipt     DonationReceipt[]
+}
+
+model DonationReceipt {
+    id              String     @id @default(uuid())
+    receiptNumber   String     @unique // Unique receipt identifier (can be generated or based on the tx hash)
+    donationDate    DateTime // Date of donation (e.g., blockchain timestamp)
+    walletAddress   String // Donor's wallet address (serves as temporary donor ID)
+    fiatAmount      Float // Donation amount in CAD (converted value)
+    transactionHash String // Blockchain transaction hash for verification
+    charityId       String?
+    charity         Charities? @relation(fields: [charityId], references: [id])
+    createdAt       DateTime   @default(now())
+    updatedAt       DateTime   @updatedAt
 }
