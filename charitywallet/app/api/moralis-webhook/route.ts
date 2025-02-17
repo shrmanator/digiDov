@@ -41,8 +41,13 @@ export async function POST(request: Request) {
       { message: "Webhook payload printed successfully", payload: body },
       { status: 200 }
     );
-  } catch (error: any) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (error: unknown) {
+    let errorMessage: string;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else {
+      errorMessage = String(error);
+    }
     console.log("Error:", errorMessage);
     return NextResponse.json(
       { message: "Failed to process webhook", error: errorMessage },
