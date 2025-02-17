@@ -1,19 +1,23 @@
 import React from "react";
-import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatEther } from "ethers";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { WalletCopyButton } from "./wallet-copy-button";
+import Moralis from "moralis";
+import Web3 from "web3";
+import { initializeMoralis } from "@/lib/moralis";
+import { polygon } from "thirdweb/chains";
+
+// Instantiate web3 (using the default provider; configure if necessary)
+const web3 = new Web3();
 
 interface Transaction {
   hash: string;
-  value: number | string;
+  value: string;
   from_address: string;
   to_address: string;
   block_number: string;
   block_timestamp: string;
-  chain_id: number;
 }
 
 interface TransactionWithType extends Transaction {
@@ -24,81 +28,69 @@ interface TransactionHistoryProps {
   walletAddress: string;
 }
 
-function convertWeiToEth(wei: number | string): string {
+// Convert wei to ETH using web3
+function convertWeiToEth(wei: string): string {
   try {
-    return formatEther(wei.toString());
+    return web3.utils.fromWei(wei, "ether");
   } catch (error) {
     console.error("Error converting wei to eth:", error);
     return "0";
   }
 }
 
-function formatDate(timestamp: string | number): string {
-  return new Date(Number(timestamp) * 1000).toISOString().split("T")[0]; // Extract YYYY-MM-DD
+// Format a timestamp to YYYY-MM-DD
+function formatDate(timestamp: string): string {
+  return new Date(timestamp).toISOString().split("T")[0];
 }
 
-async function fetchTransactions(walletAddress: string, clientId: string) {
-  const supportedChains = ["1", "137"];
-  const chainQuery = supportedChains.map((chain) => `chain=${chain}`).join("&");
-
-  const baseUrl = "https://insight.thirdweb.com/v1/transactions";
-  const incomingUrl = `${baseUrl}?${chainQuery}&filter_to_address=${walletAddress}&limit=100`;
-  const outgoingUrl = `${baseUrl}?${chainQuery}&filter_from_address=${walletAddress}&limit=100`;
-
+// Fetch transactions using Moralis's new native transactions endpoint
+async function fetchTransactions(
+  walletAddress: string
+): Promise<TransactionWithType[]> {
   try {
-    const [incomingResponse, outgoingResponse] = await Promise.all([
-      axios.get(incomingUrl, { headers: { "X-Client-Id": clientId } }),
-      axios.get(outgoingUrl, { headers: { "X-Client-Id": clientId } }),
-    ]);
-
-    const incoming: TransactionWithType[] = (
-      incomingResponse.data.data || []
-    ).map((tx: Transaction) => ({
-      ...tx,
-      type: "Received",
-    }));
-
-    const outgoing: TransactionWithType[] = (
-      outgoingResponse.data.data || []
-    ).map((tx: Transaction) => ({
-      ...tx,
-      type: "Sent",
-    }));
-
-    const allTransactions = [...incoming, ...outgoing];
-
-    allTransactions.sort(
-      (a, b) =>
-        new Date(Number(b.block_timestamp) * 1000).getTime() -
-        new Date(Number(a.block_timestamp) * 1000).getTime()
+    const response = await Moralis.EvmApi.transaction.getWalletTransactions({
+      chain: polygon.id, // Ethereum mainnet; adjust for other chains as needed
+      order: "DESC",
+      address: walletAddress,
+    });
+    console.log("Transactions:", response.raw);
+    // The API returns a raw object with a "result" array.
+    const transactions = response.raw.result as Transaction[];
+    const mapped: TransactionWithType[] = transactions.map(
+      (tx): TransactionWithType => ({
+        ...tx,
+        type:
+          tx.from_address.toLowerCase() === walletAddress.toLowerCase()
+            ? "Sent"
+            : "Received",
+      })
     );
-
-    return allTransactions;
+    // Sort transactions by timestamp descending
+    mapped.sort(
+      (a, b) =>
+        new Date(b.block_timestamp).getTime() -
+        new Date(a.block_timestamp).getTime()
+    );
+    return mapped;
   } catch (error) {
     console.error("Failed to fetch transactions:", error);
     throw new Error("Failed to load transaction history.");
   }
 }
 
-const chainIdToSymbol: { [key: number]: string } = {
-  1: "ETH",
-  137: "POL",
-  // Add other chain IDs and their symbols as needed
+const chainToSymbol: { [chain: string]: string } = {
+  "0x1": "ETH",
 };
 
 export default async function TransactionHistory({
   walletAddress,
 }: TransactionHistoryProps) {
-  const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
-  if (!clientId) {
-    console.error("Thirdweb Client ID is not configured.");
-    return <p>Client ID is missing.</p>;
-  }
+  // Ensure Moralis is initialized
+  await initializeMoralis();
 
   let transactions: TransactionWithType[] = [];
   try {
-    // Test this with 0x21a31ee1afc51d94c2efccaa2092ad1028285549 (Binance "8" wallet)
-    transactions = await fetchTransactions(walletAddress, clientId);
+    transactions = await fetchTransactions(walletAddress);
   } catch (error) {
     return (
       <p>
@@ -118,9 +110,8 @@ export default async function TransactionHistory({
               const ethValue = convertWeiToEth(tx.value);
               const addressToCopy =
                 tx.type === "Received" ? tx.from_address : tx.to_address;
-              const formattedDate = formatDate(tx.block_timestamp); // Truncated time
-              const symbol = chainIdToSymbol[tx.chain_id] || "Unknown";
-
+              const formattedDate = formatDate(tx.block_timestamp);
+              const symbol = chainToSymbol["0x1"] || "Unknown";
               return (
                 <Card
                   key={tx.hash}
@@ -137,8 +128,6 @@ export default async function TransactionHistory({
                         <ArrowUpRight className="text-red-500 h-6 w-6" />
                       )}
                     </div>
-
-                    {/* Date and Wallet (Now Responsive) */}
                     <div className="flex flex-wrap justify-between items-center gap-2 mt-2">
                       <p className="text-sm text-muted-foreground">
                         {formattedDate}

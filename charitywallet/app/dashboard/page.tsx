@@ -39,7 +39,7 @@ export default async function Page() {
       <AppSidebar />
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
