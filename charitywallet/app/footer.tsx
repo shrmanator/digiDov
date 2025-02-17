@@ -33,14 +33,14 @@ export default function Footer() {
             <ModeToggle />
           </div>
           {/* Email copy button */}
-          <div className="text-sm text-muted-foreground order-1 sm:order-2">
+          <div className="order-1 sm:order-2 text-xs">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="hover:text-foreground transition-colors flex items-center gap-1.5 group"
+                    className="flex items-center gap-1.5 group"
                   >
                     <Mail className="h-3.5 w-3.5" />
                     <span>{email}</span>
@@ -48,7 +48,7 @@ export default function Footer() {
                       {isCopied ? (
                         <Check className="h-3.5 w-3.5 text-green-500" />
                       ) : (
-                        <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100" />
                       )}
                     </span>
                   </button>

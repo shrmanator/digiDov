@@ -98,7 +98,7 @@ async function fetchBothTransactions(
 
 const chainToSymbol: { [chain: string]: string } = {
   "0x1": "ETH",
-  "0x89": "MATIC",
+  "0x89": "POL",
 };
 
 export default async function TransactionHistory({
