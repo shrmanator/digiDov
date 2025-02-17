@@ -58,7 +58,11 @@ export default async function Page() {
             {charity && (
               <div className="flex flex-col items-end gap-1 mt-5">
                 <WalletCopyButton walletAddress={charity.wallet_address} />
-                <CombinedWalletBalance />
+                <CombinedWalletBalance
+                  searchParams={{
+                    address: charity.wallet_address,
+                  }}
+                />
               </div>
             )}
           </header>

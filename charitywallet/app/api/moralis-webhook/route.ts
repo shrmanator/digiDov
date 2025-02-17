@@ -7,9 +7,7 @@ export async function POST(request: Request) {
   console.log(`[START] Method: POST, URL: ${request.url}`);
 
   try {
-    // Read the raw body text
     const bodyText = await request.text();
-    // Parse the JSON body
     const body = JSON.parse(bodyText);
 
     // Verify signature using the raw body text
@@ -33,9 +31,6 @@ export async function POST(request: Request) {
         { status: 200 }
       );
     }
-
-    // Instead of forwarding the payload, we simply log and return it.
-    console.log("Webhook payload printed above");
 
     return NextResponse.json(
       { message: "Webhook payload printed successfully", payload: body },

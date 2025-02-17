@@ -1,83 +1,41 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useActiveAccount, useWalletBalance } from "thirdweb/react";
-import { client } from "@/lib/thirdwebClient";
-import { ethereum, polygon } from "thirdweb/chains";
-import { Skeleton } from "@/components/ui/skeleton";
+// app/combined-wallet-net-worth/page.tsx
+import Moralis from "moralis";
+import { initializeMoralis } from "@/lib/moralis";
 
-export default function CombinedWalletBalance() {
-  const account = useActiveAccount();
-  const address = account?.address;
+export const dynamic = "force-dynamic"; // Ensures data is fetched on each request
 
-  // State for conversion rates (in USD)
-  const [ethUsdRate, setEthUsdRate] = useState(1700); // default: 1 ETH = $1700
-  const [maticUsdRate, setMaticUsdRate] = useState(1.2); // default: 1 MATIC = $1.20
-  const [ratesLoading, setRatesLoading] = useState(true);
+interface CombinedWalletNetWorthProps {
+  searchParams: { address?: string };
+}
 
-  useEffect(() => {
-    async function fetchRates() {
-      try {
-        const res = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,matic-network&vs_currencies=usd"
-        );
-        const data = await res.json();
-        if (data.ethereum?.usd) {
-          setEthUsdRate(data.ethereum.usd);
-        }
-        if (data["matic-network"]?.usd) {
-          setMaticUsdRate(data["matic-network"].usd);
-        }
-      } catch (err) {
-        console.error("Failed to fetch conversion rates:", err);
-      } finally {
-        setRatesLoading(false);
-      }
-    }
-    fetchRates();
-  }, []);
+export default async function CombinedWalletNetWorth({
+  searchParams,
+}: CombinedWalletNetWorthProps) {
+  const address = searchParams.address;
 
-  //   // If no wallet is connected, show a skeleton
-  //   if (!address) {
-  //     return (
-  //       <div className="text-sm font-mono mr-2.5">
-  //         <Skeleton className="inline-block h-5 w-[140px]" />
-  //       </div>
-  //     );
-  //   }
-
-  // Get balance for Ethereum
-  const { data: ethBalance, isLoading: ethLoading } = useWalletBalance({
-    client,
-    address,
-    chain: ethereum,
-  });
-
-  // Get balance for Polygon
-  const { data: polyBalance, isLoading: polyLoading } = useWalletBalance({
-    client,
-    address,
-    chain: polygon,
-  });
-
-  if (ethLoading || polyLoading || ratesLoading) {
-    return (
-      <div className="text-sm font-mono mr-2.5">
-        <Skeleton className="inline-block h-5 w-[140px]" />
-      </div>
-    );
+  if (!address) {
+    return <div>Please provide a wallet address.</div>;
   }
 
-  const ethVal = parseFloat(ethBalance?.displayValue || "0");
-  const polyVal = parseFloat(polyBalance?.displayValue || "0");
+  // Initialize Moralis using your private API key from your environment
+  await initializeMoralis();
 
-  // Convert each balance to USD using the fetched conversion rates
-  const ethUsd = ethVal * ethUsdRate;
-  const polyUsd = polyVal * maticUsdRate;
-  const totalUsd = ethUsd + polyUsd;
+  let netWorth: string | null = null;
+  try {
+    // Fetch wallet net worth from Moralis API
+    const response = await Moralis.EvmApi.wallets.getWalletNetWorth({
+      address,
+      excludeSpam: true,
+      excludeUnverifiedContracts: true,
+    });
+    netWorth = response.raw?.total_networth_usd;
+  } catch (error) {
+    console.error("Error fetching net worth:", error);
+  }
 
   return (
     <div className="text-sm font-mono mr-2.5">
-      Total: ~${totalUsd.toFixed(2)} USD
+      Amount Raised: ~${netWorth ? parseFloat(netWorth).toFixed(2) : "N/A"} USD
     </div>
   );
 }
