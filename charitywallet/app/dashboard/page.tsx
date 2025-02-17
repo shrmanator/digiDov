@@ -69,7 +69,7 @@ export default async function Page() {
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
               <header className="mb-8 text-center">
-                <h1 className="text-3xl font-bold">Transactions</h1>
+                <h1 className="text-3xl font-bold">Donations</h1>
               </header>
               {isCharityComplete ? (
                 <div className="w-full flex justify-center">
@@ -81,7 +81,7 @@ export default async function Page() {
                 </div>
               ) : (
                 <>
-                  <p className="text-center">No transactions found.</p>
+                  <p className="text-center">No donations found.</p>
                   <CharitySetupModal walletAddress={user.walletAddress} />
                 </>
               )}
