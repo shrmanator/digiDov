@@ -27,11 +27,11 @@ export default function Donate() {
         <ConnectEmbed
           client={client}
           welcomeScreen={{
-            title: "Charity Name Here",
-            subtitle: "Custom Subtitle",
+            title: "Your gateway to decentralized giving",
+            subtitle: "Connect wallet to donate to Charity Name",
           }}
           wallets={wallets}
-          header={{ title: "Connect wallet" }}
+          header={{ title: "Connect wallet", titleIcon: "/file.svg" }}
           showThirdwebBranding={false}
           chain={ethereum}
           modalSize={"wide"}
