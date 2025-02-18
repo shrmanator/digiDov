@@ -2,31 +2,39 @@
 
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
-import { inAppWallet } from "thirdweb/wallets";
-import { polygon } from "thirdweb/chains";
+import { createWallet } from "thirdweb/wallets";
+import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
-import { isLoggedIn, login, generatePayload, logout } from "../actions/auth";
+import { isLoggedIn, login, generatePayload, logout } from "@/app/actions/auth";
+import { useCharity } from "@/hooks/use-charity";
 
 const wallets = [
-  inAppWallet({
-    auth: {
-      options: ["google", "email"],
-    },
-  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("com.trustwallet.app"),
+  createWallet("com.ledger"),
+  createWallet("com.mewwallet"),
+  createWallet("com.binance"),
 ];
 
-export default function Home() {
+export default function Donate() {
   const router = useRouter();
+  const { charity } = useCharity();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-md flex flex-col items-center">
         <ConnectEmbed
           client={client}
+          welcomeScreen={{
+            title: "Charity Name Here",
+            subtitle: "Custom Subtitle",
+          }}
           wallets={wallets}
-          header={{ title: "Choose a login method" }}
+          header={{ title: "Connect wallet" }}
           showThirdwebBranding={false}
-          chain={polygon}
+          chain={ethereum}
+          modalSize={"wide"}
           auth={{
             isLoggedIn: async (address) => {
               console.log("Checking if logged in", { address });
@@ -40,7 +48,7 @@ export default function Home() {
             getLoginPayload: async ({ address }) =>
               generatePayload({
                 address: address.toLowerCase(),
-                chainId: polygon.id,
+                chainId: ethereum.id,
               }),
             doLogout: async () => {
               console.log("Logging out!");

@@ -15,7 +15,6 @@ import { useCharity } from "@/hooks/use-charity";
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { charity } = useCharity();
 
-  // Create dynamic nav data using the charity info (with fallbacks).
   const navData = {
     user: {
       name: charity?.charity_name || "Default Charity Name",
