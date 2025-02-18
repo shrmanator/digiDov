@@ -5,7 +5,7 @@ import { ConnectEmbed } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
 import { polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
-import { isLoggedIn, login, generatePayload, logout } from "../actions/auth";
+import { isLoggedIn, login, generatePayload, logout } from "../../actions/auth";
 
 const wallets = [
   inAppWallet({
