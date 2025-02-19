@@ -13,11 +13,11 @@ import {
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
 
 const wallets = [
-  inAppWallet({
-    auth: {
-      options: ["google", "email"],
-    },
-  }),
+  // inAppWallet({
+  //   auth: {
+  //     options: ["google", "email"],
+  //   },
+  // }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
