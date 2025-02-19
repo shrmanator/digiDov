@@ -1,6 +1,8 @@
+// app/donate/[walletAddress]/page.tsx
 import { notFound } from "next/navigation";
 import SideBarAndHeader from "./donate-sidebar-and-header";
 import { getCharityByWallet } from "@/app/actions/charities";
+import DonationForm from "@/components/donation-form";
 
 export default async function DonatePage({
   params,
@@ -8,12 +10,15 @@ export default async function DonatePage({
   params: { walletAddress: string };
 }) {
   const { walletAddress } = await Promise.resolve(params);
-
   const charity = await getCharityByWallet(walletAddress.toLowerCase());
 
   if (!charity) {
     notFound();
   }
 
-  return <SideBarAndHeader charity={charity} />;
+  return (
+    <SideBarAndHeader charity={charity}>
+      <DonationForm charityId={charity.id} donorAddress={""} />
+    </SideBarAndHeader>
+  );
 }

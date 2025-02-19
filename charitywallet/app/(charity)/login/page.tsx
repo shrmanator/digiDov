@@ -5,7 +5,12 @@ import { ConnectEmbed } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
 import { polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
-import { isLoggedIn, login, generatePayload, logout } from "../../actions/auth";
+import {
+  isLoggedIn,
+  generatePayload,
+  logout,
+  charityLogin,
+} from "../../actions/auth";
 
 const wallets = [
   inAppWallet({
@@ -34,7 +39,7 @@ export default function Home() {
             },
             doLogin: async (params) => {
               console.log("Logging in!");
-              await login(params);
+              await charityLogin(params);
               router.push("/dashboard");
             },
             getLoginPayload: async ({ address }) =>

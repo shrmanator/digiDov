@@ -15,14 +15,19 @@ import {
 
 interface Charity {
   charity_name?: string | null;
+  id: string;
 }
 
 interface SideBarAndHeaderProps {
   charity: Charity;
+  children?: React.ReactNode;
 }
 
-export default function SideBarAndHeader({ charity }: SideBarAndHeaderProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+export default function SideBarAndHeader({
+  charity,
+  children,
+}: SideBarAndHeaderProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
 
   useEffect(() => {
@@ -54,17 +59,9 @@ export default function SideBarAndHeader({ charity }: SideBarAndHeaderProps) {
             <ConnectWalletButton setIsAuthenticated={setIsAuthenticated} />
           </div>
         </header>
-        {/* Main Content */}
-        <div className="flex flex-1 items-center justify-center p-8">
-          <div className="w-full max-w-md flex flex-col items-center">
-            {isAuthenticated && account && account.address ? (
-              <div>
-                <h2>Welcome, {account.address}</h2>
-                {/* Render your donation form and donor info here */}
-              </div>
-            ) : null}
-          </div>
-        </div>
+        <main className="flex flex-1 items-center justify-center p-8">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
