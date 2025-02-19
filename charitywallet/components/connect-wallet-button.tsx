@@ -1,13 +1,18 @@
 "use client";
 
 import { ConnectButton } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import { isLoggedIn, login, generatePayload, logout } from "@/app/actions/auth";
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
 
 const wallets = [
+  inAppWallet({
+    auth: {
+      options: ["google", "email"],
+    },
+  }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
@@ -26,6 +31,10 @@ export default function ConnectWalletButton({
   return (
     <ConnectButton
       client={client}
+      connectModal={{
+        size: "wide",
+        showThirdwebBranding: false,
+      }}
       wallets={wallets}
       chain={ethereum}
       auth={{
