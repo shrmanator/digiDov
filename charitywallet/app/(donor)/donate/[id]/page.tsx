@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
-import { useCharity } from "@/hooks/use-charity";
 import ConnectWalletButton from "@/components/connect-wallet-button";
 
 export default function Donate() {
