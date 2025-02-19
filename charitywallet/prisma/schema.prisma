@@ -24,26 +24,26 @@ model Charities {
 
 model Donors {
     id               String            @id @default(uuid())
-    walletAddress    String            @unique // Donor's wallet address
-    email            String            @unique // Donor's email address
-    firstName        String // Donor's first name
-    lastName         String // Donor's last name
-    address          String // Donor's physical address
+    walletAddress    String            @unique
+    email            String?           @unique
+    firstName        String?
+    lastName         String?
+    address          String? // Donor's physical address
     donationReceipts DonationReceipt[] // One-to-many relation with receipts
     createdAt        DateTime          @default(now())
     updatedAt        DateTime          @updatedAt
 }
 
 model DonationReceipt {
-    id              String   @id @default(uuid())
-    receiptNumber   String   @unique // Unique receipt identifier (can be generated or based on the tx hash)
+    id              String     @id @default(uuid())
+    receiptNumber   String     @unique // Unique receipt identifier (can be generated or based on the tx hash)
     donationDate    DateTime // Date of donation (e.g., blockchain timestamp)
     fiatAmount      Float // Donation amount in CAD (converted value)
     transactionHash String // Blockchain transaction hash for verification
-    charityId String?
-    charity   Charities? @relation(fields: [charityId], references: [id])
-    donorId String? // Optional foreign key for the donor
-    donor   Donors?  @relation(fields: [donorId], references: [id])
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    charityId       String?
+    charity         Charities? @relation(fields: [charityId], references: [id])
+    donorId         String? // Optional foreign key for the donor
+    donor           Donors?    @relation(fields: [donorId], references: [id])
+    createdAt       DateTime   @default(now())
+    updatedAt       DateTime   @updatedAt
 }

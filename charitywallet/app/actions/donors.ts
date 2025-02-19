@@ -21,10 +21,10 @@ export async function upsertDonor(data: DonorInput) {
     },
     create: {
       walletAddress,
-      email: data.email ?? "",
-      firstName: data.firstName ?? "",
-      lastName: data.lastName ?? "",
-      address: data.address ?? "",
+      email: data.email ?? null,
+      firstName: data.firstName ?? null,
+      lastName: data.lastName ?? null,
+      address: data.address ?? null,
     },
   });
 }
