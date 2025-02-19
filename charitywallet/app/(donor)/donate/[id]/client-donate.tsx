@@ -26,7 +26,6 @@ export default function ClientDonate() {
   return (
     <SidebarProvider>
       <SidebarInset className="min-h-screen flex flex-col">
-        {/* Header with Breadcrumbs */}
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
           <div className="flex items-center gap-2">
             <Breadcrumb>
@@ -41,19 +40,19 @@ export default function ClientDonate() {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
+          <div className="flex items-center">
+            <ConnectWalletButton setIsAuthenticated={setIsAuthenticated} />
+          </div>
         </header>
         {/* Main Content */}
         <div className="flex flex-1 items-center justify-center p-8">
           <div className="w-full max-w-md flex flex-col items-center">
-            {!isAuthenticated ? (
-              <ConnectWalletButton setIsAuthenticated={setIsAuthenticated} />
-            ) : account && account.address ? (
+            {/* Additional content such as your donation form can go here */}
+            {isAuthenticated && account && account.address && (
               <div>
                 <h2>Welcome, {account.address}</h2>
                 {/* Render your donation form and donor info here */}
               </div>
-            ) : (
-              <p>Loading account information...</p>
             )}
           </div>
         </div>
