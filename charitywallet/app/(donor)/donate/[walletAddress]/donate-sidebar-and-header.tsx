@@ -13,8 +13,16 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export default function ClientDonate() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+interface Charity {
+  charity_name?: string | null;
+}
+
+interface SideBarAndHeaderProps {
+  charity: Charity;
+}
+
+export default function SideBarAndHeader({ charity }: SideBarAndHeaderProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const account = useActiveAccount();
 
   useEffect(() => {
@@ -35,7 +43,9 @@ export default function ClientDonate() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Charity Name</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {charity?.charity_name || "Charity Name"}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -47,13 +57,12 @@ export default function ClientDonate() {
         {/* Main Content */}
         <div className="flex flex-1 items-center justify-center p-8">
           <div className="w-full max-w-md flex flex-col items-center">
-            {/* Additional content such as your donation form can go here */}
-            {isAuthenticated && account && account.address && (
+            {isAuthenticated && account && account.address ? (
               <div>
                 <h2>Welcome, {account.address}</h2>
                 {/* Render your donation form and donor info here */}
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </SidebarInset>

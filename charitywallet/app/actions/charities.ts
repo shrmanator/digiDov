@@ -55,3 +55,9 @@ export async function updateCharityEmail(params: {
     },
   });
 }
+
+export async function getCharityByWallet(walletAddress: string) {
+  return prisma.charities.findUnique({
+    where: { wallet_address: walletAddress },
+  });
+}
