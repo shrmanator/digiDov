@@ -12,6 +12,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { polygon, ethereum } from "thirdweb/chains";
 
 interface Charity {
   charity_name?: string | null;
@@ -29,6 +37,8 @@ export default function SideBarAndHeader({
 }: SideBarAndHeaderProps) {
   const [, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
+  // default chain is Polygon
+  const [activeChain, setActiveChain] = useState(polygon);
 
   useEffect(() => {
     if (account && account.address) {
@@ -55,8 +65,25 @@ export default function SideBarAndHeader({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className="flex items-center">
-            <ConnectWalletButton setIsAuthenticated={setIsAuthenticated} />
+          <div className="flex items-center gap-4">
+            {/* Chain Selector using shadcn/ui Select */}
+            <Select
+              onValueChange={(value) =>
+                setActiveChain(value === "ethereum" ? ethereum : polygon)
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select chain" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="polygon">Polygon</SelectItem>
+                <SelectItem value="ethereum">Ethereum</SelectItem>
+              </SelectContent>
+            </Select>
+            <ConnectWalletButton
+              setIsAuthenticated={setIsAuthenticated}
+              activeChain={activeChain}
+            />
           </div>
         </header>
         <main className="flex flex-1 items-center justify-center p-8">

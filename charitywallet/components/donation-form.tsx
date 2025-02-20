@@ -8,12 +8,10 @@ import SendWithFeeButton from "./send-with-fee";
 
 interface DonationFormProps {
   charityWalletAddress: string; // Donation destination address (or contract)
-  donorAddress: string; // Connected wallet address
 }
 
 export default function DonationForm({
   charityWalletAddress,
-  donorAddress,
 }: DonationFormProps) {
   const presetAmounts = [0.005, 0.01, 0.02, 0.05]; // Donation amounts in ETH
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);

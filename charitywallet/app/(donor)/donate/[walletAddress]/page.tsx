@@ -17,10 +17,7 @@ export default async function DonatePage({
 
   return (
     <SideBarAndHeader charity={charity}>
-      <DonationForm
-        charityWalletAddress={charity.wallet_address}
-        donorAddress={""}
-      />
+      <DonationForm charityWalletAddress={charity.wallet_address} />
     </SideBarAndHeader>
   );
 }

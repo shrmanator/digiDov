@@ -2,7 +2,7 @@
 
 import { ConnectButton } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
-import { ethereum, polygon } from "thirdweb/chains";
+import { ethereum, polygon, Chain } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
   isLoggedIn,
@@ -13,11 +13,7 @@ import {
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
 
 const wallets = [
-  // inAppWallet({
-  //   auth: {
-  //     options: ["google", "email"],
-  //   },
-  // }),
+  // inAppWallet({ auth: { options: ["google", "email"] } }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
@@ -28,20 +24,23 @@ const wallets = [
 
 interface ConnectWalletButtonProps {
   setIsAuthenticated: (val: boolean) => void;
+  activeChain: Chain; // Added activeChain prop
 }
 
 export default function ConnectWalletButton({
   setIsAuthenticated,
+  activeChain,
 }: ConnectWalletButtonProps) {
   return (
     <ConnectButton
+      chains={[ethereum, polygon]}
       client={client}
       connectModal={{
         size: "wide",
         showThirdwebBranding: false,
       }}
       wallets={wallets}
-      chain={polygon}
+      chain={activeChain} // Use the activeChain prop here
       auth={{
         isLoggedIn: async (address: string) => {
           console.log("Checking if logged in", { address });
@@ -54,7 +53,7 @@ export default function ConnectWalletButton({
         getLoginPayload: async ({ address }: { address: string }) =>
           generatePayload({
             address: address.toLowerCase(),
-            chainId: polygon.id,
+            chainId: activeChain.id, // Use activeChain.id instead of polygon.id
           }),
         doLogout: async () => {
           console.log("Logging out!");
