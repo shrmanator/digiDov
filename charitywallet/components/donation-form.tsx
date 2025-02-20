@@ -3,42 +3,42 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Web3 from "web3";
+import SendWithFeeButton from "./send-with-fee";
 
 interface DonationFormProps {
-  charityId: string;
-  donorAddress: string;
+  charityWalletAddress: string; // Donation destination address (or contract)
+  donorAddress: string; // Connected wallet address
 }
 
 export default function DonationForm({
-  charityId,
+  charityWalletAddress,
   donorAddress,
 }: DonationFormProps) {
-  const presetAmounts = [10, 20, 50, 100]; // donation amounts, e.g., in dollars
+  const presetAmounts = [0.005, 0.01, 0.02, 0.05]; // Donation amounts in ETH
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<string>("");
 
+  // Initialize web3 using the injected provider (e.g. MetaMask)
+  const web3 = new Web3();
+
   const handlePresetClick = (amount: number) => {
     setSelectedAmount(amount);
-    setCustomAmount(""); // clear custom input if preset selected
+    setCustomAmount("");
   };
 
   const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCustomAmount(e.target.value);
-    setSelectedAmount(null); // clear preset if custom input used
+    setSelectedAmount(null);
   };
 
-  const handleDonate = () => {
-    const donation =
+  // Calculate the donation amount in wei as a BigInt.
+  const donationAmountInWei = (() => {
+    const donationAmount =
       selectedAmount !== null ? selectedAmount : parseFloat(customAmount);
-    if (!donation || donation <= 0) {
-      alert("Please enter a valid donation amount.");
-      return;
-    }
-    // Here, you'd integrate with your donation logic (e.g., call a function to handle the transaction via Thirdweb)
-    console.log(
-      `Donating ${donation} to charity ${charityId} from donor ${donorAddress}`
-    );
-  };
+    if (!donationAmount || donationAmount <= 0) return null;
+    return BigInt(web3.utils.toWei(donationAmount.toString(), "ether"));
+  })();
 
   return (
     <div className="space-y-4">
@@ -51,19 +51,26 @@ export default function DonationForm({
               variant={selectedAmount === amount ? "default" : "outline"}
               onClick={() => handlePresetClick(amount)}
             >
-              ${amount}
+              {amount} ETH
             </Button>
           ))}
           <Input
             type="number"
-            placeholder="Custom"
+            placeholder="Custom (ETH)"
             value={customAmount}
             onChange={handleCustomChange}
             className="w-24"
           />
         </div>
       </div>
-      <Button onClick={handleDonate}>Donate Now</Button>
+      {donationAmountInWei ? (
+        <SendWithFeeButton
+          donationValue={donationAmountInWei}
+          recipientAddress={charityWalletAddress}
+        />
+      ) : (
+        <Button disabled>Please enter a valid donation amount</Button>
+      )}
     </div>
   );
 }

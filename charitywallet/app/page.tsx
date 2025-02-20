@@ -5,7 +5,12 @@ import { ConnectEmbed } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
 import { polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
-import { isLoggedIn, login, generatePayload, logout } from "./actions/auth";
+import {
+  isLoggedIn,
+  generatePayload,
+  logout,
+  charityLogin,
+} from "./actions/auth";
 
 // Configure the wallet(s) you want to support—in this case, an in-app wallet with Google and email auth
 const wallets = [
@@ -35,7 +40,7 @@ export default function Home() {
             },
             doLogin: async (params) => {
               console.log("Logging in!");
-              await login(params);
+              await charityLogin(params);
               // Redirect to the dashboard after successful login
               router.push("/dashboard");
             },

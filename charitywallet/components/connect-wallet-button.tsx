@@ -2,7 +2,7 @@
 
 import { ConnectButton } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
-import { ethereum } from "thirdweb/chains";
+import { ethereum, polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
   isLoggedIn,
@@ -41,7 +41,7 @@ export default function ConnectWalletButton({
         showThirdwebBranding: false,
       }}
       wallets={wallets}
-      chain={ethereum}
+      chain={polygon}
       auth={{
         isLoggedIn: async (address: string) => {
           console.log("Checking if logged in", { address });
@@ -54,7 +54,7 @@ export default function ConnectWalletButton({
         getLoginPayload: async ({ address }: { address: string }) =>
           generatePayload({
             address: address.toLowerCase(),
-            chainId: ethereum.id,
+            chainId: polygon.id,
           }),
         doLogout: async () => {
           console.log("Logging out!");

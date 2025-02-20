@@ -1,4 +1,3 @@
-// app/donate/[walletAddress]/page.tsx
 import { notFound } from "next/navigation";
 import SideBarAndHeader from "./donate-sidebar-and-header";
 import { getCharityByWallet } from "@/app/actions/charities";
@@ -18,7 +17,10 @@ export default async function DonatePage({
 
   return (
     <SideBarAndHeader charity={charity}>
-      <DonationForm charityId={charity.id} donorAddress={""} />
+      <DonationForm
+        charityWalletAddress={charity.wallet_address}
+        donorAddress={""}
+      />
     </SideBarAndHeader>
   );
 }
