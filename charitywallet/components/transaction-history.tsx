@@ -45,21 +45,26 @@ async function fetchBothTransactions(
   walletAddress: string
 ): Promise<TransactionWithType[]> {
   try {
+    // Call getWalletHistory for Ethereum and Polygon
     const [ethResponse, polygonResponse] = await Promise.all([
-      Moralis.EvmApi.transaction.getWalletTransactions({
+      Moralis.EvmApi.wallets.getWalletHistory({
         chain: "0x1", // Ethereum
         order: "DESC",
         address: walletAddress,
       }),
-      Moralis.EvmApi.transaction.getWalletTransactions({
+      Moralis.EvmApi.wallets.getWalletHistory({
         chain: "0x89", // Polygon
         order: "DESC",
         address: walletAddress,
       }),
     ]);
 
-    const ethTransactions = ethResponse.raw.result as Transaction[];
-    const polygonTransactions = polygonResponse.raw.result as Transaction[];
+    // Convert responses to JSON so we can access the result property
+
+    console.log("ethResponse:", polygonResponse);
+    const ethTransactions = ethResponse.toJSON().result as Transaction[];
+    const polygonTransactions = polygonResponse.toJSON()
+      .result as Transaction[];
 
     const mappedEth: TransactionWithType[] = ethTransactions.map(
       (tx): TransactionWithType => ({
