@@ -109,7 +109,6 @@ const chainToSymbol: { [chain: string]: string } = {
 export default async function TransactionHistory({
   walletAddress,
 }: TransactionHistoryProps) {
-  // Ensure Moralis is initialized
   await initializeMoralis();
 
   let transactions: TransactionWithType[] = [];

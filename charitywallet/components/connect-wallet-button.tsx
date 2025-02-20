@@ -1,7 +1,7 @@
 "use client";
 
 import { ConnectButton } from "thirdweb/react";
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { createWallet } from "thirdweb/wallets";
 import { ethereum, polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {

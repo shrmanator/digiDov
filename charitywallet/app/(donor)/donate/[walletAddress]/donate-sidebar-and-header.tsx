@@ -27,7 +27,7 @@ export default function SideBarAndHeader({
   charity,
   children,
 }: SideBarAndHeaderProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
 
   useEffect(() => {
