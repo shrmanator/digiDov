@@ -12,7 +12,7 @@ import { upsertCharity } from "@/app/actions/charities";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { CharityFormStep } from "./charity-info-step";
-import { WalletAddressStep } from "./wallet-address-step";
+import { DonationLinkStep } from "./wallet-address-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -21,7 +21,6 @@ interface CharitySetupModalProps {
 export default function CharitySetupModal({
   walletAddress,
 }: CharitySetupModalProps) {
-  // Retrieve linked profiles from Thirdweb.
   const { data: profiles } = useProfiles({ client });
 
   // Extract a default email from profiles if available.
@@ -111,8 +110,8 @@ export default function CharitySetupModal({
             />
           </>
         ) : (
-          <WalletAddressStep
-            walletAddress={walletAddress}
+          <DonationLinkStep
+            charityName={formData.charity_name}
             onFinish={handleFinish}
           />
         )}

@@ -10,15 +10,15 @@ import {
 import { Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface WalletAddressStepProps {
-  walletAddress: string;
+interface DonationLinkStepProps {
+  charityName: string;
   onFinish: () => void;
 }
 
-export function WalletAddressStep({
-  walletAddress,
+export function DonationLinkStep({
+  charityName,
   onFinish,
-}: WalletAddressStepProps) {
+}: DonationLinkStepProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -26,7 +26,7 @@ export function WalletAddressStep({
     if (e) e.stopPropagation();
     try {
       await navigator.clipboard.writeText(
-        `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${walletAddress}`
+        `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charityName}`
       );
       setCopied(true);
       toast({
@@ -69,7 +69,7 @@ export function WalletAddressStep({
           break-all allows the link to wrap onto multiple lines if needed.
         */}
         <span className="text-sm font-mono break-all w-0 flex-1">
-          {`${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${walletAddress}`}
+          {`${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charityName}`}
         </span>
         <Button
           variant="outline"
