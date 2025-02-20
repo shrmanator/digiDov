@@ -8,7 +8,7 @@ export default async function DonatePage({
 }: {
   params: { walletAddress: string };
 }) {
-  const { walletAddress } = await Promise.resolve(params);
+  const { walletAddress } = params;
   const charity = await getCharityByWallet(walletAddress.toLowerCase());
 
   if (!charity) {
@@ -17,7 +17,7 @@ export default async function DonatePage({
 
   return (
     <SideBarAndHeader charity={charity}>
-      <DonationForm charityWalletAddress={charity.wallet_address} />
+      <DonationForm charityWalletAddress={charity.walletAddress} />
     </SideBarAndHeader>
   );
 }

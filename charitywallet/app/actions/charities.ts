@@ -3,41 +3,39 @@
 import prisma from "@/lib/prisma";
 
 export interface CharityInput {
-  charity_name?: string | null;
-  registered_address?: string | null;
-  registration_number?: string | null;
-  contact_name?: string | null;
-  contact_email?: string | null;
-  contact_phone?: string | null;
-  wallet_address: string;
+  charityName?: string | null;
+  registeredAddress?: string | null;
+  registrationNumber?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  walletAddress: string;
   isProfileComplete?: boolean;
 }
 
 export async function upsertCharity(data: CharityInput) {
-  const walletAddress = data.wallet_address.toLowerCase();
-  return prisma.charities.upsert({
-    where: { wallet_address: walletAddress },
+  const walletAddress = data.walletAddress.toLowerCase();
+  return prisma.charity.upsert({
+    where: { walletAddress },
     update: {
-      charity_name: data.charity_name ?? undefined,
-      registered_address: data.registered_address ?? undefined,
-      registration_number: data.registration_number ?? undefined,
-      contact_name: data.contact_name ?? undefined,
-      contact_email: data.contact_email ?? undefined,
-      contact_phone: data.contact_phone ?? undefined,
-      // Only update isProfileComplete if it is explicitly provided.
+      charityName: data.charityName ?? undefined,
+      registeredAddress: data.registeredAddress ?? undefined,
+      registrationNumber: data.registrationNumber ?? undefined,
+      contactName: data.contactName ?? undefined,
+      contactEmail: data.contactEmail ?? undefined,
+      contactPhone: data.contactPhone ?? undefined,
       ...(typeof data.isProfileComplete !== "undefined"
         ? { isProfileComplete: data.isProfileComplete }
         : {}),
     },
     create: {
-      charity_name: data.charity_name ?? null,
-      registered_address: data.registered_address ?? null,
-      registration_number: data.registration_number ?? null,
-      contact_name: data.contact_name ?? null,
-      contact_email: data.contact_email ?? null,
-      contact_phone: data.contact_phone ?? null,
-      wallet_address: walletAddress,
-      // When creating a new record, default to false if not provided.
+      charityName: data.charityName ?? null,
+      registeredAddress: data.registeredAddress ?? null,
+      registrationNumber: data.registrationNumber ?? null,
+      contactName: data.contactName ?? null,
+      contactEmail: data.contactEmail ?? null,
+      contactPhone: data.contactPhone ?? null,
+      walletAddress: walletAddress,
       isProfileComplete: data.isProfileComplete ?? false,
     },
   });
@@ -48,16 +46,16 @@ export async function updateCharityEmail(params: {
   email: string;
 }) {
   const walletAddress = params.walletAddress.toLowerCase();
-  return await prisma.charities.update({
-    where: { wallet_address: walletAddress },
+  return prisma.charity.update({
+    where: { walletAddress },
     data: {
-      contact_email: params.email,
+      contactEmail: params.email,
     },
   });
 }
 
 export async function getCharityByWallet(walletAddress: string) {
-  return prisma.charities.findUnique({
-    where: { wallet_address: walletAddress },
+  return prisma.charity.findUnique({
+    where: { walletAddress },
   });
 }

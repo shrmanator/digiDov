@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Web3 from "web3";
 import SendWithFeeButton from "./send-with-fee";
 
@@ -17,7 +18,6 @@ export default function DonationForm({
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<string>("");
 
-  // Initialize web3 using the injected provider (e.g. MetaMask)
   const web3 = new Web3();
 
   const handlePresetClick = (amount: number) => {
@@ -39,15 +39,20 @@ export default function DonationForm({
   })();
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold">Choose a Donation Amount</h3>
-        <div className="flex gap-2 mt-2">
+    <Card className="max-w-md mx-auto shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">
+          Choose a Donation Amount
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
           {presetAmounts.map((amount) => (
             <Button
               key={amount}
               variant={selectedAmount === amount ? "default" : "outline"}
               onClick={() => handlePresetClick(amount)}
+              className="flex-1"
             >
               {amount} ETH
             </Button>
@@ -60,15 +65,15 @@ export default function DonationForm({
             className="w-24"
           />
         </div>
-      </div>
-      {donationAmountInWei ? (
-        <SendWithFeeButton
-          donationValue={donationAmountInWei}
-          recipientAddress={charityWalletAddress}
-        />
-      ) : (
-        <Button disabled>Please enter a valid donation amount</Button>
-      )}
-    </div>
+        {donationAmountInWei ? (
+          <SendWithFeeButton
+            donationValue={donationAmountInWei}
+            recipientAddress={charityWalletAddress}
+          />
+        ) : (
+          <Button disabled>Please enter a valid donation amount</Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

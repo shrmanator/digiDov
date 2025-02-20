@@ -8,42 +8,43 @@ generator client {
     provider = "prisma-client-js"
 }
 
-model Charities {
-    id                  String            @id @default(uuid())
-    charity_name        String? // e.g., "legal_name"
-    registered_address  String?
-    registration_number String?
-    contact_name        String?
-    contact_email       String?
-    contact_phone       String?
-    wallet_address      String            @unique // required
-    isProfileComplete   Boolean           @default(false)
-    createdAt           DateTime          @default(now())
-    DonationReceipt     DonationReceipt[]
+model Charity {
+    id                 String            @id @default(uuid())
+    charityName        String?           @map("charity_name")
+    registeredAddress  String?           @map("registered_address")
+    registrationNumber String?           @map("registration_number")
+    contactName        String?           @map("contact_name")
+    contactEmail       String?           @map("contact_email")
+    contactPhone       String?           @map("contact_phone")
+    walletAddress      String            @unique @map("wallet_address")
+    isProfileComplete  Boolean           @default(false)
+    createdAt          DateTime          @default(now())
+    donationReceipts   DonationReceipt[]
 }
 
-model Donors {
-    id               String            @id @default(uuid())
-    walletAddress    String            @unique
-    email            String?           @unique
-    firstName        String?
-    lastName         String?
-    address          String? // Donor's physical address
-    donationReceipts DonationReceipt[] // One-to-many relation with receipts
-    createdAt        DateTime          @default(now())
-    updatedAt        DateTime          @updatedAt
+model Donor {
+    id                String            @id @default(uuid())
+    walletAddress     String            @unique
+    email             String?           @unique
+    firstName         String?
+    lastName          String?
+    address           String?
+    donationReceipts  DonationReceipt[]
+    isProfileComplete Boolean           @default(false)
+    createdAt         DateTime          @default(now())
+    updatedAt         DateTime          @updatedAt
 }
 
 model DonationReceipt {
-    id              String     @id @default(uuid())
-    receiptNumber   String     @unique // Unique receipt identifier (can be generated or based on the tx hash)
-    donationDate    DateTime // Date of donation (e.g., blockchain timestamp)
-    fiatAmount      Float // Donation amount in CAD (converted value)
-    transactionHash String // Blockchain transaction hash for verification
+    id              String   @id @default(uuid())
+    receiptNumber   String   @unique
+    donationDate    DateTime
+    fiatAmount      Float
+    transactionHash String
     charityId       String?
-    charity         Charities? @relation(fields: [charityId], references: [id])
-    donorId         String? // Optional foreign key for the donor
-    donor           Donors?    @relation(fields: [donorId], references: [id])
-    createdAt       DateTime   @default(now())
-    updatedAt       DateTime   @updatedAt
+    charity         Charity? @relation(fields: [charityId], references: [id])
+    donorId         String?
+    donor           Donor?   @relation(fields: [donorId], references: [id])
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 }
