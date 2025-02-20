@@ -14,29 +14,30 @@ export interface CharityInput {
 }
 
 export async function upsertCharity(data: CharityInput) {
+  console.log("walletAddress", data.walletAddress);
   const walletAddress = data.walletAddress.toLowerCase();
   return prisma.charity.upsert({
-    where: { walletAddress },
+    where: { wallet_address: walletAddress },
     update: {
-      charityName: data.charityName ?? undefined,
-      registeredAddress: data.registeredAddress ?? undefined,
-      registrationNumber: data.registrationNumber ?? undefined,
-      contactName: data.contactName ?? undefined,
-      contactEmail: data.contactEmail ?? undefined,
-      contactPhone: data.contactPhone ?? undefined,
+      charity_name: data.charityName ?? undefined,
+      registered_office_address: data.registeredAddress ?? undefined,
+      registration_number: data.registrationNumber ?? undefined,
+      contact_name: data.contactName ?? undefined,
+      contact_email: data.contactEmail ?? undefined,
+      contact_phone: data.contactPhone ?? undefined,
       ...(typeof data.isProfileComplete !== "undefined"
         ? { isProfileComplete: data.isProfileComplete }
         : {}),
     },
     create: {
-      charityName: data.charityName ?? null,
-      registeredAddress: data.registeredAddress ?? null,
-      registrationNumber: data.registrationNumber ?? null,
-      contactName: data.contactName ?? null,
-      contactEmail: data.contactEmail ?? null,
-      contactPhone: data.contactPhone ?? null,
-      walletAddress: walletAddress,
-      isProfileComplete: data.isProfileComplete ?? false,
+      charity_name: data.charityName ?? null,
+      registered_office_address: data.registeredAddress ?? null,
+      registration_number: data.registrationNumber ?? null,
+      contact_name: data.contactName ?? null,
+      contact_email: data.contactEmail ?? null,
+      contact_phone: data.contactPhone ?? null,
+      wallet_address: walletAddress,
+      is_profile_complete: data.isProfileComplete ?? false,
     },
   });
 }
@@ -47,15 +48,15 @@ export async function updateCharityEmail(params: {
 }) {
   const walletAddress = params.walletAddress.toLowerCase();
   return prisma.charity.update({
-    where: { walletAddress },
+    where: { wallet_address: walletAddress },
     data: {
-      contactEmail: params.email,
+      contact_email: params.email,
     },
   });
 }
 
 export async function getCharityByWallet(walletAddress: string) {
   return prisma.charity.findUnique({
-    where: { walletAddress },
+    where: { wallet_address: walletAddress },
   });
 }

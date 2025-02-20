@@ -29,10 +29,10 @@ export default async function Page() {
   }
 
   const charity = await prisma.charity.findUnique({
-    where: { walletAddress: user.walletAddress },
+    where: { wallet_address: user.walletAddress },
   });
 
-  const isCharityComplete = charity?.isProfileComplete ?? false;
+  const isCharityComplete = charity?.is_profile_complete ?? false;
 
   return (
     <SidebarProvider>
@@ -57,10 +57,10 @@ export default async function Page() {
             </div>
             {charity && (
               <div className="flex flex-col items-end gap-1 mt-5">
-                <WalletCopyButton walletAddress={charity.walletAddress} />
+                <WalletCopyButton walletAddress={charity.wallet_address} />
                 <CombinedWalletBalance
                   searchParams={{
-                    address: charity.walletAddress,
+                    address: charity.wallet_address,
                   }}
                 />
               </div>
@@ -75,7 +75,7 @@ export default async function Page() {
                 <div className="w-full flex justify-center">
                   <div className="w-full max-w-2xl mx-auto">
                     <TransactionHistory
-                      walletAddress={charity!.walletAddress}
+                      walletAddress={charity!.wallet_address}
                     />
                   </div>
                 </div>
