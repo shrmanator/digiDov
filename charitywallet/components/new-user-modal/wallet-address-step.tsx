@@ -25,11 +25,13 @@ export function WalletAddressStep({
   const handleCopy = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(walletAddress);
+      await navigator.clipboard.writeText(
+        `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${walletAddress}`
+      );
       setCopied(true);
       toast({
         title: "Copied!",
-        description: "Wallet address copied to clipboard.",
+        description: "Donation link copied to clipboard.",
         variant: "default",
       });
       setTimeout(() => setCopied(false), 2000);
@@ -37,7 +39,7 @@ export function WalletAddressStep({
       console.error("Failed to copy:", error);
       toast({
         title: "Error",
-        description: "Failed to copy wallet address.",
+        description: "Failed to copy donation link.",
         variant: "destructive",
       });
     }
@@ -48,25 +50,30 @@ export function WalletAddressStep({
       <DialogHeader>
         <DialogTitle>Your Donation Wallet</DialogTitle>
         <DialogDescription>
-          This is your Ethereum wallet address for receiving donations. You can
-          display it anywhere—on flyers, websites, or social media. As long as
-          the wallet address is visible, donors can send Ethereum directly to
-          it.
+          This is your unique donation link for receiving crypto donations. You
+          can copy and share it anywhere—on flyers, your website, social media,
+          etc.—to invite donors to support you.
           <br />
           <br />
           Currently, we only support tax receipts for POL, but we will be adding
           support for ETH and many other currencies soon.
         </DialogDescription>
       </DialogHeader>
-      {/* Clickable container for copying the wallet address */}
+
       <div
-        className="flex items-center justify-between p-2 border rounded-md bg-muted cursor-pointer select-all break-words"
+        className="flex items-center justify-between p-2 border rounded-md bg-muted cursor-pointer select-all sm:flex-nowrap"
         onClick={handleCopy}
       >
-        <span className="text-sm font-mono">{walletAddress}</span>
+        {/* 
+          w-0 flex-1 ensures the span can shrink or grow as needed.
+          break-all allows the link to wrap onto multiple lines if needed.
+        */}
+        <span className="text-sm font-mono break-all w-0 flex-1">
+          {`${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${walletAddress}`}
+        </span>
         <Button
           variant="outline"
-          className="ml-2 h-8 w-8 p-0"
+          className="ml-2 h-8 w-8 p-0 flex-shrink-0"
           onClick={(e) => handleCopy(e)}
         >
           {copied ? (
@@ -76,6 +83,7 @@ export function WalletAddressStep({
           )}
         </Button>
       </div>
+
       <div className="flex justify-end">
         <Button onClick={onFinish}>Finish</Button>
       </div>
