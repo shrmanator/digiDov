@@ -66,7 +66,6 @@ export default function SideBarAndHeader({
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-4">
-            {/* Chain Selector using shadcn/ui Select */}
             <Select
               onValueChange={(value) =>
                 setActiveChain(value === "ethereum" ? ethereum : polygon)

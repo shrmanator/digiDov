@@ -8,7 +8,7 @@ export default async function DonatePage({
 }: {
   params: { walletAddress: string };
 }) {
-  const { walletAddress } = params;
+  const { walletAddress } = await params;
   const charity = await getCharityByWallet(walletAddress.toLowerCase());
 
   if (!charity) {
