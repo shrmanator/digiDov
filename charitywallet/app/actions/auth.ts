@@ -22,7 +22,7 @@ export async function charityLogin(payload: VerifyLoginPayloadParams) {
     const walletAddress = verifiedPayload.payload.address.toLowerCase();
     console.log("wallet addr", walletAddress);
     await upsertCharity({
-      wallet_address: walletAddress,
+      walletAddress: walletAddress,
     });
 
     try {
