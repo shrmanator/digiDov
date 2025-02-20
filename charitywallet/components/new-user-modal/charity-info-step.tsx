@@ -32,7 +32,7 @@ export function CharityFormStep({
         name="charity_name"
         value={formData.charity_name}
         onChange={onChange}
-        placeholder="Organization Name"
+        placeholder="Name of Registered Charity"
         required
       />
       <Input
@@ -40,7 +40,7 @@ export function CharityFormStep({
         name="registered_address"
         value={formData.registered_address}
         onChange={onChange}
-        placeholder="Registered Address"
+        placeholder="Registered Office Address"
         required
       />
       <Input
@@ -48,7 +48,7 @@ export function CharityFormStep({
         name="registration_number"
         value={formData.registration_number}
         onChange={onChange}
-        placeholder="Registration Number"
+        placeholder="Charitable Registration Number"
         required
       />
       <Input
@@ -56,7 +56,7 @@ export function CharityFormStep({
         name="contact_name"
         value={formData.contact_name}
         onChange={onChange}
-        placeholder="Contact Name"
+        placeholder="Public Contact Name"
         required
       />
       <Input
@@ -64,7 +64,7 @@ export function CharityFormStep({
         name="contact_phone"
         value={formData.contact_phone}
         onChange={onChange}
-        placeholder="Contact Phone"
+        placeholder="Public Contact Phone Number"
         required
       />
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
