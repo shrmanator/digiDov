@@ -1,150 +1,187 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import Web3 from "web3";
 import { useActiveWalletChain } from "thirdweb/react";
 import { useSendWithFee } from "./send-with-fee";
+import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 
-// Mapping from native currency symbols to CoinGecko IDs.
-const coinGeckoIdMap: Record<string, string> = {
-  ETH: "ethereum",
-  POL: "matic-network", // Use the correct CoinGecko ID for "POL"
-  // Add more mappings as needed.
-};
+interface DonationFormProps {
+  charityWalletAddress: string;
+}
 
+// In a real app, you might pass `presetUsdAmounts` in as props or fetch from an API.
 export default function DonationForm({
   charityWalletAddress,
-}: {
-  charityWalletAddress: string;
-}) {
-  // Preset donation amounts in USD.
-  const presetAmountsUSD = [10, 20, 50];
-  const [selectedAmountUSD, setSelectedAmountUSD] = useState<number | null>(
-    null
-  );
-  const [customAmountUSD, setCustomAmountUSD] = useState<string>("");
-  const [usdToNativeRate, setUsdToNativeRate] = useState<number | null>(null);
+}: DonationFormProps) {
+  const presetUsdAmounts = [10, 20, 50];
+
+  // Track the user’s selected or custom USD
+  const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
+  const [customUSD, setCustomUSD] = useState("");
 
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
-  // Use fallback values if activeChain is undefined.
+  // e.g. "POL", "ETH", etc.
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
+  // e.g. 18 for ETH/MATIC
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
-  // Fetch conversion rate from USD to native currency using CoinGecko.
-  useEffect(() => {
-    async function fetchConversionRate() {
-      try {
-        const coinId =
-          coinGeckoIdMap[nativeSymbol] || nativeSymbol.toLowerCase();
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
-        );
-        const data = await response.json();
-        if (data && data[coinId]?.usd) {
-          const usdPrice = data[coinId].usd; // USD per 1 native unit.
-          setUsdToNativeRate(1 / usdPrice); // 1 native = (1/usdPrice) native per USD.
-        } else {
-          console.error("Unexpected data format from CoinGecko:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching conversion rate:", error);
-      }
-    }
-    if (nativeSymbol) {
-      fetchConversionRate();
-    }
-  }, [nativeSymbol]);
+  // ----- LIVE token price from the WebSocket -----
+  // Null until the first price arrives
+  const tokenPriceUSD = usePriceWebSocket(nativeSymbol);
 
-  const handlePresetClick = (usdAmount: number) => {
-    setSelectedAmountUSD(usdAmount);
-    setCustomAmountUSD("");
-  };
+  // Convert user’s chosen USD to smallest token units (wei, etc.)
+  const donationAmountWei = (() => {
+    if (!tokenPriceUSD) return null;
 
-  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomAmountUSD(e.target.value);
-    setSelectedAmountUSD(null);
-  };
+    // Figure out which USD value we’re using
+    const usdValue =
+      selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
+    if (usdValue <= 0) return null;
 
-  // Convert the chosen USD amount to the native currency amount (in wei).
-  const donationAmountInNative = (() => {
-    if (!usdToNativeRate) return null;
-    const usdAmount =
-      selectedAmountUSD !== null
-        ? selectedAmountUSD
-        : parseFloat(customAmountUSD);
-    if (!usdAmount || usdAmount <= 0) return null;
-    const nativeAmount = usdAmount * usdToNativeRate;
+    // USD -> raw token amount
+    const tokenAmount = usdValue / tokenPriceUSD;
+
+    // tokenAmount -> smallest units
     if (decimals === 18) {
-      return BigInt(web3.utils.toWei(nativeAmount.toString(), "ether"));
+      return BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"));
     } else {
-      return BigInt(Math.floor(nativeAmount * Math.pow(10, decimals)));
+      return BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
     }
   })();
 
-  // Call useSendWithFee unconditionally with a fallback donation amount of 0.
-  const sendWithFee = useSendWithFee(
-    donationAmountInNative ?? BigInt(0),
+  // For display: If the user’s typed custom USD, show real-time tokens
+  const customTokenAmount = (() => {
+    if (!tokenPriceUSD) return 0;
+    const val = parseFloat(customUSD || "0");
+    return val > 0 ? val / tokenPriceUSD : 0;
+  })();
+
+  // Our hook that sends the donation transaction
+  const { onClick, isPending, transactionResult } = useSendWithFee(
+    donationAmountWei ?? BigInt(0),
     charityWalletAddress
   );
 
+  // Handlers
+  const handlePresetClick = (usdVal: number) => {
+    setSelectedUSD(usdVal);
+    setCustomUSD("");
+  };
+
+  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomUSD(e.target.value);
+    setSelectedUSD(null);
+  };
+
   return (
-    <Card className="max-w-md mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
+    <Card className="mx-auto w-full max-w-md border bg-card text-card-foreground shadow-sm">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-xl font-bold">
           Choose a Donation Amount
         </CardTitle>
+        <CardDescription className="text-sm text-muted-foreground">
+          Contribute to our cause with a donation in USD (converted live to{" "}
+          {nativeSymbol}).
+        </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-4">
-        {!usdToNativeRate ? (
-          <p>Loading conversion rate...</p>
+        {/* If we haven't got a price yet, show a loading message */}
+        {!tokenPriceUSD ? (
+          <p className="text-sm text-muted-foreground">
+            Waiting for live price...
+          </p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {presetAmountsUSD.map((usdAmount) => {
-              // Convert preset USD amount to native for display.
-              const nativeAmountDisplay = (usdAmount * usdToNativeRate).toFixed(
-                6
-              );
-              return (
-                <Button
-                  key={usdAmount}
-                  variant={
-                    selectedAmountUSD === usdAmount ? "default" : "outline"
-                  }
-                  onClick={() => handlePresetClick(usdAmount)}
-                  className="flex-1"
-                >
-                  {nativeAmountDisplay} {nativeSymbol} (~${usdAmount})
-                </Button>
-              );
-            })}
-            <Input
-              type="number"
-              placeholder={`Custom (USD)`}
-              value={customAmountUSD}
-              onChange={handleCustomChange}
-              className="w-24"
-            />
-          </div>
-        )}
-        {donationAmountInNative ? (
-          <Button
-            onClick={sendWithFee.onClick}
-            disabled={sendWithFee.isPending}
-          >
-            {sendWithFee.isPending
-              ? "Processing..."
-              : sendWithFee.transactionResult
-              ? "Transaction Sent"
-              : "Send With Fee"}
-          </Button>
-        ) : (
-          <Button disabled>Please enter a valid donation amount</Button>
+          <>
+            {/* Preset USD amounts (main) + crypto (secondary) */}
+            <div className="grid grid-cols-3 gap-2">
+              {presetUsdAmounts.map((usdVal) => {
+                const isSelected = selectedUSD === usdVal;
+                const approxTokens = usdVal / tokenPriceUSD;
+
+                return (
+                  <Button
+                    key={usdVal}
+                    variant={isSelected ? "default" : "outline"}
+                    onClick={() => handlePresetClick(usdVal)}
+                    className="flex flex-col items-center justify-center px-2 py-2 space-y-1 text-center"
+                  >
+                    {/* Primary: USD */}
+                    <span className="text-base font-medium leading-tight whitespace-nowrap">
+                      ${usdVal.toFixed(2)} USD
+                    </span>
+
+                    {/* Secondary: tokens, smaller text */}
+                    <span className="text-xs text-muted-foreground leading-tight whitespace-nowrap">
+                      (~{approxTokens.toFixed(4)} {nativeSymbol})
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Separator className="my-2" />
+
+            {/* Custom USD input */}
+            <div className="grid gap-2">
+              <Label htmlFor="custom-usd" className="text-sm font-medium">
+                Custom Amount (USD)
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="custom-usd"
+                  type="number"
+                  placeholder="e.g. 100"
+                  value={customUSD}
+                  onChange={handleCustomChange}
+                  className="max-w-[150px]"
+                />
+                {/* Show the token conversion if > 0 */}
+                {customTokenAmount > 0 && (
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    ≈ {customTokenAmount.toFixed(4)} {nativeSymbol}
+                  </span>
+                )}
+              </div>
+            </div>
+          </>
         )}
       </CardContent>
+
+      <CardFooter>
+        {donationAmountWei ? (
+          <Button
+            onClick={onClick}
+            disabled={isPending}
+            size="lg"
+            className="w-full"
+          >
+            {isPending
+              ? "Processing..."
+              : transactionResult
+              ? "Donation Sent"
+              : "Donate Now"}
+          </Button>
+        ) : (
+          <Button disabled size="lg" className="w-full">
+            Please enter a valid donation amount
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 }
