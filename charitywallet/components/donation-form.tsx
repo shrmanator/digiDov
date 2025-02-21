@@ -159,7 +159,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                       className="w-full justify-between h-10"
                     >
                       <span>${usdVal}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs">
                         (~{approxTokens} {nativeSymbol})
                       </span>
                     </Button>
@@ -181,26 +181,29 @@ export default function DonationForm({ charity }: DonationFormProps) {
             <div>
               <Label
                 htmlFor="custom-usd"
-                className="mb-2 block text-sm font-semibold"
+                className="mb-1 block text-sm font-semibold"
               >
                 Enter your own
               </Label>
-              <div className="space-y-2">
+              <div className="relative group">
+                <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
+                  $
+                </span>
                 <Input
                   id="custom-usd"
                   type="number"
                   placeholder="e.g. 100"
                   value={customUSD}
                   onChange={handleCustomChange}
-                  className="h-10"
+                  className="h-10 pl-6"
                 />
-                {/* Show approximate token conversion if > 0 */}
-                {tokenFloat > 0 && selectedUSD === null && (
-                  <p className="text-sm text-muted-foreground">
-                    ~{tokenFloat.toFixed(3)} {nativeSymbol}
-                  </p>
-                )}
               </div>
+
+              {tokenFloat > 0 && selectedUSD === null && (
+                <p className="text-sm text-muted-foreground">
+                  ~{tokenFloat.toFixed(3)} {nativeSymbol}
+                </p>
+              )}
             </div>
           </div>
         )}
