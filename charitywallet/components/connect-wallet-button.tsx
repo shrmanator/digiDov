@@ -36,7 +36,7 @@ export default function ConnectWalletButton({
       chains={[ethereum, polygon]}
       client={client}
       connectModal={{
-        size: "wide",
+        // size: "wide",
         showThirdwebBranding: false,
       }}
       wallets={wallets}

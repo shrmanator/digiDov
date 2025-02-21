@@ -1,3 +1,5 @@
+// app/dashboard/page.tsx
+
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -20,20 +22,46 @@ import { Separator } from "@/components/ui/separator";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
+import { initializeMoralis } from "@/lib/moralis";
+// 1) Import TransactionWithType so TS knows the shape of your transaction array
+import {
+  fetchBothTransactions,
+  TransactionWithType,
+} from "@/utils/moralis-utils";
+
+// RECOMMENDED: control how often Next.js re-fetches data (in seconds).
+// If you do not want any caching, remove this line or set dynamic = "force-dynamic".
+export const revalidate = 60;
 
 export default async function Dashboard() {
+  // 2) Check user
   const user = await getAuthenticatedUser();
-
   if (!user) {
     redirect("/login");
   }
 
+  // 3) Fetch charity from DB
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
   });
+  if (!charity) {
+    return <p>No charity found.</p>;
+  }
 
-  const isCharityComplete = charity?.is_profile_complete ?? false;
+  const isCharityComplete = charity.is_profile_complete ?? false;
 
+  // 4) Initialize Moralis once
+  await initializeMoralis();
+
+  // 5) Explicitly type transactions as TransactionWithType[]
+  let transactions: TransactionWithType[] = [];
+  try {
+    transactions = await fetchBothTransactions(charity.wallet_address);
+  } catch (error) {
+    console.error("Failed to fetch transactions from Moralis:", error);
+  }
+
+  // 6) Render
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -55,16 +83,12 @@ export default async function Dashboard() {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            {charity && (
-              <div className="flex flex-col items-end gap-1 mt-5">
-                <WalletCopyButton walletAddress={charity.wallet_address} />
-                <CombinedWalletBalance
-                  searchParams={{
-                    address: charity.wallet_address,
-                  }}
-                />
-              </div>
-            )}
+            <div className="flex flex-col items-end gap-1 mt-5">
+              <WalletCopyButton walletAddress={charity.wallet_address} />
+              <CombinedWalletBalance
+                searchParams={{ address: charity.wallet_address }}
+              />
+            </div>
           </header>
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
@@ -74,9 +98,8 @@ export default async function Dashboard() {
               {isCharityComplete ? (
                 <div className="w-full flex justify-center">
                   <div className="w-full max-w-2xl mx-auto">
-                    <TransactionHistory
-                      walletAddress={charity!.wallet_address}
-                    />
+                    {/* Pass the fetched transactions to TransactionHistory */}
+                    <TransactionHistory transactions={transactions} />
                   </div>
                 </div>
               ) : (
