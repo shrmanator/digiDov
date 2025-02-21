@@ -84,7 +84,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     ? "Donation Sent!"
     : tokenFloat > 0
     ? `Donate $${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
-        2
+        3
       )} ${nativeSymbol})`
     : "Donate";
 
@@ -144,13 +144,13 @@ export default function DonationForm({ charity }: DonationFormProps) {
             {/* Left: Preset Amounts */}
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Choose a Preset
+                Choose an amount
               </Label>
               <div className="space-y-2">
                 {presetUsdAmounts.map((usdVal) => {
                   const isSelected = selectedUSD === usdVal;
                   // Approx token conversion
-                  const approxTokens = (usdVal / tokenPriceUSD).toFixed(2);
+                  const approxTokens = (usdVal / tokenPriceUSD).toFixed(3);
                   return (
                     <Button
                       key={usdVal}
@@ -183,7 +183,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 htmlFor="custom-usd"
                 className="mb-2 block text-sm font-semibold"
               >
-                Enter Your Own
+                Enter your own
               </Label>
               <div className="space-y-2">
                 <Input
@@ -197,7 +197,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 {/* Show approximate token conversion if > 0 */}
                 {tokenFloat > 0 && selectedUSD === null && (
                   <p className="text-sm text-muted-foreground">
-                    ~{tokenFloat.toFixed(4)} {nativeSymbol}
+                    ~{tokenFloat.toFixed(3)} {nativeSymbol}
                   </p>
                 )}
               </div>
