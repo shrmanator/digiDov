@@ -5,7 +5,7 @@ import { getAuthenticatedWallet } from "@/lib/jwtAuth";
 export async function GET() {
   try {
     const walletAddress = await getAuthenticatedWallet();
-    const charity = await prisma.charities.findUnique({
+    const charity = await prisma.charity.findUnique({
       where: { wallet_address: walletAddress },
     });
     if (!charity) {
