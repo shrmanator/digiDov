@@ -63,7 +63,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Approx token amount *in float form* (for the button label)
   const tokenFloat = (() => {
     if (!tokenPriceUSD) return 0;
-    // The user’s chosen USD
     const usdValue =
       selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
     if (usdValue <= 0) return 0;
@@ -114,18 +113,30 @@ export default function DonationForm({ charity }: DonationFormProps) {
       <CardContent className="mt-4">
         {/* Show skeletons while token price is loading */}
         {!tokenPriceUSD ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {/* Left column skeleton */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-12 w-full rounded-md" />
-              <Skeleton className="h-12 w-full rounded-md" />
-              <Skeleton className="h-12 w-full rounded-md" />
+          <div className="grid items-start gap-8 sm:grid-cols-[1fr_auto_1fr]">
+            {/* Left side: label + 3 button skeletons */}
+            <div>
+              <Skeleton className="mb-2 h-5 w-3/4" />
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full rounded-md" />
+                <Skeleton className="h-10 w-full rounded-md" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
             </div>
-            {/* Right column skeleton */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-12 w-full rounded-md" />
+
+            {/* Middle: vertical separator + “OR” */}
+            <div className="hidden h-full flex-col items-center sm:flex">
+              <Separator orientation="vertical" className="flex-1" />
+              <span className="my-2 text-sm font-medium text-muted-foreground">
+                OR
+              </span>
+              <Separator orientation="vertical" className="flex-1" />
+            </div>
+
+            {/* Right side: label + input skeleton */}
+            <div>
+              <Skeleton className="mb-2 h-5 w-1/2" />
+              <Skeleton className="h-10 w-full rounded-md" />
             </div>
           </div>
         ) : (
@@ -145,7 +156,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                       key={usdVal}
                       variant={isSelected ? "default" : "outline"}
                       onClick={() => handlePresetClick(usdVal)}
-                      className="w-full justify-between"
+                      className="w-full justify-between h-10"
                     >
                       <span>${usdVal}</span>
                       <span className="text-xs text-muted-foreground">
@@ -157,7 +168,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
               </div>
             </div>
 
-            {/* OR - vertical separator on desktop */}
+            {/* Middle: vertical separator + “OR” */}
             <div className="hidden h-full flex-col items-center sm:flex">
               <Separator orientation="vertical" className="flex-1" />
               <span className="my-2 text-sm font-medium text-muted-foreground">
@@ -181,6 +192,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   placeholder="e.g. 100"
                   value={customUSD}
                   onChange={handleCustomChange}
+                  className="h-10"
                 />
                 {/* Show approximate token conversion if > 0 */}
                 {tokenFloat > 0 && selectedUSD === null && (
