@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Web3 from "web3";
-import SendWithFeeButton from "./send-with-fee";
 import { useActiveWalletChain } from "thirdweb/react";
+import { useSendWithFee } from "./send-with-fee";
 
 // Mapping from native currency symbols to CoinGecko IDs.
 const coinGeckoIdMap: Record<string, string> = {
   ETH: "ethereum",
-  POL: "matic-network", // Use the correct CoinGecko ID for Polygon (native token symbol "POL")
+  POL: "matic-network", // Use the correct CoinGecko ID for "POL"
   // Add more mappings as needed.
 };
 
@@ -38,7 +38,6 @@ export default function DonationForm({
   useEffect(() => {
     async function fetchConversionRate() {
       try {
-        // Look up the correct CoinGecko ID for the active chain's native currency.
         const coinId =
           coinGeckoIdMap[nativeSymbol] || nativeSymbol.toLowerCase();
         const response = await fetch(
@@ -46,10 +45,8 @@ export default function DonationForm({
         );
         const data = await response.json();
         if (data && data[coinId]?.usd) {
-          // usdPrice is how many USD one native unit is worth.
-          const usdPrice = data[coinId].usd;
-          // To convert USD to native: nativeAmount = USD / usdPrice.
-          setUsdToNativeRate(1 / usdPrice);
+          const usdPrice = data[coinId].usd; // USD per 1 native unit.
+          setUsdToNativeRate(1 / usdPrice); // 1 native = (1/usdPrice) native per USD.
         } else {
           console.error("Unexpected data format from CoinGecko:", data);
         }
@@ -84,10 +81,15 @@ export default function DonationForm({
     if (decimals === 18) {
       return BigInt(web3.utils.toWei(nativeAmount.toString(), "ether"));
     } else {
-      const multiplier = BigInt(10) ** BigInt(decimals);
       return BigInt(Math.floor(nativeAmount * Math.pow(10, decimals)));
     }
   })();
+
+  // Call useSendWithFee unconditionally with a fallback donation amount of 0.
+  const sendWithFee = useSendWithFee(
+    donationAmountInNative ?? BigInt(0),
+    charityWalletAddress
+  );
 
   return (
     <Card className="max-w-md mx-auto shadow-lg">
@@ -102,7 +104,7 @@ export default function DonationForm({
         ) : (
           <div className="flex flex-wrap gap-2">
             {presetAmountsUSD.map((usdAmount) => {
-              // Convert the USD preset to native amount for display.
+              // Convert preset USD amount to native for display.
               const nativeAmountDisplay = (usdAmount * usdToNativeRate).toFixed(
                 6
               );
@@ -129,10 +131,16 @@ export default function DonationForm({
           </div>
         )}
         {donationAmountInNative ? (
-          <SendWithFeeButton
-            donationValue={donationAmountInNative}
-            recipientAddress={charityWalletAddress}
-          />
+          <Button
+            onClick={sendWithFee.onClick}
+            disabled={sendWithFee.isPending}
+          >
+            {sendWithFee.isPending
+              ? "Processing..."
+              : sendWithFee.transactionResult
+              ? "Transaction Sent"
+              : "Send With Fee"}
+          </Button>
         ) : (
           <Button disabled>Please enter a valid donation amount</Button>
         )}
