@@ -18,6 +18,7 @@ model charity {
     contact_phone             String?
     wallet_address            String             @unique
     is_profile_complete       Boolean            @default(false)
+    slug                      String?            @unique
     created_at                DateTime           @default(now())
     donation_receipts         donation_receipt[]
 }

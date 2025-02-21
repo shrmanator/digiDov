@@ -21,7 +21,7 @@ import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
 
-export default async function Page() {
+export default async function Dashboard() {
   const user = await getAuthenticatedUser();
 
   if (!user) {

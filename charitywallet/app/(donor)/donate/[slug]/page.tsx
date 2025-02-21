@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import SideBarAndHeader from "./donate-sidebar-and-header";
-import { getCharityByWallet } from "@/app/actions/charities";
 import DonationForm from "@/components/donation-form";
+import { getCharityBySlug } from "@/app/actions/charities";
 
 export default async function DonatePage({
   params,
 }: {
-  params: { walletAddress: string };
+  params: { slug: string };
 }) {
-  const { walletAddress } = await params;
-  const charity = await getCharityByWallet(walletAddress.toLowerCase());
+  const { slug } = await params;
+  const charity = await getCharityBySlug(slug);
 
   if (!charity) {
     notFound();

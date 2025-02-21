@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { upsertCharity } from "@/app/actions/charities";
+import { upsertCharity } from "@/app/actions/charities"; // This is now a Server Action.
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { CharityFormStep } from "./charity-info-step";
@@ -22,6 +22,7 @@ export default function CharitySetupModal({
   walletAddress,
 }: CharitySetupModalProps) {
   const { data: profiles } = useProfiles({ client });
+  const [charitySlug, setCharitySlug] = useState<string>("");
 
   // Extract a default email from profiles if available.
   const defaultEmail =
@@ -59,7 +60,8 @@ export default function CharitySetupModal({
     setIsLoadingForm(true);
     setErrorMessage(null);
     try {
-      await upsertCharity({
+      // Call the server action directly.
+      const updatedCharity = await upsertCharity({
         wallet_address: walletAddress,
         charity_name: formData.charity_name,
         registered_address: formData.registered_address,
@@ -69,6 +71,8 @@ export default function CharitySetupModal({
         contact_phone: formData.contact_phone,
         is_profile_complete: true,
       });
+      // Capture the slug from the updated charity record.
+      setCharitySlug(updatedCharity.slug || "");
       setStep("confirmation");
     } catch (err) {
       console.error("Error upserting charity:", err);
@@ -110,10 +114,8 @@ export default function CharitySetupModal({
             />
           </>
         ) : (
-          <DonationLinkStep
-            charityName={formData.charity_name}
-            onFinish={handleFinish}
-          />
+          // Pass both walletAddress and charitySlug to DonationLinkStep.
+          <DonationLinkStep charitySlug={charitySlug} onFinish={handleFinish} />
         )}
       </DialogContent>
     </Dialog>

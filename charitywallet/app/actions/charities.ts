@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import slugify from "slugify";
 
 export interface CharityInput {
   charity_name?: string | null;
@@ -13,9 +14,29 @@ export interface CharityInput {
   is_profile_complete?: boolean;
 }
 
+// Helper function to generate a unique slug based on charity_name
+async function generateUniqueSlug(charity_name: string): Promise<string> {
+  const baseSlug = slugify(charity_name, { lower: true, strict: true });
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (await prisma.charity.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  return slug;
+}
+
 export async function upsertCharity(data: CharityInput) {
   console.log("wallet_address", data.wallet_address);
   const walletAddress = data.wallet_address.toLowerCase();
+
+  let slug: string | undefined = undefined;
+  if (data.charity_name) {
+    slug = await generateUniqueSlug(data.charity_name);
+  }
+
   return prisma.charity.upsert({
     where: { wallet_address: walletAddress },
     update: {
@@ -28,6 +49,7 @@ export async function upsertCharity(data: CharityInput) {
       ...(typeof data.is_profile_complete !== "undefined"
         ? { is_profile_complete: data.is_profile_complete }
         : {}),
+      ...(slug ? { slug } : {}),
     },
     create: {
       charity_name: data.charity_name ?? null,
@@ -38,6 +60,7 @@ export async function upsertCharity(data: CharityInput) {
       contact_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
       is_profile_complete: data.is_profile_complete ?? false,
+      slug: slug ?? null,
     },
   });
 }
@@ -55,8 +78,17 @@ export async function updateCharityEmail(params: {
   });
 }
 
-export async function getCharityByWallet(wallet_address: string) {
+export async function getCharityBySlug(slug: string) {
   return prisma.charity.findUnique({
-    where: { wallet_address },
+    where: { slug },
   });
+}
+
+export async function getCharitySlugByWalletAddress(wallet_address: string) {
+  const walletAddress = wallet_address.toLowerCase();
+  const charity = await prisma.charity.findUnique({
+    where: { wallet_address: walletAddress },
+    select: { slug: true },
+  });
+  return charity?.slug;
 }

@@ -11,12 +11,12 @@ import { Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DonationLinkStepProps {
-  charityName: string;
+  charitySlug: string;
   onFinish: () => void;
 }
 
 export function DonationLinkStep({
-  charityName,
+  charitySlug,
   onFinish,
 }: DonationLinkStepProps) {
   const [copied, setCopied] = useState(false);
@@ -25,9 +25,8 @@ export function DonationLinkStep({
   const handleCopy = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(
-        `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charityName}`
-      );
+      const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charitySlug}`;
+      await navigator.clipboard.writeText(donationLink);
       setCopied(true);
       toast({
         title: "Copied!",
@@ -64,12 +63,8 @@ export function DonationLinkStep({
         className="flex items-center justify-between p-2 border rounded-md bg-muted cursor-pointer select-all sm:flex-nowrap"
         onClick={handleCopy}
       >
-        {/* 
-          w-0 flex-1 ensures the span can shrink or grow as needed.
-          break-all allows the link to wrap onto multiple lines if needed.
-        */}
         <span className="text-sm font-mono break-all w-0 flex-1">
-          {`${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charityName}`}
+          {`${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charitySlug}`}
         </span>
         <Button
           variant="outline"
