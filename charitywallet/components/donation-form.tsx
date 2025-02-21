@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Web3 from "web3";
 import {
   Card,
   CardHeader,
@@ -10,63 +11,83 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import Web3 from "web3";
+
 import { useActiveWalletChain } from "thirdweb/react";
-import { useSendWithFee } from "./send-with-fee";
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
+import { useSendWithFee } from "./send-with-fee";
+import { charity } from "@prisma/client";
 
 interface DonationFormProps {
-  charityWalletAddress: string;
+  charity: charity;
 }
 
-export default function DonationForm({
-  charityWalletAddress,
-}: DonationFormProps) {
-  // Predefined USD amounts
+export default function DonationForm({ charity }: DonationFormProps) {
+  // Predefined USD choices
   const presetUsdAmounts = [10, 20, 50];
 
-  // Track selected and custom USD amounts
+  // State to track which preset is selected or a custom input
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
 
-  // Initialize Web3 and get the chain info
+  // Web3 + chain info
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
-  const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH"; // e.g. "ETH", "MATIC"
-  const decimals = activeChain?.nativeCurrency?.decimals || 18; // e.g. 18
+  const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
+  const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
-  // Real-time token price (USD)
+  // Live price in USD for the native token
   const tokenPriceUSD = usePriceWebSocket(nativeSymbol);
 
-  // Convert USD to smallest token units (e.g. wei)
+  // Determine how many tokens to send, in smallest units (wei, etc.)
   const donationAmountWei = (() => {
     if (!tokenPriceUSD) return null;
 
+    // The user’s chosen USD
     const usdValue =
       selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
     if (usdValue <= 0) return null;
 
+    // Convert USD -> token amount
     const tokenAmount = usdValue / tokenPriceUSD;
+
+    // Convert token amount -> smallest units
     return decimals === 18
       ? BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"))
       : BigInt(Math.floor(tokenAmount * 10 ** decimals));
   })();
 
-  // For displaying approximate token amount when using custom USD
-  const customTokenAmount = (() => {
+  // Approx token amount *in float form* (for the button label)
+  const tokenFloat = (() => {
     if (!tokenPriceUSD) return 0;
-    const val = parseFloat(customUSD || "0");
-    return val > 0 ? val / tokenPriceUSD : 0;
+    // The user’s chosen USD
+    const usdValue =
+      selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
+    if (usdValue <= 0) return 0;
+    return usdValue / tokenPriceUSD;
   })();
 
-  // Hook to send the donation transaction
+  // The main donation hook
   const { onClick, isPending, transactionResult } = useSendWithFee(
     donationAmountWei ?? BigInt(0),
-    charityWalletAddress
+    charity.wallet_address
   );
+
+  // Button label logic
+  const chosenUSD =
+    selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
+  const buttonLabel = isPending
+    ? "Processing..."
+    : transactionResult
+    ? "Donation Sent!"
+    : tokenFloat > 0
+    ? `Donate $${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
+        2
+      )} ${nativeSymbol})`
+    : "Donate";
 
   // Handlers
   const handlePresetClick = (usdVal: number) => {
@@ -80,76 +101,107 @@ export default function DonationForm({
   };
 
   return (
-    <Card className="mx-auto w-full max-w-md border bg-card shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">Donate</CardTitle>
-        <CardDescription>
-          Select or enter a USD amount. We’ll convert it to {nativeSymbol}.
+    <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-bold">
+          Donate to {charity.charity_name}
+        </CardTitle>
+        <CardDescription className="mt-1">
+          Amount will be sent in {nativeSymbol}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* If price is still loading */}
+      <CardContent className="mt-4">
+        {/* Show skeletons while token price is loading */}
         {!tokenPriceUSD ? (
-          <p>Loading live token price...</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Left column skeleton */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-12 w-full rounded-md" />
+              <Skeleton className="h-12 w-full rounded-md" />
+              <Skeleton className="h-12 w-full rounded-md" />
+            </div>
+            {/* Right column skeleton */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-12 w-full rounded-md" />
+            </div>
+          </div>
         ) : (
-          <>
-            {/* Preset buttons */}
-            <div className="grid grid-cols-3 gap-2">
-              {presetUsdAmounts.map((usdVal) => {
-                const isSelected = selectedUSD === usdVal;
-                const approxTokens = usdVal / tokenPriceUSD;
-                return (
-                  <Button
-                    key={usdVal}
-                    variant={isSelected ? "default" : "outline"}
-                    onClick={() => handlePresetClick(usdVal)}
-                  >
-                    ${usdVal}
-                    <br />
-                    (~{approxTokens.toFixed(4)} {nativeSymbol})
-                  </Button>
-                );
-              })}
+          <div className="grid items-start gap-8 sm:grid-cols-[1fr_auto_1fr]">
+            {/* Left: Preset Amounts */}
+            <div>
+              <Label className="mb-2 block text-sm font-semibold">
+                Choose a Preset
+              </Label>
+              <div className="space-y-2">
+                {presetUsdAmounts.map((usdVal) => {
+                  const isSelected = selectedUSD === usdVal;
+                  // Approx token conversion
+                  const approxTokens = (usdVal / tokenPriceUSD).toFixed(2);
+                  return (
+                    <Button
+                      key={usdVal}
+                      variant={isSelected ? "default" : "outline"}
+                      onClick={() => handlePresetClick(usdVal)}
+                      className="w-full justify-between"
+                    >
+                      <span>${usdVal}</span>
+                      <span className="text-xs text-muted-foreground">
+                        (~{approxTokens} {nativeSymbol})
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
 
-            <Separator />
+            {/* OR - vertical separator on desktop */}
+            <div className="hidden h-full flex-col items-center sm:flex">
+              <Separator orientation="vertical" className="flex-1" />
+              <span className="my-2 text-sm font-medium text-muted-foreground">
+                OR
+              </span>
+              <Separator orientation="vertical" className="flex-1" />
+            </div>
 
-            {/* Custom amount input */}
-            <div className="space-y-2">
-              <Label htmlFor="custom-usd">Custom USD Amount</Label>
-              <div className="flex items-center space-x-2">
+            {/* Right: Custom Amount */}
+            <div>
+              <Label
+                htmlFor="custom-usd"
+                className="mb-2 block text-sm font-semibold"
+              >
+                Enter Your Own
+              </Label>
+              <div className="space-y-2">
                 <Input
                   id="custom-usd"
                   type="number"
                   placeholder="e.g. 100"
                   value={customUSD}
                   onChange={handleCustomChange}
-                  className="max-w-[120px]"
                 />
-                {customTokenAmount > 0 && (
-                  <span className="text-sm text-gray-500">
-                    ≈ {customTokenAmount.toFixed(4)} {nativeSymbol}
-                  </span>
+                {/* Show approximate token conversion if > 0 */}
+                {tokenFloat > 0 && selectedUSD === null && (
+                  <p className="text-sm text-muted-foreground">
+                    ~{tokenFloat.toFixed(4)} {nativeSymbol}
+                  </p>
                 )}
               </div>
             </div>
-          </>
+          </div>
         )}
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="pt-6">
         <Button
           size="lg"
           onClick={onClick}
           disabled={!donationAmountWei || isPending}
           className="w-full"
         >
-          {isPending
-            ? "Processing..."
-            : transactionResult
-            ? "Donation Sent!"
-            : "Donate"}
+          {buttonLabel}
         </Button>
       </CardFooter>
     </Card>
