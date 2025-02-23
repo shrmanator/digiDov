@@ -24,7 +24,6 @@ import {
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useSendWithFee } from "./send-with-fee";
 import { charity } from "@prisma/client";
-import { client } from "@/lib/thirdwebClient";
 
 interface DonationFormProps {
   charity: charity;
@@ -34,9 +33,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const presetUsdAmounts = [10, 20, 50];
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
-
-  const { connect } = useConnectModal();
-  const account = useActiveAccount();
 
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
@@ -210,15 +206,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       <CardFooter className="pt-6">
         <Button
           size="lg"
-          onClick={() => {
-            if (!account) {
-              // Open the connect modal if no wallet is connected
-              connect({ client });
-            } else {
-              // Proceed with the donation transaction if connected
-              onClick();
-            }
-          }}
+          onClick={onClick}
           disabled={!donationAmountWei || isPending}
           className="w-full"
         >

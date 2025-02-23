@@ -11,19 +11,19 @@ export interface DonorInput {
 
 export async function upsertDonor(data: DonorInput) {
   const walletAddress = data.walletAddress.toLowerCase();
-  return prisma.donors.upsert({
-    where: { walletAddress },
+  return prisma.donor.upsert({
+    where: { wallet_address: walletAddress },
     update: {
       email: data.email ?? undefined,
-      firstName: data.firstName ?? undefined,
-      lastName: data.lastName ?? undefined,
+      first_name: data.firstName ?? undefined,
+      last_name: data.lastName ?? undefined,
       address: data.address ?? undefined,
     },
     create: {
-      walletAddress,
+      wallet_address: walletAddress,
       email: data.email ?? null,
-      firstName: data.firstName ?? null,
-      lastName: data.lastName ?? null,
+      first_name: data.firstName ?? null,
+      last_name: data.lastName ?? null,
       address: data.address ?? null,
     },
   });
@@ -34,8 +34,8 @@ export async function updateDonorEmail(params: {
   email: string;
 }) {
   const walletAddress = params.walletAddress.toLowerCase();
-  return await prisma.donors.update({
-    where: { walletAddress },
+  return await prisma.donor.update({
+    where: { wallet_address: walletAddress },
     data: {
       email: params.email,
     },
@@ -43,7 +43,7 @@ export async function updateDonorEmail(params: {
 }
 
 export async function getDonorByWallet(walletAddress: string) {
-  return prisma.donors.findUnique({
-    where: { walletAddress: walletAddress.toLowerCase() },
+  return prisma.donor.findUnique({
+    where: { wallet_address: walletAddress.toLowerCase() },
   });
 }
