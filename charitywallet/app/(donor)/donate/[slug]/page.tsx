@@ -8,7 +8,9 @@ export default async function DonatePage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = await params;
+  // Wrap params in a Promise to satisfy Next.js requirements
+  const resolvedParams = await Promise.resolve(params);
+  const { slug } = resolvedParams;
   const charity = await getCharityBySlug(slug);
 
   if (!charity) {
