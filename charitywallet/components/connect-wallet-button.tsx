@@ -40,7 +40,7 @@ export default function ConnectWalletButton({
         showThirdwebBranding: false,
       }}
       wallets={wallets}
-      chain={activeChain} // Use the activeChain prop here
+      chain={activeChain}
       auth={{
         isLoggedIn: async (address: string) => {
           console.log("Checking if logged in", { address });
@@ -53,7 +53,7 @@ export default function ConnectWalletButton({
         getLoginPayload: async ({ address }: { address: string }) =>
           generatePayload({
             address: address.toLowerCase(),
-            chainId: activeChain.id, // Use activeChain.id instead of polygon.id
+            chainId: activeChain.id,
           }),
         doLogout: async () => {
           console.log("Logging out!");
