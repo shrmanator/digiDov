@@ -16,11 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
-import {
-  useActiveAccount,
-  useActiveWalletChain,
-  useConnectModal,
-} from "thirdweb/react";
+import { useActiveWalletChain } from "thirdweb/react";
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useSendWithFee } from "./send-with-fee";
 import { charity } from "@prisma/client";

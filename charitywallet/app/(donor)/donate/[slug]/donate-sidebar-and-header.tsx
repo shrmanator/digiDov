@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 import ConnectWalletButton from "@/components/connect-wallet-button";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import {

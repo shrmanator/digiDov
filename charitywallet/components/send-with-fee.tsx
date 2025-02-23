@@ -32,7 +32,7 @@ export function useSendWithFee(
     });
 
     sendTx(transaction, {
-      onSuccess: (txResult) => {
+      onSuccess: () => {
         toast({
           title: "Transaction Sent",
           description: "Your donation transaction has been sent.",
