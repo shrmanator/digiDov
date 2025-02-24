@@ -19,7 +19,7 @@ import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useSendWithFee } from "./send-with-fee";
 import { charity } from "@prisma/client";
-import DonorProfileModal from "./new-donor-modal";
+import DonorProfileModal from "./new-donor-modal/new-donor-modal";
 import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
 
 interface DonationFormProps {

@@ -15,6 +15,7 @@ import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
 import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
+import googlePlacesStyles from "./google-place-styles";
 
 interface DonorProfileModalProps {
   walletAddress: string;
@@ -42,7 +43,6 @@ export default function DonorProfileModal({
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Auto-open modal if donor info is incomplete
   if (isIncomplete && !open && !isLoading) {
     setOpen(true);
   }
@@ -128,60 +128,7 @@ export default function DonorProfileModal({
                 : null,
               onChange: handleAddressChange,
               placeholder: "Enter Postal Address",
-              styles: {
-                control: (base, state) => ({
-                  ...base,
-                  borderRadius: "var(--radius)",
-                  border: "1px solid hsl(var(--input))",
-                  backgroundColor: "transparent",
-                  boxShadow: state.isFocused
-                    ? "0 0 0 2px hsl(var(--ring) / 0.5)"
-                    : "none",
-                  "&:hover": {
-                    borderColor: "hsl(var(--input))",
-                  },
-                }),
-                // Set font size for the container holding the selected value.
-                valueContainer: (base) => ({
-                  ...base,
-                  fontSize: "0.90rem",
-                }),
-                // Set font size for the displayed value.
-                singleValue: (base) => ({
-                  ...base,
-                  color: "inherit",
-                  fontSize: "0.90rem",
-                }),
-                input: (base) => ({
-                  ...base,
-                  color: "inherit",
-                  margin: 0,
-                  padding: 0,
-                  fontSize: "0.90rem", // makes user-entered text small
-                }),
-                placeholder: (base) => ({
-                  ...base,
-                  color: "hsl(var(--muted-foreground))",
-                  fontSize: "0.90rem",
-                }),
-                dropdownIndicator: (base) => ({
-                  ...base,
-                  color: "hsl(var(--muted-foreground))",
-                }),
-                menu: (base) => ({
-                  ...base,
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--input))",
-                }),
-                option: (base, state) => ({
-                  ...base,
-                  backgroundColor: state.isFocused
-                    ? "hsl(var(--accent))"
-                    : "hsl(var(--card))",
-                  color: "hsl(var(--foreground))",
-                  fontSize: "0.75rem",
-                }),
-              },
+              styles: googlePlacesStyles,
             }}
             autocompletionRequest={{
               componentRestrictions: { country: ["ca"] },
