@@ -1,5 +1,7 @@
-export const googlePlacesStyles = {
-  control: (base: any, state: { isFocused: any }) => ({
+import { CSSObjectWithLabel } from 'react-select';
+
+const googlePlacesStyles = {
+  control: (base: CSSObjectWithLabel, state: { isFocused: boolean }): CSSObjectWithLabel => ({
     ...base,
     borderRadius: "var(--radius)",
     border: "1px solid hsl(var(--input))",
@@ -14,41 +16,39 @@ export const googlePlacesStyles = {
       borderColor: "hsl(var(--input))",
     },
   }),
-  valueContainer: (base: any) => ({
+  valueContainer: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     fontSize: "0.90rem",
   }),
-  singleValue: (base: any) => ({
+  singleValue: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     color: "inherit",
     fontSize: "0.90rem",
   }),
-  input: (base: any) => ({
+  input: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     color: "inherit",
     margin: 0,
     padding: 0,
     fontSize: "0.90rem",
   }),
-  placeholder: (base: any) => ({
+  placeholder: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     color: "hsl(var(--muted-foreground))",
     fontSize: "0.90rem",
   }),
-  dropdownIndicator: (base: any) => ({
+  dropdownIndicator: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     color: "hsl(var(--muted-foreground))",
   }),
-  menu: (base: any) => ({
+  menu: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
     ...base,
     backgroundColor: "hsl(var(--card))",
     border: "1px solid hsl(var(--input))",
   }),
-  option: (base: any, state: { isFocused: any }) => ({
+  option: (base: CSSObjectWithLabel, state: { isFocused: boolean }): CSSObjectWithLabel => ({
     ...base,
-    backgroundColor: state.isFocused
-      ? "hsl(var(--accent))"
-      : "hsl(var(--card))",
+    backgroundColor: state.isFocused ? "hsl(var(--accent))" : "hsl(var(--card))",
     color: "hsl(var(--foreground))",
     fontSize: "0.75rem",
   }),

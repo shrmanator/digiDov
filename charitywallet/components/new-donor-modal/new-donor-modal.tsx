@@ -22,6 +22,12 @@ interface DonorProfileModalProps {
   onClose: () => void;
 }
 
+// Define a type for the options returned by GooglePlacesAutocomplete
+interface GooglePlaceOption {
+  label: string;
+  value: string;
+}
+
 export default function DonorProfileModal({
   walletAddress,
   open,
@@ -47,7 +53,7 @@ export default function DonorProfileModal({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddressChange = (value: any) => {
+  const handleAddressChange = (value: GooglePlaceOption | null) => {
     setFormData({ ...formData, address: value?.label || "" });
   };
 
