@@ -83,8 +83,7 @@ export default function DonorProfileModal({
       onOpenChange={(val) => {
         // Disable external closing. The modal will remain open until onClose is called explicitly.
       }}
-      onInteractOutside={(e) => e.preventDefault()}
-      onEscapeKeyDown={(e) => e.preventDefault()}
+      modal={true}
     >
       <DialogContent className="[&>button]:hidden">
         <DialogHeader>
