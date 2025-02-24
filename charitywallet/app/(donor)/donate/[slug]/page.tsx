@@ -8,7 +8,6 @@ export default async function DonatePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  // Await the resolved params
   const { slug } = await params;
   const charity = await getCharityBySlug(slug);
 

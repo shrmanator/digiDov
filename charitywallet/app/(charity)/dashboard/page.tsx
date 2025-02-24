@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
-import CharitySetupModal from "@/components/new-user-modal/charity-setup-modal";
+import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
 import { initializeMoralis } from "@/lib/moralis";
 // 1) Import TransactionWithType so TS knows the shape of your transaction array
