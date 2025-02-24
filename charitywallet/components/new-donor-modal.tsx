@@ -14,6 +14,7 @@ import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
 import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
+import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 
 interface DonorProfileModalProps {
   walletAddress: string;
@@ -41,12 +42,17 @@ export default function DonorProfileModal({
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Auto-open modal if donor info is incomplete
   if (isIncomplete && !open && !isLoading) {
     setOpen(true);
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAddressChange = (value: any) => {
+    setFormData({ ...formData, address: value?.label || "" });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -114,14 +120,72 @@ export default function DonorProfileModal({
             onChange={handleChange}
             required
           />
-          <Input
-            id="address"
-            name="address"
-            type="text"
-            placeholder="Mailing Address"
-            value={formData.address}
-            onChange={handleChange}
-            required
+          <GooglePlacesAutocomplete
+            apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!}
+            selectProps={{
+              value: formData.address
+                ? { label: formData.address, value: formData.address }
+                : null,
+              onChange: handleAddressChange,
+              placeholder: "Enter Postal Address",
+              styles: {
+                control: (base, state) => ({
+                  ...base,
+                  borderRadius: "var(--radius)",
+                  border: "1px solid hsl(var(--input))",
+                  backgroundColor: "transparent",
+                  boxShadow: state.isFocused
+                    ? "0 0 0 2px hsl(var(--ring) / 0.5)"
+                    : "none",
+                  "&:hover": {
+                    borderColor: "hsl(var(--input))",
+                  },
+                }),
+                // Set font size for the container holding the selected value.
+                valueContainer: (base) => ({
+                  ...base,
+                  fontSize: "0.90rem",
+                }),
+                // Set font size for the displayed value.
+                singleValue: (base) => ({
+                  ...base,
+                  color: "inherit",
+                  fontSize: "0.90rem",
+                }),
+                input: (base) => ({
+                  ...base,
+                  color: "inherit",
+                  margin: 0,
+                  padding: 0,
+                  fontSize: "0.90rem", // makes user-entered text small
+                }),
+                placeholder: (base) => ({
+                  ...base,
+                  color: "hsl(var(--muted-foreground))",
+                  fontSize: "0.90rem",
+                }),
+                dropdownIndicator: (base) => ({
+                  ...base,
+                  color: "hsl(var(--muted-foreground))",
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--input))",
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isFocused
+                    ? "hsl(var(--accent))"
+                    : "hsl(var(--card))",
+                  color: "hsl(var(--foreground))",
+                  fontSize: "0.75rem",
+                }),
+              },
+            }}
+            autocompletionRequest={{
+              componentRestrictions: { country: ["ca"] },
+            }}
           />
 
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
