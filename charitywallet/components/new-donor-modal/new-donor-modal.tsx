@@ -80,7 +80,7 @@ export default function DonorProfileModal({
   return (
     <Dialog
       open={open}
-      onOpenChange={(val) => {
+      onOpenChange={() => {
         // Disable external closing. The modal will remain open until onClose is called explicitly.
       }}
       modal={true}
