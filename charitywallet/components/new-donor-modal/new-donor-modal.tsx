@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -42,10 +42,11 @@ export default function DonorProfileModal({
 
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  if (isIncomplete && !open && !isLoading) {
-    setOpen(true);
-  }
+  useEffect(() => {
+    if (isIncomplete && !open && !isLoading) {
+      setOpen(true);
+    }
+  }, [isIncomplete, open, isLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

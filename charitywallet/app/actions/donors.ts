@@ -11,6 +11,8 @@ export interface DonorInput {
 
 export async function upsertDonor(data: DonorInput) {
   const walletAddress = data.walletAddress.toLowerCase();
+  const complete = isProfileComplete(data);
+
   return prisma.donor.upsert({
     where: { wallet_address: walletAddress },
     update: {
@@ -18,6 +20,7 @@ export async function upsertDonor(data: DonorInput) {
       first_name: data.firstName ?? undefined,
       last_name: data.lastName ?? undefined,
       address: data.address ?? undefined,
+      is_profile_complete: complete,
     },
     create: {
       wallet_address: walletAddress,
@@ -25,8 +28,19 @@ export async function upsertDonor(data: DonorInput) {
       first_name: data.firstName ?? null,
       last_name: data.lastName ?? null,
       address: data.address ?? null,
+      is_profile_complete: complete,
     },
   });
+}
+
+function isProfileComplete(data: DonorInput): boolean {
+  // Trim strings to ensure non-empty values are considered
+  const email = data.email?.trim();
+  const firstName = data.firstName?.trim();
+  const lastName = data.lastName?.trim();
+  const address = data.address?.trim();
+
+  return Boolean(email && firstName && lastName && address);
 }
 
 export async function updateDonorEmail(params: {
