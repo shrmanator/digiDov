@@ -1,4 +1,4 @@
-const googlePlacesStyles = {
+export const googlePlacesStyles = {
   control: (base: any, state: { isFocused: any }) => ({
     ...base,
     borderRadius: "var(--radius)",
