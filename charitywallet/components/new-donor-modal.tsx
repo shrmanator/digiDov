@@ -8,6 +8,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
@@ -39,7 +41,6 @@ export default function DonorProfileModal({
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Automatically open the modal if the profile is incomplete
   if (isIncomplete && !open && !isLoading) {
     setOpen(true);
   }
@@ -55,19 +56,16 @@ export default function DonorProfileModal({
 
     try {
       await upsertDonor({
-        walletAddress: walletAddress,
+        walletAddress,
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
         address: formData.address,
       });
-
-      setOpen(false); // Close modal when profile is complete
+      setOpen(false);
     } catch (err) {
-      console.error("Error updating donor profile:", err);
-      setErrorMessage(
-        "There was an error saving your profile. Please try again."
-      );
+      console.error(err);
+      setErrorMessage("Error saving info. Please try again.");
     } finally {
       setIsLoadingForm(false);
     }
@@ -77,65 +75,62 @@ export default function DonorProfileModal({
     <Dialog
       open={open}
       onOpenChange={() => {
-        // Prevent closing until profile is complete
         if (!isIncomplete) setOpen(false);
       }}
     >
       <DialogContent className="[&>button]:hidden">
         <DialogHeader>
-          <DialogTitle>Complete Your Profile</DialogTitle>
+          <DialogTitle>Tax Receipt Info</DialogTitle>
           <DialogDescription>
-            Please fill out your details to fully activate your donor account.
+            Provide your details for tax receipts on all future donations.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
+          <Input
+            id="email"
             name="email"
+            type="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
             required
           />
-          <input
-            type="text"
+          <Input
+            id="firstName"
             name="firstName"
+            type="text"
             placeholder="First Name"
             value={formData.firstName}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
             required
           />
-          <input
-            type="text"
+          <Input
+            id="lastName"
             name="lastName"
+            type="text"
             placeholder="Last Name"
             value={formData.lastName}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
             required
           />
-          <input
-            type="text"
+          <Input
+            id="address"
             name="address"
-            placeholder="Address"
+            type="text"
+            placeholder="Mailing Address"
             value={formData.address}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
             required
           />
 
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
-          <button
-            type="submit"
-            disabled={isLoadingForm}
-            className="w-full bg-blue-500 text-white py-2 rounded"
-          >
-            {isLoadingForm ? "Saving..." : "Complete Profile"}
-          </button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isLoadingForm}>
+              {isLoadingForm ? "Saving..." : "Save Info"}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

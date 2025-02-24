@@ -15,10 +15,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { useActiveWalletChain } from "thirdweb/react";
+import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useSendWithFee } from "./send-with-fee";
 import { charity } from "@prisma/client";
+import DonorProfileModal from "./new-donor-modal";
+import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
 
 interface DonationFormProps {
   charity: charity;
@@ -28,7 +30,9 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const presetUsdAmounts = [10, 20, 50];
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
-
+  const activeAccount = useActiveAccount();
+  const walletAddress = activeAccount?.address;
+  const { isIncomplete, isLoading } = useIncompleteDonorProfile(walletAddress);
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
@@ -90,124 +94,129 @@ export default function DonationForm({ charity }: DonationFormProps) {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">
-          Donate to {charity.charity_name}
-        </CardTitle>
-        <CardDescription className="mt-1">
-          Amount will be sent in {nativeSymbol}
-        </CardDescription>
-      </CardHeader>
+    <>
+      {isIncomplete && !isLoading && walletAddress && (
+        <DonorProfileModal walletAddress={walletAddress} />
+      )}
+      <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            Donate to {charity.charity_name}
+          </CardTitle>
+          <CardDescription className="mt-1">
+            Amount will be sent in {nativeSymbol}
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="mt-4">
-        {!tokenPriceUSD ? (
-          // Skeleton loading state in a single-column layout
-          <div className="flex flex-col gap-4">
-            {/* Preset skeletons */}
-            <div>
-              <Skeleton className="mb-2 h-5 w-3/4" />
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full rounded-md" />
-                <Skeleton className="h-10 w-full rounded-md" />
-                <Skeleton className="h-10 w-full rounded-md" />
+        <CardContent className="mt-4">
+          {!tokenPriceUSD ? (
+            // Skeleton loading state in a single-column layout
+            <div className="flex flex-col gap-4">
+              {/* Preset skeletons */}
+              <div>
+                <Skeleton className="mb-2 h-5 w-3/4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full rounded-md" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
               </div>
-            </div>
 
-            {/* Separator with "OR" */}
-            <div className="flex items-center">
-              <Separator className="flex-1" />
-              <span className="mx-2 text-sm font-medium text-muted-foreground">
-                OR
-              </span>
-              <Separator className="flex-1" />
-            </div>
-
-            {/* Custom input skeleton */}
-            <div>
-              <Skeleton className="mb-2 h-5 w-1/2" />
-              <Skeleton className="h-10 w-full rounded-md" />
-            </div>
-          </div>
-        ) : (
-          // Actual form in a single-column layout
-          <div className="flex flex-col gap-4">
-            {/* Preset Amounts */}
-            <div>
-              <Label className="mb-2 block text-sm font-semibold">
-                Choose an amount
-              </Label>
-              <div className="space-y-2">
-                {presetUsdAmounts.map((usdVal) => {
-                  const isSelected = selectedUSD === usdVal;
-                  const approxTokens = (usdVal / tokenPriceUSD).toFixed(3);
-                  return (
-                    <Button
-                      key={usdVal}
-                      variant={isSelected ? "default" : "outline"}
-                      onClick={() => handlePresetClick(usdVal)}
-                      className="w-full justify-between h-10"
-                    >
-                      <span>${usdVal}</span>
-                      <span className="text-xs">
-                        (~{approxTokens} {nativeSymbol})
-                      </span>
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Separator with "OR" */}
-            <div className="flex items-center">
-              <Separator className="flex-1" />
-              <span className="mx-2 text-sm font-medium text-muted-foreground">
-                OR
-              </span>
-              <Separator className="flex-1" />
-            </div>
-
-            {/* Custom Amount */}
-            <div>
-              <Label
-                htmlFor="custom-usd"
-                className="mb-1 block text-sm font-semibold"
-              >
-                Enter your own
-              </Label>
-              <div className="relative group">
-                <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
-                  $
+              {/* Separator with "OR" */}
+              <div className="flex items-center">
+                <Separator className="flex-1" />
+                <span className="mx-2 text-sm font-medium text-muted-foreground">
+                  OR
                 </span>
-                <Input
-                  id="custom-usd"
-                  type="number"
-                  placeholder="e.g. 100"
-                  value={customUSD}
-                  onChange={handleCustomChange}
-                  className="h-10 pl-6"
-                />
+                <Separator className="flex-1" />
               </div>
-              {tokenFloat > 0 && selectedUSD === null && (
-                <p className="text-sm text-muted-foreground">
-                  ~{tokenFloat.toFixed(3)} {nativeSymbol}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
 
-      <CardFooter className="pt-6">
-        <Button
-          size="lg"
-          onClick={onClick}
-          disabled={!donationAmountWei || isPending}
-          className="w-full"
-        >
-          {buttonLabel}
-        </Button>
-      </CardFooter>
-    </Card>
+              {/* Custom input skeleton */}
+              <div>
+                <Skeleton className="mb-2 h-5 w-1/2" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            </div>
+          ) : (
+            // Actual form in a single-column layout
+            <div className="flex flex-col gap-4">
+              {/* Preset Amounts */}
+              <div>
+                <Label className="mb-2 block text-sm font-semibold">
+                  Choose an amount
+                </Label>
+                <div className="space-y-2">
+                  {presetUsdAmounts.map((usdVal) => {
+                    const isSelected = selectedUSD === usdVal;
+                    const approxTokens = (usdVal / tokenPriceUSD).toFixed(3);
+                    return (
+                      <Button
+                        key={usdVal}
+                        variant={isSelected ? "default" : "outline"}
+                        onClick={() => handlePresetClick(usdVal)}
+                        className="w-full justify-between h-10"
+                      >
+                        <span>${usdVal}</span>
+                        <span className="text-xs">
+                          (~{approxTokens} {nativeSymbol})
+                        </span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Separator with "OR" */}
+              <div className="flex items-center">
+                <Separator className="flex-1" />
+                <span className="mx-2 text-sm font-medium text-muted-foreground">
+                  OR
+                </span>
+                <Separator className="flex-1" />
+              </div>
+
+              {/* Custom Amount */}
+              <div>
+                <Label
+                  htmlFor="custom-usd"
+                  className="mb-1 block text-sm font-semibold"
+                >
+                  Enter your own
+                </Label>
+                <div className="relative group">
+                  <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="custom-usd"
+                    type="number"
+                    placeholder="e.g. 100"
+                    value={customUSD}
+                    onChange={handleCustomChange}
+                    className="h-10 pl-6"
+                  />
+                </div>
+                {tokenFloat > 0 && selectedUSD === null && (
+                  <p className="text-sm text-muted-foreground">
+                    ~{tokenFloat.toFixed(3)} {nativeSymbol}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="pt-6">
+          <Button
+            size="lg"
+            onClick={onClick}
+            disabled={!donationAmountWei || isPending}
+            className="w-full"
+          >
+            {buttonLabel}
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }
