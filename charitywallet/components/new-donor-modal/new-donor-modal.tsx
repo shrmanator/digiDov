@@ -22,7 +22,6 @@ interface DonorProfileModalProps {
   onClose: () => void;
 }
 
-// Define a type for the options returned by GooglePlacesAutocomplete
 interface GooglePlaceOption {
   label: string;
   value: string;
@@ -82,9 +81,10 @@ export default function DonorProfileModal({
     <Dialog
       open={open}
       onOpenChange={(val) => {
-        // Prevent closing the modal if the donor profile is incomplete
-        if (!val) onClose();
+        // Disable external closing. The modal will remain open until onClose is called explicitly.
       }}
+      onInteractOutside={(e) => e.preventDefault()}
+      onEscapeKeyDown={(e) => e.preventDefault()}
     >
       <DialogContent className="[&>button]:hidden">
         <DialogHeader>
