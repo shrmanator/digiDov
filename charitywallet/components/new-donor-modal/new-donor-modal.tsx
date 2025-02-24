@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,21 +13,21 @@ import { Button } from "@/components/ui/button";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
-import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import googlePlacesStyles from "./google-place-styles";
 
 interface DonorProfileModalProps {
   walletAddress: string;
+  open: boolean;
+  onClose: () => void;
 }
 
 export default function DonorProfileModal({
   walletAddress,
+  open,
+  onClose,
 }: DonorProfileModalProps) {
   const { data: profiles } = useProfiles({ client });
-  const { isIncomplete, isLoading } = useIncompleteDonorProfile(walletAddress);
-  const [open, setOpen] = useState(false);
-
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
@@ -42,11 +42,6 @@ export default function DonorProfileModal({
 
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  useEffect(() => {
-    if (isIncomplete && !open && !isLoading) {
-      setOpen(true);
-    }
-  }, [isIncomplete, open, isLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,7 +55,6 @@ export default function DonorProfileModal({
     e.preventDefault();
     setIsLoadingForm(true);
     setErrorMessage(null);
-
     try {
       await upsertDonor({
         walletAddress,
@@ -69,7 +63,7 @@ export default function DonorProfileModal({
         lastName: formData.lastName,
         address: formData.address,
       });
-      setOpen(false);
+      onClose();
     } catch (err) {
       console.error(err);
       setErrorMessage("Error saving info. Please try again.");
@@ -81,8 +75,9 @@ export default function DonorProfileModal({
   return (
     <Dialog
       open={open}
-      onOpenChange={() => {
-        if (!isIncomplete) setOpen(false);
+      onOpenChange={(val) => {
+        // Prevent closing the modal if the donor profile is incomplete
+        if (!val) onClose();
       }}
     >
       <DialogContent className="[&>button]:hidden">

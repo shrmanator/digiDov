@@ -9,6 +9,15 @@ export interface DonorInput {
   address?: string | null;
 }
 
+function isProfileComplete(data: DonorInput): boolean {
+  return Boolean(
+    data.email?.trim() &&
+      data.firstName?.trim() &&
+      data.lastName?.trim() &&
+      data.address?.trim()
+  );
+}
+
 export async function upsertDonor(data: DonorInput) {
   const walletAddress = data.walletAddress.toLowerCase();
   const complete = isProfileComplete(data);
@@ -31,16 +40,6 @@ export async function upsertDonor(data: DonorInput) {
       is_profile_complete: complete,
     },
   });
-}
-
-function isProfileComplete(data: DonorInput): boolean {
-  // Trim strings to ensure non-empty values are considered
-  const email = data.email?.trim();
-  const firstName = data.firstName?.trim();
-  const lastName = data.lastName?.trim();
-  const address = data.address?.trim();
-
-  return Boolean(email && firstName && lastName && address);
 }
 
 export async function updateDonorEmail(params: {

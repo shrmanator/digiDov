@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Web3 from "web3";
 import {
   Card,
@@ -30,9 +30,22 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const presetUsdAmounts = [10, 20, 50];
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
+
   const activeAccount = useActiveAccount();
   const walletAddress = activeAccount?.address;
   const { isIncomplete, isLoading } = useIncompleteDonorProfile(walletAddress);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (walletAddress && !isLoading) {
+      if (isIncomplete) {
+        setIsModalOpen(true);
+      } else {
+        setIsModalOpen(false);
+      }
+    }
+  }, [isIncomplete, isLoading, walletAddress]);
+
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
@@ -41,20 +54,19 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Live token price in USD
   const tokenPriceUSD = usePriceWebSocket(nativeSymbol);
 
-  // Convert chosen USD to smallest native units (wei, etc.)
+  // Convert chosen USD to smallest native units
   const donationAmountWei = (() => {
     if (!tokenPriceUSD) return null;
     const usdValue =
       selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
     if (usdValue <= 0) return null;
-
     const tokenAmount = usdValue / tokenPriceUSD;
     return decimals === 18
       ? BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"))
       : BigInt(Math.floor(tokenAmount * 10 ** decimals));
   })();
 
-  // Approximate token float (for the button label)
+  // Approximate token float (for button label)
   const tokenFloat = (() => {
     if (!tokenPriceUSD) return 0;
     const usdValue =
@@ -63,13 +75,11 @@ export default function DonationForm({ charity }: DonationFormProps) {
     return usdValue / tokenPriceUSD;
   })();
 
-  // Donation hook
   const { onClick, isPending, transactionResult } = useSendWithFee(
     donationAmountWei ?? BigInt(0),
     charity.wallet_address
   );
 
-  // Button label
   const chosenUSD =
     selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
   const buttonLabel = isPending
@@ -82,7 +92,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
       )} ${nativeSymbol})`
     : "Donate";
 
-  // Handlers
   const handlePresetClick = (usdVal: number) => {
     setSelectedUSD(usdVal);
     setCustomUSD("");
@@ -95,8 +104,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   return (
     <>
-      {isIncomplete && !isLoading && walletAddress && (
-        <DonorProfileModal walletAddress={walletAddress} />
+      {walletAddress && (
+        <DonorProfileModal
+          walletAddress={walletAddress}
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
       <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
         <CardHeader className="text-center">
@@ -110,9 +123,8 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
         <CardContent className="mt-4">
           {!tokenPriceUSD ? (
-            // Skeleton loading state in a single-column layout
+            // Skeleton loading state
             <div className="flex flex-col gap-4">
-              {/* Preset skeletons */}
               <div>
                 <Skeleton className="mb-2 h-5 w-3/4" />
                 <div className="space-y-2">
@@ -121,8 +133,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   <Skeleton className="h-10 w-full rounded-md" />
                 </div>
               </div>
-
-              {/* Separator with "OR" */}
               <div className="flex items-center">
                 <Separator className="flex-1" />
                 <span className="mx-2 text-sm font-medium text-muted-foreground">
@@ -130,17 +140,14 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 </span>
                 <Separator className="flex-1" />
               </div>
-
-              {/* Custom input skeleton */}
               <div>
                 <Skeleton className="mb-2 h-5 w-1/2" />
                 <Skeleton className="h-10 w-full rounded-md" />
               </div>
             </div>
           ) : (
-            // Actual form in a single-column layout
+            // Donation form
             <div className="flex flex-col gap-4">
-              {/* Preset Amounts */}
               <div>
                 <Label className="mb-2 block text-sm font-semibold">
                   Choose an amount
@@ -165,8 +172,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   })}
                 </div>
               </div>
-
-              {/* Separator with "OR" */}
               <div className="flex items-center">
                 <Separator className="flex-1" />
                 <span className="mx-2 text-sm font-medium text-muted-foreground">
@@ -174,8 +179,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 </span>
                 <Separator className="flex-1" />
               </div>
-
-              {/* Custom Amount */}
               <div>
                 <Label
                   htmlFor="custom-usd"
