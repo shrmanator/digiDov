@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Web3 from "web3";
 import {
   Card,
@@ -27,74 +27,89 @@ interface DonationFormProps {
 }
 
 export default function DonationForm({ charity }: DonationFormProps) {
-  const presetUsdAmounts = [10, 20, 50];
+  // Constants
+  const PRESET_USD_AMOUNTS = [10, 20, 50];
+
+  // State
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Hooks
+  const { donor } = useAuth();
   const activeAccount = useActiveAccount();
   const walletAddress = activeAccount?.address;
-  const { donor } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const isProfileComplete = donor ? donor.is_profile_complete : false;
-
-  useEffect(() => {
-    if (walletAddress && donor !== null) {
-      if (!isProfileComplete) {
-        setIsModalOpen(true);
-      } else {
-        setIsModalOpen(false);
-        // Ensure any lingering overlay styles are removed (unfortunately has to be done manually here).
-        document.body.style.removeProperty("pointer-events");
-        document.body.removeAttribute("data-scroll-locked");
-      }
-    }
-  }, [walletAddress, donor]);
-
-  const web3 = new Web3();
   const activeChain = useActiveWalletChain();
+  const web3 = useMemo(() => new Web3(), []);
+
+  // Derived values
+  const isProfileComplete = donor?.is_profile_complete ?? false;
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
   // Live token price in USD
   const tokenPriceUSD = usePriceWebSocket(nativeSymbol);
 
-  // Convert chosen USD to smallest native units
-  const donationAmountWei = (() => {
-    if (!tokenPriceUSD) return null;
+  // Open modal if profile not complete
+  useEffect(() => {
+    if (!walletAddress || donor === null) return;
+
+    if (!isProfileComplete) {
+      setIsModalOpen(true);
+    } else {
+      setIsModalOpen(false);
+      // Cleanup any modal styles (we are closing the modal based on donor profile completeness, preventing the modal's default cleanup logic).
+      document.body.style.removeProperty("pointer-events");
+      document.body.removeAttribute("data-scroll-locked");
+    }
+  }, [walletAddress, donor, isProfileComplete]);
+
+  // Calculate donation amount
+  const { donationAmountWei, tokenFloat, chosenUSD } = useMemo(() => {
+    if (!tokenPriceUSD) {
+      return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
+    }
+
     const usdValue =
       selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
-    if (usdValue <= 0) return null;
+
+    if (usdValue <= 0) {
+      return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
+    }
+
     const tokenAmount = usdValue / tokenPriceUSD;
-    return decimals === 18
-      ? BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"))
-      : BigInt(Math.floor(tokenAmount * 10 ** decimals));
-  })();
 
-  // Approximate token float (for button label)
-  const tokenFloat = (() => {
-    if (!tokenPriceUSD) return 0;
-    const usdValue =
-      selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
-    if (usdValue <= 0) return 0;
-    return usdValue / tokenPriceUSD;
-  })();
+    const amountWei =
+      decimals === 18
+        ? BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"))
+        : BigInt(Math.floor(tokenAmount * 10 ** decimals));
 
+    return {
+      donationAmountWei: amountWei,
+      tokenFloat: tokenAmount,
+      chosenUSD: usdValue,
+    };
+  }, [tokenPriceUSD, selectedUSD, customUSD, decimals, web3]);
+
+  // Transaction handler
   const { onClick, isPending, transactionResult } = useSendWithFee(
     donationAmountWei ?? BigInt(0),
     charity.wallet_address
   );
 
-  const chosenUSD =
-    selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
-  const buttonLabel = isPending
-    ? "Processing..."
-    : transactionResult
-    ? "Donation Sent!"
-    : tokenFloat > 0
-    ? `Donate $${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
+  // Dynamic button label
+  const buttonLabel = useMemo(() => {
+    if (isPending) return "Processing...";
+    if (transactionResult) return "Donation Sent!";
+    if (tokenFloat > 0) {
+      return `Donate $${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
         3
-      )} ${nativeSymbol})`
-    : "Donate";
+      )} ${nativeSymbol})`;
+    }
+    return "Donate";
+  }, [isPending, transactionResult, tokenFloat, chosenUSD, nativeSymbol]);
 
+  // Event handlers
   const handlePresetClick = (usdVal: number) => {
     setSelectedUSD(usdVal);
     setCustomUSD("");
@@ -104,6 +119,93 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCustomUSD(e.target.value);
     setSelectedUSD(null);
   };
+
+  // UI Components
+  const renderLoadingSkeleton = () => (
+    <div className="flex flex-col gap-4">
+      <div>
+        <Skeleton className="mb-2 h-5 w-3/4" />
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+      <div className="flex items-center">
+        <Separator className="flex-1" />
+        <span className="mx-2 text-sm font-medium text-muted-foreground">
+          OR
+        </span>
+        <Separator className="flex-1" />
+      </div>
+      <div>
+        <Skeleton className="mb-2 h-5 w-1/2" />
+        <Skeleton className="h-10 w-full rounded-md" />
+      </div>
+    </div>
+  );
+
+  const renderDonationForm = () => (
+    <div className="flex flex-col gap-4">
+      <div>
+        <Label className="mb-2 block text-sm font-semibold">
+          Choose an amount
+        </Label>
+        <div className="space-y-2">
+          {PRESET_USD_AMOUNTS.map((usdVal) => {
+            const isSelected = selectedUSD === usdVal;
+            const approxTokens = (usdVal / tokenPriceUSD!).toFixed(3);
+            return (
+              <Button
+                key={usdVal}
+                variant={isSelected ? "default" : "outline"}
+                onClick={() => handlePresetClick(usdVal)}
+                className="w-full justify-between h-10"
+              >
+                <span>${usdVal}</span>
+                <span className="text-xs">
+                  (~{approxTokens} {nativeSymbol})
+                </span>
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex items-center">
+        <Separator className="flex-1" />
+        <span className="mx-2 text-sm font-medium text-muted-foreground">
+          OR
+        </span>
+        <Separator className="flex-1" />
+      </div>
+      <div>
+        <Label
+          htmlFor="custom-usd"
+          className="mb-1 block text-sm font-semibold"
+        >
+          Enter your own
+        </Label>
+        <div className="relative group">
+          <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
+            $
+          </span>
+          <Input
+            id="custom-usd"
+            type="number"
+            placeholder="e.g. 100"
+            value={customUSD}
+            onChange={handleCustomChange}
+            className="h-10 pl-6"
+          />
+        </div>
+        {tokenFloat > 0 && selectedUSD === null && (
+          <p className="text-sm text-muted-foreground">
+            ~{tokenFloat.toFixed(3)} {nativeSymbol}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -125,90 +227,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         </CardHeader>
 
         <CardContent className="mt-4">
-          {!tokenPriceUSD ? (
-            <div className="flex flex-col gap-4">
-              <div>
-                <Skeleton className="mb-2 h-5 w-3/4" />
-                <div className="space-y-2">
-                  <Skeleton className="h-10 w-full rounded-md" />
-                  <Skeleton className="h-10 w-full rounded-md" />
-                  <Skeleton className="h-10 w-full rounded-md" />
-                </div>
-              </div>
-              <div className="flex items-center">
-                <Separator className="flex-1" />
-                <span className="mx-2 text-sm font-medium text-muted-foreground">
-                  OR
-                </span>
-                <Separator className="flex-1" />
-              </div>
-              <div>
-                <Skeleton className="mb-2 h-5 w-1/2" />
-                <Skeleton className="h-10 w-full rounded-md" />
-              </div>
-            </div>
-          ) : (
-            // Donation form
-            <div className="flex flex-col gap-4">
-              <div>
-                <Label className="mb-2 block text-sm font-semibold">
-                  Choose an amount
-                </Label>
-                <div className="space-y-2">
-                  {presetUsdAmounts.map((usdVal) => {
-                    const isSelected = selectedUSD === usdVal;
-                    const approxTokens = (usdVal / tokenPriceUSD).toFixed(3);
-                    return (
-                      <Button
-                        key={usdVal}
-                        variant={isSelected ? "default" : "outline"}
-                        onClick={() => handlePresetClick(usdVal)}
-                        className="w-full justify-between h-10"
-                      >
-                        <span>${usdVal}</span>
-                        <span className="text-xs">
-                          (~{approxTokens} {nativeSymbol})
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="flex items-center">
-                <Separator className="flex-1" />
-                <span className="mx-2 text-sm font-medium text-muted-foreground">
-                  OR
-                </span>
-                <Separator className="flex-1" />
-              </div>
-              <div>
-                <Label
-                  htmlFor="custom-usd"
-                  className="mb-1 block text-sm font-semibold"
-                >
-                  Enter your own
-                </Label>
-                <div className="relative group">
-                  <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
-                    $
-                  </span>
-                  <Input
-                    id="custom-usd"
-                    type="number"
-                    placeholder="e.g. 100"
-                    value={customUSD}
-                    onChange={handleCustomChange}
-                    className="h-10 pl-6"
-                  />
-                </div>
-                {tokenFloat > 0 && selectedUSD === null && (
-                  <p className="text-sm text-muted-foreground">
-                    ~{tokenFloat.toFixed(3)} {nativeSymbol}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+          {!tokenPriceUSD ? renderLoadingSkeleton() : renderDonationForm()}
         </CardContent>
 
         <CardFooter className="pt-6">
