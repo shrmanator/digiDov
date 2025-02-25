@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Organization Wallet",
-  description: "The simplest way to accept crypto donations.",
+  title: "SuperMint Wallet",
+  description: "The simplest way to manage crypto donations.",
 };
 
 export default function RootLayout({

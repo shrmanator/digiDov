@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { polygon, ethereum } from "thirdweb/chains";
+import DonorConnectWalletButton from "@/components/connect-wallet-button";
 
 interface Charity {
   charity_name?: string | null;
@@ -37,7 +38,6 @@ export default function SideBarAndHeader({
 }: SideBarAndHeaderProps) {
   const [, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
-  // default chain is Polygon
   const [activeChain, setActiveChain] = useState(polygon);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function SideBarAndHeader({
                 <SelectItem value="ethereum">Ethereum</SelectItem>
               </SelectContent>
             </Select>
-            <ConnectWalletButton
+            <DonorConnectWalletButton
               setIsAuthenticated={setIsAuthenticated}
               activeChain={activeChain}
             />
