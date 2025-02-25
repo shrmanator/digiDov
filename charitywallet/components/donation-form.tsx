@@ -30,32 +30,24 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const presetUsdAmounts = [10, 20, 50];
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
-
   const activeAccount = useActiveAccount();
   const walletAddress = activeAccount?.address;
-  const { donor } = useAuth(); // Get donor data from global context
-
-  const isProfileComplete = donor ? donor.is_profile_complete : false;
-  console.log("Donor is complete:", isProfileComplete);
-  // Optionally, you can add a loading state if your context supports it
+  const { donor } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isProfileComplete = donor ? donor.is_profile_complete : false;
+
   useEffect(() => {
-    if (donor !== null && isProfileComplete) {
-      // Clean up any lingering styles or attributes
-      document.body.style.removeProperty("pointer-events");
-      document.body.removeAttribute("data-scroll-locked");
+    if (walletAddress && donor !== null) {
+      if (!isProfileComplete) {
+        setIsModalOpen(true);
+      } else {
+        setIsModalOpen(false);
+        // Also ensure any lingering overlay styles are removed.
+        document.body.style.removeProperty("pointer-events");
+        document.body.removeAttribute("data-scroll-locked");
+      }
     }
-  }, [donor, isProfileComplete]);
-  useEffect(() => {
-    if (walletAddress && !isProfileComplete && !isModalOpen) {
-      console.log(
-        "Re-opening modal because donor is still incomplete",
-        walletAddress,
-        isProfileComplete
-      );
-      setIsModalOpen(true);
-    }
-  }, [walletAddress, isProfileComplete, isModalOpen]);
+  }, [walletAddress, donor]);
 
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
