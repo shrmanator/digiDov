@@ -20,25 +20,43 @@ function isProfileComplete(data: DonorInput): boolean {
 
 export async function upsertDonor(data: DonorInput) {
   const walletAddress = data.walletAddress.toLowerCase();
-  const complete = isProfileComplete(data);
+  const { email, firstName, lastName, address } = data;
+
+  // Determine if any new profile data is provided
+  const hasNewProfileData = Boolean(email || firstName || lastName || address);
+
+  // Fetch the existing donor (if any)
+  const existingDonor = await prisma.donor.findUnique({
+    where: { wallet_address: walletAddress },
+  });
+
+  // Use new data to recalc complete if provided; otherwise, preserve existing value.
+  const complete = hasNewProfileData
+    ? isProfileComplete(data)
+    : existingDonor?.is_profile_complete ?? false;
+
+  // Build the update and create payloads
+  const updateData = {
+    email: email ?? undefined,
+    first_name: firstName ?? undefined,
+    last_name: lastName ?? undefined,
+    address: address ?? undefined,
+    is_profile_complete: complete,
+  };
+
+  const createData = {
+    wallet_address: walletAddress,
+    email: email ?? null,
+    first_name: firstName ?? null,
+    last_name: lastName ?? null,
+    address: address ?? null,
+    is_profile_complete: complete,
+  };
 
   return prisma.donor.upsert({
     where: { wallet_address: walletAddress },
-    update: {
-      email: data.email ?? undefined,
-      first_name: data.firstName ?? undefined,
-      last_name: data.lastName ?? undefined,
-      address: data.address ?? undefined,
-      is_profile_complete: complete,
-    },
-    create: {
-      wallet_address: walletAddress,
-      email: data.email ?? null,
-      first_name: data.firstName ?? null,
-      last_name: data.lastName ?? null,
-      address: data.address ?? null,
-      is_profile_complete: complete,
-    },
+    update: updateData,
+    create: createData,
   });
 }
 
