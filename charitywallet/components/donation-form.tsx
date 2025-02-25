@@ -36,15 +36,21 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const { donor } = useAuth(); // Get donor data from global context
 
   // Determine if the donor profile is incomplete
-  const isIncomplete = donor ? !donor.is_profile_complete : false;
+  const isProfileComplete = donor ? donor.is_profile_complete : false;
+  console.log("Donor is complete:", isProfileComplete);
   // Optionally, you can add a loading state if your context supports it
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (walletAddress) {
-      setIsModalOpen(isIncomplete);
+    if (walletAddress && !isProfileComplete && !isModalOpen) {
+      console.log(
+        "Re-opening modal because donor is still incomplete",
+        walletAddress,
+        isProfileComplete
+      );
+      setIsModalOpen(true);
     }
-  }, [isIncomplete, walletAddress]);
+  }, [walletAddress, isProfileComplete, isModalOpen]);
 
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();
@@ -104,7 +110,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   return (
     <>
-      {walletAddress && (
+      {donor !== null && walletAddress && !isProfileComplete && (
         <DonorProfileModal
           walletAddress={walletAddress}
           open={isModalOpen}

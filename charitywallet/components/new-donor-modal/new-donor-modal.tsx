@@ -15,6 +15,7 @@ import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import googlePlacesStyles from "./google-place-styles";
+import { useAuth } from "@/contexts/auth-context";
 
 interface DonorProfileModalProps {
   walletAddress: string;
@@ -32,6 +33,7 @@ export default function DonorProfileModal({
   open,
   onClose,
 }: DonorProfileModalProps) {
+  const { updateDonor } = useAuth();
   const { data: profiles } = useProfiles({ client });
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
@@ -68,6 +70,7 @@ export default function DonorProfileModal({
         lastName: formData.lastName,
         address: formData.address,
       });
+      await updateDonor(walletAddress);
       onClose();
     } catch (err) {
       console.error(err);
