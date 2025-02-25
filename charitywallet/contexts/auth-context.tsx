@@ -1,53 +1,70 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { getDonorByWallet } from "@/app/actions/donors";
-import {
-  donorLogin as donorLoginAPI,
-  logout as logoutAPI,
-} from "@/app/actions/auth";
 import type { VerifyLoginPayloadParams } from "thirdweb/auth";
+import {
+  donorLogin as loginDonorServer,
+  charityLogin as loginCharityServer,
+  logout as logoutServer,
+} from "@/app/actions/auth";
 
 interface AuthContextProps {
   user: { walletAddress: string } | null;
   donor: any | null;
-  login: (params: VerifyLoginPayloadParams) => Promise<void>;
+  loginDonor: (params: VerifyLoginPayloadParams) => Promise<void>;
+  loginCharity: (params: VerifyLoginPayloadParams) => Promise<void>;
   logout: () => Promise<void>;
   updateDonor: (walletAddress: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<{ walletAddress: string } | null>(null);
   const [donor, setDonor] = useState<any | null>(null);
   const activeAccount = useActiveAccount();
 
-  // Update context state when active account changes
+  // When the active wallet changes (e.g. on auto-connect), update user state and fetch donor info.
   useEffect(() => {
     if (activeAccount?.address) {
       const walletAddress = activeAccount.address.toLowerCase();
       setUser({ walletAddress });
-      // Fetch donor info (you might want to add error handling)
       getDonorByWallet(walletAddress)
         .then((donorData) => setDonor(donorData))
-        .catch((error) => console.error("Failed to fetch donor", error));
+        .catch((error) => console.error("Failed to fetch donor info", error));
     } else {
       setUser(null);
       setDonor(null);
     }
   }, [activeAccount]);
 
-  const login = async (params: VerifyLoginPayloadParams) => {
+  // Donor login function – calls your donorLogin server action then updates context.
+  const loginDonor = async (params: VerifyLoginPayloadParams) => {
     const walletAddress = params.payload.address.toLowerCase();
-    await donorLoginAPI(params);
+    await loginDonorServer(params);
     setUser({ walletAddress });
     const updatedDonor = await getDonorByWallet(walletAddress);
     setDonor(updatedDonor);
   };
 
+  // Charity login function – calls your charityLogin server action then updates context.
+  const loginCharity = async (params: VerifyLoginPayloadParams) => {
+    const walletAddress = params.payload.address.toLowerCase();
+    await loginCharityServer(params);
+    setUser({ walletAddress });
+    // UPDATE CHARITY SPECIFIC STATE HERE
+  };
+
   const logout = async () => {
-    await logoutAPI();
+    await logoutServer();
     setUser(null);
     setDonor(null);
   };
@@ -58,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, donor, login, logout, updateDonor }}>
+    <AuthContext.Provider
+      value={{ user, donor, loginDonor, loginCharity, logout, updateDonor }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -4,11 +4,16 @@ import { ConnectButton } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { ethereum, polygon, Chain } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
+import {
+  isLoggedIn,
+  generatePayload,
+  logout,
+  donorLogin,
+} from "@/app/actions/auth";
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
-import { generatePayload } from "@/app/actions/auth";
-import { useAuth } from "@/contexts/auth-context";
 
 const wallets = [
+  // inAppWallet({ auth: { options: ["google", "email"] } }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
@@ -18,19 +23,20 @@ const wallets = [
 ];
 
 interface ConnectWalletButtonProps {
-  activeChain: Chain;
+  setIsAuthenticated: (val: boolean) => void;
+  activeChain: Chain; // Added activeChain prop
 }
 
-export default function ConnectWalletButton({
+export default function DonorConnectWalletButton({
+  setIsAuthenticated,
   activeChain,
 }: ConnectWalletButtonProps) {
-  const { login, logout, user } = useAuth(); // Use global context
-
   return (
     <ConnectButton
       chains={[ethereum, polygon]}
       client={client}
       connectModal={{
+        // size: "wide",
         showThirdwebBranding: false,
       }}
       wallets={wallets}
@@ -38,12 +44,11 @@ export default function ConnectWalletButton({
       auth={{
         isLoggedIn: async (address: string) => {
           console.log("Checking if logged in", { address });
-          // Check if the user is logged in via context
-          return !!user;
+          return await isLoggedIn();
         },
         doLogin: async (params: VerifyLoginPayloadParams) => {
           console.log("Logging in!");
-          await login(params); // Use the context's login function
+          await donorLogin(params);
         },
         getLoginPayload: async ({ address }: { address: string }) =>
           generatePayload({
@@ -52,7 +57,8 @@ export default function ConnectWalletButton({
           }),
         doLogout: async () => {
           console.log("Logging out!");
-          await logout(); // Use the context's logout function
+          await logout();
+          setIsAuthenticated(false);
         },
       }}
     />
