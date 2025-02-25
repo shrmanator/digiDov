@@ -7,6 +7,7 @@ import { addWalletAddressToMoralis } from "./moralis";
 import { upsertDonor } from "./donors";
 
 export const generatePayload = thirdwebAuth.generatePayload;
+export const verifyPayload = thirdwebAuth.verifyPayload;
 
 export async function charityLogin(payload: VerifyLoginPayloadParams) {
   const verifiedPayload = await thirdwebAuth.verifyPayload(payload);
