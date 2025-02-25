@@ -42,7 +42,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         setIsModalOpen(true);
       } else {
         setIsModalOpen(false);
-        // Also ensure any lingering overlay styles are removed.
+        // Ensure any lingering overlay styles are removed (unfortunately has to be done manually here).
         document.body.style.removeProperty("pointer-events");
         document.body.removeAttribute("data-scroll-locked");
       }
