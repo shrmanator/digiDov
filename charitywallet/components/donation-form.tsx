@@ -35,12 +35,17 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const walletAddress = activeAccount?.address;
   const { donor } = useAuth(); // Get donor data from global context
 
-  // Determine if the donor profile is incomplete
   const isProfileComplete = donor ? donor.is_profile_complete : false;
   console.log("Donor is complete:", isProfileComplete);
   // Optionally, you can add a loading state if your context supports it
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  useEffect(() => {
+    if (donor !== null && isProfileComplete) {
+      // Clean up any lingering styles or attributes
+      document.body.style.removeProperty("pointer-events");
+      document.body.removeAttribute("data-scroll-locked");
+    }
+  }, [donor, isProfileComplete]);
   useEffect(() => {
     if (walletAddress && !isProfileComplete && !isModalOpen) {
       console.log(
@@ -129,7 +134,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
         <CardContent className="mt-4">
           {!tokenPriceUSD ? (
-            // Skeleton loading state
             <div className="flex flex-col gap-4">
               <div>
                 <Skeleton className="mb-2 h-5 w-3/4" />
