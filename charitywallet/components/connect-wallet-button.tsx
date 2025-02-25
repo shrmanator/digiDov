@@ -1,19 +1,15 @@
 "use client";
 
-import { ConnectButton } from "thirdweb/react";
+import { useRouter } from "next/navigation";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { ethereum, polygon, Chain } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
-import {
-  isLoggedIn,
-  generatePayload,
-  logout,
-  donorLogin,
-} from "@/app/actions/auth";
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
+import { useAuth } from "@/contexts/auth-context";
+import { generatePayload } from "@/app/actions/auth";
 
 const wallets = [
-  // inAppWallet({ auth: { options: ["google", "email"] } }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
@@ -23,34 +19,43 @@ const wallets = [
 ];
 
 interface ConnectWalletButtonProps {
-  setIsAuthenticated: (val: boolean) => void;
-  activeChain: Chain; // Added activeChain prop
+  activeChain: Chain;
 }
 
 export default function DonorConnectWalletButton({
-  setIsAuthenticated,
   activeChain,
 }: ConnectWalletButtonProps) {
+  const router = useRouter();
+  const activeAccount = useActiveAccount();
+  const { user, loginDonor, logout } = useAuth();
+
   return (
     <ConnectButton
       chains={[ethereum, polygon]}
       client={client}
       connectModal={{
-        // size: "wide",
         showThirdwebBranding: false,
       }}
       wallets={wallets}
       chain={activeChain}
       auth={{
+        // Check both activeAccount and our context's user to support auto connect.
         isLoggedIn: async (address: string) => {
-          console.log("Checking if logged in", { address });
-          return await isLoggedIn();
+          const normalized = address.toLowerCase();
+          // If thirdweb has an active account matching the address, consider it logged in.
+          if (activeAccount?.address.toLowerCase() === normalized) {
+            return true;
+          }
+          // Otherwise, fallback to our context user.
+          return user?.walletAddress === normalized;
         },
         doLogin: async (params: VerifyLoginPayloadParams) => {
           console.log("Logging in!");
-          await donorLogin(params);
+          await loginDonor(params);
+          router.refresh();
         },
         getLoginPayload: async ({ address }: { address: string }) =>
+          // You can keep your existing generatePayload logic if needed.
           generatePayload({
             address: address.toLowerCase(),
             chainId: activeChain.id,
@@ -58,7 +63,7 @@ export default function DonorConnectWalletButton({
         doLogout: async () => {
           console.log("Logging out!");
           await logout();
-          setIsAuthenticated(false);
+          router.refresh();
         },
       }}
     />

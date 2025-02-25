@@ -79,10 +79,7 @@ export default function SideBarAndHeader({
                 <SelectItem value="ethereum">Ethereum</SelectItem>
               </SelectContent>
             </Select>
-            <DonorConnectWalletButton
-              setIsAuthenticated={setIsAuthenticated}
-              activeChain={activeChain}
-            />
+            <DonorConnectWalletButton activeChain={activeChain} />
           </div>
         </header>
         <main className="flex flex-1 items-center justify-center p-8">
