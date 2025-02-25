@@ -20,7 +20,7 @@ import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useSendWithFee } from "./send-with-fee";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "./new-donor-modal/new-donor-modal";
-import { useIncompleteDonorProfile } from "@/hooks/use-incomplete-donor-profile";
+import { useAuth } from "@/contexts/auth-context";
 
 interface DonationFormProps {
   charity: charity;
@@ -33,18 +33,18 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   const activeAccount = useActiveAccount();
   const walletAddress = activeAccount?.address;
-  const { isIncomplete, isLoading } = useIncompleteDonorProfile(walletAddress);
+  const { donor } = useAuth(); // Get donor data from global context
+
+  // Determine if the donor profile is incomplete
+  const isIncomplete = donor ? !donor.is_profile_complete : false;
+  // Optionally, you can add a loading state if your context supports it
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (walletAddress && !isLoading) {
-      if (isIncomplete) {
-        setIsModalOpen(true);
-      } else {
-        setIsModalOpen(false);
-      }
+    if (walletAddress) {
+      setIsModalOpen(isIncomplete);
     }
-  }, [isIncomplete, isLoading, walletAddress]);
+  }, [isIncomplete, walletAddress]);
 
   const web3 = new Web3();
   const activeChain = useActiveWalletChain();

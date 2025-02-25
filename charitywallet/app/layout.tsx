@@ -6,6 +6,7 @@ import { ThirdwebProvider } from "thirdweb/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,13 +40,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-screen flex flex-col">
-              <main className="flex-1">{children}</main>
-            </div>
-            {/* <div className="bottom-4 right-4 z-50">
-              <Footer />
-            </div> */}
-            <Toaster />
+            <AuthProvider>
+              <div className="min-h-screen flex flex-col">
+                <main className="flex-1">{children}</main>
+              </div>
+              <Toaster />
+            </AuthProvider>
           </ThemeProvider>
         </ThirdwebProvider>
         <Analytics />

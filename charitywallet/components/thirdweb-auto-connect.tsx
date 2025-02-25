@@ -6,7 +6,7 @@ import { inAppWallet } from "thirdweb/wallets";
 const wallets = [inAppWallet()];
 
 const appMetadata = {
-  name: "Organization Wallet",
+  name: "SuperMint Wallet",
   iconURL: "https://myapp.com/icon.png",
   logoURL: "https://myapp.com/logo.png",
 };
