@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
 import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
-import { useSendWithFee } from "./send-with-fee";
+import { useSendWithFee } from "../hooks/use-send-with-fee";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "./new-donor-modal/new-donor-modal";
 import { useAuth } from "@/contexts/auth-context";
