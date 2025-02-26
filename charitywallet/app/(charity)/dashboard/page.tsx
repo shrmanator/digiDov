@@ -1,5 +1,4 @@
 // app/dashboard/page.tsx
-
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -23,42 +22,59 @@ import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
 import { initializeMoralis } from "@/lib/moralis";
-// 1) Import TransactionWithType so TS knows the shape of your transaction array
 import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
+import Moralis from "moralis";
 
-// RECOMMENDED: control how often Next.js re-fetches data (in seconds).
-// If you do not want any caching, remove this line or set dynamic = "force-dynamic".
+// Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
 
 export default async function Dashboard() {
-  // 2) Check user
+  // 1) Check user
   const user = await getAuthenticatedUser();
   if (!user) {
     redirect("/login");
   }
 
-  // 3) Fetch charity from DB
+  // 2) Fetch charity from DB
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
   });
   if (!charity) {
     return <p>No charity found.</p>;
   }
-
   const isCharityComplete = charity.is_profile_complete ?? false;
 
-  // 4) Initialize Moralis once
+  // 3) Initialize Moralis once
   await initializeMoralis();
 
-  // 5) Explicitly type transactions as TransactionWithType[]
-  let transactions: TransactionWithType[] = [];
-  try {
-    transactions = await fetchTransactions("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", "received");
-  } catch (error) {
-    console.error("Failed to fetch transactions from Moralis:", error);
+  // 4) Fetch net worth and transactions concurrently
+  const [netWorthResult, transactionsResult] = await Promise.allSettled([
+    Moralis.EvmApi.wallets.getWalletNetWorth({
+      address: charity.wallet_address,
+      excludeSpam: true,
+      excludeUnverifiedContracts: true,
+    }),
+    fetchTransactions(charity.wallet_address, "received"),
+  ]);
+
+  let netWorth: string | null = null;
+  if (netWorthResult.status === "fulfilled") {
+    netWorth = netWorthResult.value.raw?.total_networth_usd;
+  } else {
+    console.error("Error fetching net worth:", netWorthResult.reason);
   }
 
-  // 6) Render
+  let transactions: TransactionWithType[] = [];
+  if (transactionsResult.status === "fulfilled") {
+    transactions = transactionsResult.value;
+  } else {
+    console.error(
+      "Failed to fetch transactions from Moralis:",
+      transactionsResult.reason
+    );
+  }
+
+  // 5) Render the page and pass the data to child components
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -82,9 +98,8 @@ export default async function Dashboard() {
             </div>
             <div className="flex flex-col items-end gap-1 mt-5">
               <WalletCopyButton walletAddress={charity.wallet_address} />
-              <CombinedWalletBalance
-                searchParams={{ address: charity.wallet_address }}
-              />
+              {/* Pass netWorth as a prop */}
+              <CombinedWalletBalance netWorth={netWorth} />
             </div>
           </header>
           <main className="flex flex-1 p-6">
@@ -95,7 +110,6 @@ export default async function Dashboard() {
               {isCharityComplete ? (
                 <div className="w-full flex justify-center">
                   <div className="w-full max-w-2xl mx-auto">
-                    {/* Pass the fetched transactions to TransactionHistory */}
                     <TransactionHistory transactions={transactions} />
                   </div>
                 </div>
