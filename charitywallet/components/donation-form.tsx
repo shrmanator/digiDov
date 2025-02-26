@@ -101,7 +101,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     if (isPending) return "Processing...";
     if (transactionResult) return "Donation Sent!";
     if (tokenFloat > 0) {
-      return `Donate $${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
+      return `Donate ${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
         3
       )} ${nativeSymbol})`;
     }
@@ -148,7 +148,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     <div className="flex flex-col gap-4">
       <div>
         <Label className="mb-2 block text-sm font-semibold">
-          Choose an amount
+          Choose an amount (CAD)
         </Label>
         <div className="space-y-2">
           {PRESET_USD_AMOUNTS.map((usdVal) => {
@@ -182,7 +182,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
           htmlFor="custom-usd"
           className="mb-1 block text-sm font-semibold"
         >
-          Enter your own
+          Enter your own (CAD)
         </Label>
         <div className="relative group">
           <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
