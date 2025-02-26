@@ -19,7 +19,7 @@ export function useHistoricalPrice(
 
       try {
         const res = await fetch(
-          `/api/historicalPrice?tokenSymbol=${tokenSymbol}&date=${formattedDate}&targetCurrency=${targetCurrency}`
+          `/api/historical-crypto-price?tokenSymbol=${tokenSymbol}&date=${formattedDate}&targetCurrency=${targetCurrency}`
         );
         if (!res.ok) {
           console.error("Error fetching historical price:", await res.text());
