@@ -1,11 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const coinIdMapping: { [symbol: string]: string } = {
-  ETH: "ethereum",
-  POL: "matic-network", // Adjust this mapping as needed.
-};
-
 export function useHistoricalPrice(
   tokenSymbol: string,
   timestamp: string,
@@ -15,23 +10,21 @@ export function useHistoricalPrice(
 
   useEffect(() => {
     async function fetchHistoricalPrice() {
-      // Convert the transaction timestamp to "dd-mm-yyyy" format for CoinGecko.
+      // Convert the transaction timestamp to "dd-mm-yyyy" format required by CoinGecko.
       const date = new Date(timestamp);
       const day = String(date.getUTCDate()).padStart(2, "0");
       const month = String(date.getUTCMonth() + 1).padStart(2, "0");
       const year = date.getUTCFullYear();
       const formattedDate = `${day}-${month}-${year}`;
 
-      const coinId = coinIdMapping[tokenSymbol];
-      if (!coinId) {
-        console.error("No coin id mapping for token:", tokenSymbol);
-        return;
-      }
-
       try {
         const res = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${formattedDate}`
+          `/api/historicalPrice?tokenSymbol=${tokenSymbol}&date=${formattedDate}&targetCurrency=${targetCurrency}`
         );
+        if (!res.ok) {
+          console.error("Error fetching historical price:", await res.text());
+          return;
+        }
         const data = await res.json();
         if (
           data &&

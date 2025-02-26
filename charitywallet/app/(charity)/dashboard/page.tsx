@@ -53,7 +53,7 @@ export default async function Dashboard() {
   // 5) Explicitly type transactions as TransactionWithType[]
   let transactions: TransactionWithType[] = [];
   try {
-    transactions = await fetchTransactions(charity.wallet_address, "received");
+    transactions = await fetchTransactions("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", "received");
   } catch (error) {
     console.error("Failed to fetch transactions from Moralis:", error);
   }

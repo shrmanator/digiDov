@@ -1,10 +1,7 @@
-import { initializeMoralis } from "@/lib/moralis";
 import Moralis from "moralis";
 
 export const addWalletAddressToMoralis = async (walletAddress: string) => {
   try {
-    await initializeMoralis();
-
     const streamId = process.env.MORALIS_STREAM_ID;
     if (!streamId) {
       throw new Error("Stream ID is not configured in environment variables.");
@@ -24,8 +21,6 @@ export const addWalletAddressToMoralis = async (walletAddress: string) => {
 
 export const removeWalletAddressFromMoralis = async (walletAddress: string) => {
   try {
-    await initializeMoralis();
-
     const streamId = process.env.MORALIS_STREAM_ID;
     if (!streamId) {
       throw new Error("Stream ID is not configured in environment variables.");

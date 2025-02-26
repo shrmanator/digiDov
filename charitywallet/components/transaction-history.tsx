@@ -1,10 +1,11 @@
-// components/transaction-history.tsx
+"use client";
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { WalletCopyButton } from "./wallet-copy-button";
 import Web3 from "web3";
+import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
 
 const web3 = new Web3();
 
@@ -18,12 +19,10 @@ interface Transaction {
   chain: "0x1" | "0x89";
 }
 
-// We accept an array of transactions, which the page fetches for us
 interface TransactionHistoryProps {
   transactions: Transaction[];
 }
 
-// Convert Wei => ETH
 function convertWeiToEth(wei: string): string {
   try {
     return web3.utils.fromWei(wei, "ether");
@@ -33,12 +32,10 @@ function convertWeiToEth(wei: string): string {
   }
 }
 
-// Format date
 function formatDate(timestamp: string): string {
   return new Date(timestamp).toISOString().split("T")[0];
 }
 
-// Mapping chain ID => symbol
 const chainToSymbol: { [chain: string]: string } = {
   "0x1": "ETH",
   "0x89": "POL",
@@ -62,6 +59,17 @@ export default function TransactionHistory({
             const formattedDate = formatDate(tx.block_timestamp);
             const symbol = chainToSymbol[tx.chain] || "Unknown";
 
+            // Use the updated hook to get the historical price in USD.
+            const historicalPrice = useHistoricalPrice(
+              symbol,
+              tx.block_timestamp,
+              "usd"
+            );
+            const usdValue =
+              historicalPrice && !isNaN(parseFloat(nativeValue))
+                ? parseFloat(nativeValue) * historicalPrice
+                : 0;
+
             return (
               <Card
                 key={tx.hash + tx.chain}
@@ -70,7 +78,10 @@ export default function TransactionHistory({
                 <CardContent className="flex flex-col p-4">
                   <div className="flex items-center space-x-3">
                     <span className="text-xl font-semibold">
-                      {nativeValue} {symbol}
+                      ${usdValue.toFixed(2)}{" "}
+                      <span className="text-base font-normal">
+                        ({nativeValue} {symbol})
+                      </span>
                     </span>
                     {tx.type === "Received" ? (
                       <ArrowDownLeft className="text-green-500 h-6 w-6" />

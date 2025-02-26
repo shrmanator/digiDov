@@ -1,7 +1,7 @@
 import Moralis from "moralis";
-import { initializeMoralis } from "@/lib/moralis";
 
-export const dynamic = "force-dynamic"; // Ensures data is fetched on each request
+// Cache the data for 60 seconds (adjust as needed)
+export const revalidate = 60;
 
 interface CombinedWalletNetWorthProps {
   searchParams: { address?: string };
@@ -16,10 +16,9 @@ export default async function CombinedWalletNetWorth({
     return <div>Please provide a wallet address.</div>;
   }
 
-  await initializeMoralis();
-
   let netWorth: string | null = null;
   try {
+    console.log("Fetching net worth for address:", address);
     const response = await Moralis.EvmApi.wallets.getWalletNetWorth({
       address,
       excludeSpam: true,
@@ -32,7 +31,8 @@ export default async function CombinedWalletNetWorth({
 
   return (
     <div className="text-sm font-mono mr-2.5">
-      Total donations: ~${netWorth ? parseFloat(netWorth).toFixed(2) : "N/A"} USD
+      Total donations: ~$
+      {netWorth ? parseFloat(netWorth).toFixed(2) : "N/A"} USD
     </div>
   );
 }
