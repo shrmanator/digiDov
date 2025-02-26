@@ -24,10 +24,7 @@ import CharitySetupModal from "@/components/new-charity-modal/charity-setup-moda
 import CombinedWalletBalance from "@/components/wallet-balance";
 import { initializeMoralis } from "@/lib/moralis";
 // 1) Import TransactionWithType so TS knows the shape of your transaction array
-import {
-  fetchBothTransactions,
-  TransactionWithType,
-} from "@/utils/moralis-utils";
+import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 
 // RECOMMENDED: control how often Next.js re-fetches data (in seconds).
 // If you do not want any caching, remove this line or set dynamic = "force-dynamic".
@@ -56,7 +53,7 @@ export default async function Dashboard() {
   // 5) Explicitly type transactions as TransactionWithType[]
   let transactions: TransactionWithType[] = [];
   try {
-    transactions = await fetchBothTransactions(charity.wallet_address);
+    transactions = await fetchTransactions(charity.wallet_address, "received");
   } catch (error) {
     console.error("Failed to fetch transactions from Moralis:", error);
   }
