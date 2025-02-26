@@ -47,8 +47,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
-  // Live token price in USD
-  const tokenPriceUSD = usePriceWebSocket(nativeSymbol);
+  const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
 
   // Open modal if profile not complete
   useEffect(() => {
@@ -66,7 +65,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   // Calculate donation amount
   const { donationAmountWei, tokenFloat, chosenUSD } = useMemo(() => {
-    if (!tokenPriceUSD) {
+    if (!tokenPrice) {
       return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
     }
 
@@ -77,7 +76,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
     }
 
-    const tokenAmount = usdValue / tokenPriceUSD;
+    const tokenAmount = usdValue / tokenPrice;
 
     const amountWei =
       decimals === 18
@@ -89,7 +88,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       tokenFloat: tokenAmount,
       chosenUSD: usdValue,
     };
-  }, [tokenPriceUSD, selectedUSD, customUSD, decimals, web3]);
+  }, [tokenPrice, selectedUSD, customUSD, decimals, web3]);
 
   // Transaction handler
   const { onClick, isPending, transactionResult } = useSendWithFee(
@@ -154,7 +153,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         <div className="space-y-2">
           {PRESET_USD_AMOUNTS.map((usdVal) => {
             const isSelected = selectedUSD === usdVal;
-            const approxTokens = (usdVal / tokenPriceUSD!).toFixed(3);
+            const approxTokens = (usdVal / tokenPrice!).toFixed(3);
             return (
               <Button
                 key={usdVal}
@@ -227,7 +226,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         </CardHeader>
 
         <CardContent className="mt-4">
-          {!tokenPriceUSD ? renderLoadingSkeleton() : renderDonationForm()}
+          {!tokenPrice ? renderLoadingSkeleton() : renderDonationForm()}
         </CardContent>
 
         <CardFooter className="pt-6">

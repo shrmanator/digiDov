@@ -2,12 +2,49 @@
 
 import { useEffect, useState } from "react";
 
-// Custom hook to subscribe to live token price updates via Binance WebSocket
-export function usePriceWebSocket(tokenSymbol: string): number | null {
+/**
+ * A hook that subscribes to live token price updates via Binance WebSocket (returns prices in USD)
+ * and converts the price to CAD using a live conversion rate from open.er-api.com.
+ *
+ * @param tokenSymbol - The token symbol (e.g. "eth" for Ethereum)
+ * @param targetCurrency - Either "USD" or "CAD" (defaults to "USD")
+ * @returns The current price in the chosen currency, or null if not available.
+ */
+export function usePriceWebSocket(
+  tokenSymbol: string,
+  targetCurrency: "USD" | "CAD" = "USD"
+): number | null {
   const [price, setPrice] = useState<number | null>(null);
+  const [usdToCadRate, setUsdToCadRate] = useState<number>(1); // fallback value
+
+  // Fetch live USD to CAD conversion rate from open.er-api.com
+  useEffect(() => {
+    const fetchConversionRate = async () => {
+      try {
+        const response = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await response.json();
+        console.log("Conversion API response:", data);
+        if (
+          data &&
+          data.result === "success" &&
+          data.rates &&
+          typeof data.rates.CAD === "number"
+        ) {
+          setUsdToCadRate(data.rates.CAD);
+        } else {
+          console.error("Unexpected conversion API response structure:", data);
+          setUsdToCadRate(1.3);
+        }
+      } catch (error) {
+        console.error("Error fetching USD to CAD conversion rate:", error);
+        setUsdToCadRate(1.3);
+      }
+    };
+
+    fetchConversionRate();
+  }, []);
 
   useEffect(() => {
-    // Map the token symbol to Binance's ticker pair (assumes USDT pair for USD pricing)
     const lowerSymbol = tokenSymbol.toLowerCase();
     const pair = `${lowerSymbol}usdt`; // e.g. "ethusdt" for ETH
     const wsUrl = `wss://stream.binance.com:9443/ws/${pair}@ticker`;
@@ -42,5 +79,6 @@ export function usePriceWebSocket(tokenSymbol: string): number | null {
     };
   }, [tokenSymbol]);
 
-  return price;
+  if (price === null) return null;
+  return targetCurrency === "CAD" ? price * usdToCadRate : price;
 }
