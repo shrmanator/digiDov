@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
  * Interface for the input required to create a donation receipt.
  */
 export interface DonationReceiptInput {
-  // Optionally provide a custom receipt number; otherwise, a default is used.
+  // Optionally provide a custom receipt number; otherwise, one will be generated.
   receiptNumber?: string;
   // Donation date as an ISO string (e.g., "2025-02-26T18:00:00.000Z").
   donationDate: string;
@@ -25,20 +25,71 @@ export interface DonationReceiptInput {
 }
 
 /**
+ * Increments the counter for a specific jurisdiction and returns the new value.
+ * Creates a new counter starting at 1 if none exists.
+ */
+async function incrementJurisdictionCounter(
+  jurisdiction: "CRA" | "IRS",
+  tx: any
+): Promise<number> {
+  const counterRecord = await tx.donation_receipt_counter.findUnique({
+    where: { jurisdiction },
+  });
+
+  if (counterRecord) {
+    const newCounter = counterRecord.counter + 1;
+    await tx.donation_receipt_counter.update({
+      where: { jurisdiction },
+      data: { counter: newCounter },
+    });
+    return newCounter;
+  } else {
+    await tx.donation_receipt_counter.create({
+      data: {
+        jurisdiction,
+        counter: 1,
+      },
+    });
+    return 1;
+  }
+}
+
+/**
+ * Formats a jurisdiction and counter into a receipt number string.
+ */
+function formatReceiptNumber(jurisdiction: string, counter: number): string {
+  return `${jurisdiction.toLowerCase()}-${String(counter).padStart(3, "0")}`;
+}
+
+/**
+ * Retrieves and increments the receipt counter for the given jurisdiction,
+ * returning a formatted receipt number (e.g., "cra-001").
+ */
+export async function getNextReceiptNumber(
+  jurisdiction: "CRA" | "IRS"
+): Promise<string> {
+  const newCounter = await prisma.$transaction(async (tx) => {
+    return incrementJurisdictionCounter(jurisdiction, tx);
+  });
+
+  return formatReceiptNumber(jurisdiction, newCounter);
+}
+
+/**
  * Creates a new donation receipt in the database.
  *
- * For demonstration purposes, if no receipt number is provided,
- * "cra-001" is used by default. In production, you'll likely generate
- * a unique receipt number dynamically.
+ * If no receipt number is provided, the function will generate one
+ * dynamically using getNextReceiptNumber.
  *
  * @param data - DonationReceiptInput object containing receipt details.
  * @returns The newly created donation receipt record.
  */
 export async function createDonationReceipt(data: DonationReceiptInput) {
-  // Use a default receipt number if not provided.
-  const receiptNumber = data.receiptNumber || "cra-001";
   // Default jurisdiction is CRA.
   const jurisdiction = data.jurisdiction || "CRA";
+  // Generate a receipt number if not provided.
+  const receiptNumber =
+    data.receiptNumber || (await getNextReceiptNumber(jurisdiction));
 
   // Create the donation receipt record in the database.
   const newReceipt = await prisma.donation_receipt.create({
@@ -57,48 +108,6 @@ export async function createDonationReceipt(data: DonationReceiptInput) {
   });
 
   return newReceipt;
-}
-
-/**
- * Retrieves the next receipt number for the given jurisdiction.
- * Uses a separate `receipt_counter` model to safely increment the counter.
- * The receipt number is formatted as, for example, "cra-001".
- */
-export async function getNextReceiptNumber(
-  jurisdiction: "CRA" | "IRS"
-): Promise<string> {
-  // Use a transaction to safely increment the counter.
-  const result = await prisma.$transaction(async (tx) => {
-    // Try to fetch the counter for the given jurisdiction.
-    const counterRecord = await tx.donation_receipt_counter.findUnique({
-      where: { jurisdiction },
-    });
-
-    let newCounter: number;
-    if (counterRecord) {
-      newCounter = counterRecord.counter + 1;
-      await tx.donation_receipt_counter.update({
-        where: { jurisdiction },
-        data: { counter: newCounter },
-      });
-    } else {
-      // If no counter exists for this jurisdiction, create one starting at 1.
-      newCounter = 1;
-      await tx.donation_receipt_counter.create({
-        data: {
-          jurisdiction,
-          counter: newCounter,
-        },
-      });
-    }
-    // Format the receipt number, e.g., "cra-001".
-    return `${jurisdiction.toLowerCase()}-${String(newCounter).padStart(
-      3,
-      "0"
-    )}`;
-  });
-
-  return result;
 }
 
 // Additional receipt actions (e.g., update, retrieve, delete) can be added below.
