@@ -7,6 +7,7 @@ import {
   enrichDonationEvent,
   extractDonationEventFromPayload,
 } from "@/utils/donation-event-helpers";
+import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 
 const web3 = new Web3();
 
@@ -64,8 +65,13 @@ export async function POST(request: Request) {
     const donationTimestamp = parseInt(block.timestamp, 10);
     const donationDate = new Date(donationTimestamp * 1000).toISOString();
 
-    // Use the fullAmount from the event as fiatAmount (in Wei, for now).
-    const fiatAmount = Number(donationEvent.fullAmount);
+    // Convert the fullAmount (in Wei) to fiat (CAD) using the historical price.
+    const fiatAmount = await convertWeiToFiat(
+      donationEvent.fullAmount,
+      donationTimestamp,
+      "cad",
+      chainId
+    );
 
     // Look up donor and charity records in the database using addresses from the event.
     const donorRecord = await prisma.donor.findUnique({
@@ -85,7 +91,7 @@ export async function POST(request: Request) {
       donorId: donorRecord.id,
       charityId: charityRecord.id,
       donationDate,
-      fiatAmount, // Using fullAmount (in Wei) as a placeholder.
+      fiatAmount, // Now using the converted fiat value.
       transactionHash: donationEvent.transactionHash,
       jurisdiction: "CRA", // Assuming CRA for now.
       jurisdictionDetails: {
