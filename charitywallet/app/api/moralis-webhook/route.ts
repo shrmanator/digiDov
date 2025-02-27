@@ -65,9 +65,21 @@ export async function POST(request: Request) {
     const donationTimestamp = parseInt(block.timestamp, 10);
     const donationDate = new Date(donationTimestamp * 1000).toISOString();
 
-    // Convert the fullAmount (in Wei) to fiat (CAD) using the historical price.
+    // Convert the Wei amounts to fiat (CAD).
     const fiatAmount = await convertWeiToFiat(
       donationEvent.fullAmount,
+      donationTimestamp,
+      "cad",
+      chainId
+    );
+    const netFiatAmount = await convertWeiToFiat(
+      donationEvent.netAmount,
+      donationTimestamp,
+      "cad",
+      chainId
+    );
+    const feeFiatAmount = await convertWeiToFiat(
+      donationEvent.fee,
       donationTimestamp,
       "cad",
       chainId
@@ -86,19 +98,19 @@ export async function POST(request: Request) {
       throw new Error("Donor or Charity record not found");
     }
 
-    // Create the donation receipt using the extracted event data.
+    // Create the donation receipt using the extracted and converted event data.
     const receipt = await createDonationReceipt({
       donorId: donorRecord.id,
       charityId: charityRecord.id,
       donationDate,
-      fiatAmount, // Now using the converted fiat value.
+      fiatAmount, // Full donation amount in fiat (converted from Wei).
       transactionHash: donationEvent.transactionHash,
       jurisdiction: "CRA", // Assuming CRA for now.
       jurisdictionDetails: {
         blockNumber: block.number,
         chainId,
-        netAmount: donationEvent.netAmount,
-        fee: donationEvent.fee,
+        netAmount: netFiatAmount, // Net donation amount in fiat.
+        fee: feeFiatAmount, // Fee in fiat.
       },
     });
 
