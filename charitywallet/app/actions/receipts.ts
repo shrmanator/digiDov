@@ -59,4 +59,46 @@ export async function createDonationReceipt(data: DonationReceiptInput) {
   return newReceipt;
 }
 
+/**
+ * Retrieves the next receipt number for the given jurisdiction.
+ * Uses a separate `receipt_counter` model to safely increment the counter.
+ * The receipt number is formatted as, for example, "cra-001".
+ */
+export async function getNextReceiptNumber(
+  jurisdiction: "CRA" | "IRS"
+): Promise<string> {
+  // Use a transaction to safely increment the counter.
+  const result = await prisma.$transaction(async (tx) => {
+    // Try to fetch the counter for the given jurisdiction.
+    const counterRecord = await tx.donation_receipt_counter.findUnique({
+      where: { jurisdiction },
+    });
+
+    let newCounter: number;
+    if (counterRecord) {
+      newCounter = counterRecord.counter + 1;
+      await tx.donation_receipt_counter.update({
+        where: { jurisdiction },
+        data: { counter: newCounter },
+      });
+    } else {
+      // If no counter exists for this jurisdiction, create one starting at 1.
+      newCounter = 1;
+      await tx.donation_receipt_counter.create({
+        data: {
+          jurisdiction,
+          counter: newCounter,
+        },
+      });
+    }
+    // Format the receipt number, e.g., "cra-001".
+    return `${jurisdiction.toLowerCase()}-${String(newCounter).padStart(
+      3,
+      "0"
+    )}`;
+  });
+
+  return result;
+}
+
 // Additional receipt actions (e.g., update, retrieve, delete) can be added below.
