@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 
 // Retrieve the fee-enabled contract instance.
 const feeContract = getContract({
-  address: "0x678C769Ae4505D91bA112EA2C9cEbcAbD86AF2a9",
+  address: "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0",
   chain: polygon,
   client,
 });

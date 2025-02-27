@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
+import prisma from "@/lib/prisma";
+import { createDonationReceipt } from "@/app/actions/receipts";
+import {
+  RawDonationEventData,
+  enrichDonationEvent,
+  extractDonationEventFromPayload,
+} from "@/utils/donation-event-helpers";
 
 const web3 = new Web3();
 
@@ -10,7 +17,7 @@ export async function POST(request: Request) {
     const bodyText = await request.text();
     const body = JSON.parse(bodyText);
 
-    // Verify signature using the raw body text
+    // Verify signature using the raw body text.
     console.log("Verifying signature...");
     const secret = process.env.MORALIS_STREAM_SECRET_KEY;
     if (!secret) throw new Error("Missing MORALIS_STREAM_SECRET_KEY");
@@ -23,7 +30,8 @@ export async function POST(request: Request) {
 
     console.log("Received webhook body:", JSON.stringify(body));
 
-    const { confirmed } = body;
+    // Only process confirmed transactions.
+    const { confirmed, block, chainId } = body;
     if (!confirmed) {
       console.log("Unconfirmed transaction ignored.");
       return NextResponse.json(
@@ -32,8 +40,69 @@ export async function POST(request: Request) {
       );
     }
 
+    // Extract raw DonationForwarded event data from the logs.
+    const rawEvent: RawDonationEventData | null =
+      extractDonationEventFromPayload(body);
+    if (!rawEvent) {
+      console.log("No DonationForwarded event found.");
+      return NextResponse.json(
+        { message: "No DonationForwarded event found." },
+        { status: 200 }
+      );
+    }
+    // Enrich the raw event data with the transaction hash from the first tx (if available).
+    const donationEvent = enrichDonationEvent(
+      rawEvent,
+      body.txs && body.txs.length > 0 ? body.txs[0].hash : ""
+    );
+    console.log(
+      "Extracted enriched DonationForwarded event data:",
+      donationEvent
+    );
+
+    // Use the block's timestamp (in seconds) as the donation date.
+    const donationTimestamp = parseInt(block.timestamp, 10);
+    const donationDate = new Date(donationTimestamp * 1000).toISOString();
+
+    // Use the fullAmount from the event as fiatAmount (in Wei, for now).
+    const fiatAmount = Number(donationEvent.fullAmount);
+
+    // Look up donor and charity records in the database using addresses from the event.
+    const donorRecord = await prisma.donor.findUnique({
+      where: { wallet_address: donationEvent.donor.toLowerCase() },
+    });
+    const charityRecord = await prisma.charity.findUnique({
+      where: { wallet_address: donationEvent.charity.toLowerCase() },
+    });
+    console.log("Donor Record:", donorRecord);
+    console.log("Charity Record:", charityRecord);
+    if (!donorRecord || !charityRecord) {
+      throw new Error("Donor or Charity record not found");
+    }
+
+    // Create the donation receipt using the extracted event data.
+    const receipt = await createDonationReceipt({
+      donorId: donorRecord.id,
+      charityId: charityRecord.id,
+      donationDate,
+      fiatAmount, // Using fullAmount (in Wei) as a placeholder.
+      transactionHash: donationEvent.transactionHash,
+      jurisdiction: "CRA", // Assuming CRA for now.
+      jurisdictionDetails: {
+        blockNumber: block.number,
+        chainId,
+        netAmount: donationEvent.netAmount,
+        fee: donationEvent.fee,
+      },
+    });
+
+    console.log("Donation receipt created:", receipt);
+
     return NextResponse.json(
-      { message: "Webhook payload printed successfully", payload: body },
+      {
+        message: "Webhook processed and donation receipt created successfully",
+        receipt,
+      },
       { status: 200 }
     );
   } catch (error: unknown) {
