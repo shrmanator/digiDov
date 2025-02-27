@@ -8,6 +8,13 @@ generator client {
     provider = "prisma-client-js"
 }
 
+// Donation receipt jurisdictions
+enum Jurisdiction {
+    CRA
+    IRS
+    // Add additional jurisdictions as needed
+}
+
 model charity {
     id                        String             @id @default(uuid())
     charity_name              String?
@@ -37,15 +44,18 @@ model donor {
 }
 
 model donation_receipt {
-    id               String   @id @default(uuid())
-    receipt_number   String   @unique
-    donation_date    DateTime
-    fiat_amount      Float
-    transaction_hash String
-    charity_id       String?
-    charity          charity? @relation(fields: [charity_id], references: [id])
-    donor_id         String?
-    donor            donor?   @relation(fields: [donor_id], references: [id])
-    created_at       DateTime @default(now())
-    updated_at       DateTime @updatedAt
+    id                   String       @id @default(uuid())
+    receipt_number       String       @unique
+    donation_date        DateTime
+    fiat_amount          Float
+    transaction_hash     String
+    jurisdiction         Jurisdiction @default(CRA)
+    jurisdiction_details Json? // For example, IRS receipts might include fields like cost_basis, etc.
+    charity_id           String?
+    charity              charity?     @relation(fields: [charity_id], references: [id])
+    donor_id             String?
+    donor                donor?       @relation(fields: [donor_id], references: [id])
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
 }
