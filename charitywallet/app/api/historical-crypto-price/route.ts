@@ -9,7 +9,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { tokenSymbol, date, targetCurrency = "usd" } = req.query;
+  const { tokenSymbol, date = "usd" } = req.query;
 
   if (!tokenSymbol || !date) {
     return res.status(400).json({ error: "Missing required parameters." });
