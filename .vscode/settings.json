@@ -1,10 +1,13 @@
 {
     "cSpell.words": [
+        "ipfs",
+        "mailersend",
         "mewwallet",
         "MORALIS",
         "networth",
         "thirdweb",
         "trustwallet",
         "upserting"
-    ]
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

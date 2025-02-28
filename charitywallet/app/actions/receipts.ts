@@ -89,13 +89,12 @@ export async function getNextReceiptNumber(
  * @returns The newly created donation receipt record.
  */
 export async function createDonationReceipt(data: DonationReceiptInput) {
-  // Default jurisdiction is CRA.
   const jurisdiction = data.jurisdiction || "CRA";
+
   // Generate a receipt number if not provided.
   const receiptNumber =
     data.receiptNumber || (await getNextReceiptNumber(jurisdiction));
 
-  // Create the donation receipt record in the database.
   const newReceipt = await prisma.donation_receipt.create({
     data: {
       receipt_number: receiptNumber,
@@ -115,5 +114,3 @@ export async function createDonationReceipt(data: DonationReceiptInput) {
 
   return newReceipt;
 }
-
-// Additional receipt actions (e.g., update, retrieve, delete) can be added below.

@@ -8,6 +8,7 @@ import {
   extractDonationEventFromPayload,
 } from "@/utils/donation-event-helpers";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
+import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
 
 const web3 = new Web3();
 
@@ -118,6 +119,19 @@ export async function POST(request: Request) {
     });
 
     console.log("Donation receipt created:", receipt);
+
+    // Generate the receipt PDF (You need a function to do this)
+    const receiptPath = await generateDonationReceiptPDF(receipt);
+    console.log("Receipt PDF generated:", receiptPath);
+
+    // Send the receipt via email
+    // await sendDonationReceipt(
+    //   donorRecord.email!,
+    //   donorRecord.first_name || "Donor",
+    //   receiptPath,
+    //   receipt.receipt_number
+    // );
+    // cononsole.log("Donation receipt email sent successfully");
 
     return NextResponse.json(
       {
