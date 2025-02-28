@@ -98,6 +98,7 @@ export async function POST(request: Request) {
     if (!donorRecord || !charityRecord) {
       throw new Error("Donor or Charity record not found");
     }
+    console.log("Donor ID, chainId", donationEvent.fullAmount, chainId);
 
     // Create the donation receipt using the extracted event data.
     const receipt = await createDonationReceipt({

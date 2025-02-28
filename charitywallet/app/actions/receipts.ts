@@ -101,7 +101,9 @@ export async function createDonationReceipt(data: DonationReceiptInput) {
       receipt_number: receiptNumber,
       donation_date: new Date(data.donationDate),
       fiat_amount: data.fiatAmount,
+      crypto_amount_wei: data.cryptoAmountWei,
       transaction_hash: data.transactionHash,
+      chainId: data.chainId,
       jurisdiction,
       jurisdiction_details: data.jurisdictionDetails ?? null,
       // If a charityId is provided, connect the record to the charity.
