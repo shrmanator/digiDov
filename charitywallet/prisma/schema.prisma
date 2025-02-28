@@ -49,7 +49,7 @@ model donation_receipt {
     donation_date        DateTime
     fiat_amount          Float
     crypto_amount_wei    BigInt? // Made optional since supabase giving migration error
-    transaction_hash     String
+    transaction_hash     String       @unique
     chainId              String? // Made optional since supabase giving migration error
     jurisdiction         Jurisdiction @default(CRA)
     jurisdiction_details Json?
