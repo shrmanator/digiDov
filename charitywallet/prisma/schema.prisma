@@ -48,16 +48,17 @@ model donation_receipt {
     receipt_number       String       @unique
     donation_date        DateTime
     fiat_amount          Float
+    crypto_amount_wei    BigInt? // Made optional since supabase giving migration error
     transaction_hash     String
+    chainId              String? // Made optional since supabase giving migration error
     jurisdiction         Jurisdiction @default(CRA)
-    jurisdiction_details Json? // For example, IRS receipts might include fields like cost_basis, etc.
+    jurisdiction_details Json?
     charity_id           String?
     charity              charity?     @relation(fields: [charity_id], references: [id])
     donor_id             String?
     donor                donor?       @relation(fields: [donor_id], references: [id])
-
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+    created_at           DateTime     @default(now())
+    updated_at           DateTime     @updatedAt
 }
 
 model donation_receipt_counter {

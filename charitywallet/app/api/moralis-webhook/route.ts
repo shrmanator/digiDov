@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         { status: 200 }
       );
     }
+
     // Enrich the raw event data with the transaction hash from the first tx (if available).
     const donationEvent = enrichDonationEvent(
       rawEvent,
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
     const donationTimestamp = parseInt(block.timestamp, 10);
     const donationDate = new Date(donationTimestamp * 1000).toISOString();
 
-    // Convert the Wei amounts to fiat (CAD).
+    // Convert the Wei amounts to fiat (CAD) using historical price data.
     const fiatAmount = await convertWeiToFiat(
       donationEvent.fullAmount,
       donationTimestamp,
@@ -98,17 +99,18 @@ export async function POST(request: Request) {
       throw new Error("Donor or Charity record not found");
     }
 
-    // Create the donation receipt using the extracted and converted event data.
+    // Create the donation receipt using the extracted event data.
     const receipt = await createDonationReceipt({
       donorId: donorRecord.id,
       charityId: charityRecord.id,
       donationDate,
       fiatAmount, // Full donation amount in fiat (converted from Wei).
+      cryptoAmountWei: BigInt(donationEvent.fullAmount), // Original crypto amount in Wei.
+      chainId, // Blockchain identifier.
       transactionHash: donationEvent.transactionHash,
       jurisdiction: "CRA", // Assuming CRA for now.
       jurisdictionDetails: {
         blockNumber: block.number,
-        chainId,
         netAmount: netFiatAmount, // Net donation amount in fiat.
         fee: feeFiatAmount, // Fee in fiat.
       },

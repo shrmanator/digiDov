@@ -12,12 +12,16 @@ export interface DonationReceiptInput {
   donationDate: string;
   // The fiat amount (in CAD) representing the donation's fair market value.
   fiatAmount: number;
+  // The crypto amount (in WEI) representing the donation's original value.
+  cryptoAmountWei: bigint;
   // Transaction hash (useful for tracking crypto donations).
   transactionHash: string;
   // Jurisdiction for the receipt; defaults to "CRA".
   jurisdiction?: "CRA" | "IRS";
   // Additional details specific to the jurisdiction stored as JSON.
   jurisdictionDetails?: any;
+  // The blockchain chain identifier (e.g., "0x89" for Polygon, "0x1" for Ethereum).
+  chainId: string;
   // Optional charity ID to associate this receipt with a charity.
   charityId?: string;
   // Optional donor ID to associate this receipt with a donor.
