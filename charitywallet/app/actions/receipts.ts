@@ -1,6 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import { donation_receipt } from "@prisma/client";
 
 /**
  * Interface for the input required to create a donation receipt.
@@ -26,6 +28,57 @@ export interface DonationReceiptInput {
   charityId?: string;
   // Optional donor ID to associate this receipt with a donor.
   donorId?: string;
+}
+
+export async function getDonationReceipts() {
+  return await prisma.donation_receipt.findMany({
+    orderBy: { donation_date: "desc" },
+    include: {
+      charity: {
+        select: {
+          charity_name: true,
+          registered_office_address: true,
+          registration_number: true,
+          contact_name: true,
+        },
+      },
+      donor: {
+        select: {
+          first_name: true,
+          last_name: true,
+          email: true,
+          address: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Retrieves a donation receipt by its ID, generates a PDF using pdf‑lib,
+ * and returns the PDF data as a Base64 encoded string.
+ *
+ * @param receiptId - The ID of the donation receipt.
+ * @returns Base64 encoded PDF string.
+ */
+export async function getDonationReceiptPdf(
+  receiptId: string
+): Promise<string> {
+  // Fetch the complete receipt data (with related charity and donor details)
+  const receipt = await prisma.donation_receipt.findUnique({
+    where: { id: receiptId },
+    include: {
+      charity: true,
+      donor: true,
+    },
+  });
+
+  if (!receipt) {
+    throw new Error("Donation receipt not found");
+  }
+
+  const pdfBytes = await generateDonationReceiptPDF(receipt);
+  return Buffer.from(pdfBytes).toString("base64");
 }
 
 /**
@@ -113,4 +166,14 @@ export async function createDonationReceipt(data: DonationReceiptInput) {
   });
 
   return newReceipt;
+}
+
+/**
+ * Generates a donation receipt PDF and returns it as a base64 string.
+ */
+export async function handleDonationReceipt(receiptData: any): Promise<string> {
+  const pdfBytes = await generateDonationReceiptPDF(receiptData);
+
+  // Convert to Base64 for safe transfer to the frontend
+  return Buffer.from(pdfBytes).toString("base64");
 }
