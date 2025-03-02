@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Bar, BarChart, ResponsiveContainer } from "recharts";
 import { Download } from "lucide-react";
 
 import {
@@ -14,9 +13,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-
-// Import Prisma-generated types
-import { donation_receipt, charity, donor } from "@prisma/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Import your server-side functions
 import {
@@ -75,7 +72,17 @@ export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
           </DrawerHeader>
           <div className="p-4 pb-0">
             {loading ? (
-              <p>Loading receipts...</p>
+              <ul className="space-y-4">
+                {[...Array(receipts.length || 1)].map((_, index) => (
+                  <li key={index} className="p-3 border rounded-lg">
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-3 w-1/2 mb-2" />
+                    <Skeleton className="h-3 w-2/3 mb-2" />
+                    <Skeleton className="h-3 w-1/3 mb-2" />
+                    <Skeleton className="h-4 w-20 mt-2" />
+                  </li>
+                ))}
+              </ul>
             ) : receipts.length === 0 ? (
               <p>No receipts found.</p>
             ) : (

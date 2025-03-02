@@ -1,4 +1,4 @@
-import { getHistoricalPrice } from "@/utils/get-historical-crytpo-price";
+import { getHistoricalCryptoToFiatPrice } from "@/utils/get-historical-crytpo-price";
 import { useEffect, useState } from "react";
 
 /**
@@ -29,7 +29,7 @@ export function useHistoricalPrice(
         "0"
       )}-${date.getUTCFullYear()}`;
 
-      const historicalPrice = await getHistoricalPrice(
+      const historicalPrice = await getHistoricalCryptoToFiatPrice(
         tokenId,
         formattedDate,
         targetCurrency
