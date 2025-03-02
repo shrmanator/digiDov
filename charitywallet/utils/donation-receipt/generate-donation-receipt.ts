@@ -71,7 +71,7 @@ export async function generateDonationReceiptPDF(
 
   if (receipt.crypto_amount_wei) {
     drawText(
-      `Amount in Crypto: ${receipt.crypto_amount_wei.toString()} WEI`,
+      `Amount in Crypto: ${receipt.crypto_amount_wei.toString()} Wei`,
       leftMargin,
       y
     );

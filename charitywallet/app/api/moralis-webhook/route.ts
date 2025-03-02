@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
-import { createDonationReceipt } from "@/app/actions/receipts";
+import {
+  createDonationReceipt,
+  getNextReceiptNumber,
+} from "@/app/actions/receipts";
 import {
   RawDonationEventData,
   enrichDonationEvent,
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
 
     // Use the block's timestamp (in seconds) as the donation date.
     const donationTimestamp = parseInt(block.timestamp, 10);
-    const donationDate = new Date(donationTimestamp * 1000).toISOString();
+    const donationDate = new Date(donationTimestamp * 1000);
 
     // Convert the Wei amounts to fiat (CAD) using historical price data.
     const fiatAmount = await convertWeiToFiat(
@@ -101,20 +104,23 @@ export async function POST(request: Request) {
     }
     console.log("Donor ID, chainId", donationEvent.fullAmount, chainId);
 
-    // Create the donation receipt using the extracted event data.
+    // Generate a receipt number before creating the donation receipt
+    const receiptNumber = await getNextReceiptNumber("CRA");
+
     const receipt = await createDonationReceipt({
-      donorId: donorRecord.id,
-      charityId: charityRecord.id,
-      donationDate,
-      fiatAmount, // Full donation amount in fiat (converted from Wei).
-      cryptoAmountWei: BigInt(donationEvent.fullAmount), // Original crypto amount in Wei.
-      chainId, // Blockchain identifier.
-      transactionHash: donationEvent.transactionHash,
-      jurisdiction: "CRA", // Assuming CRA for now.
-      jurisdictionDetails: {
+      donor_id: donorRecord.id,
+      charity_id: charityRecord.id,
+      receipt_number: receiptNumber,
+      donation_date: donationDate,
+      fiat_amount: fiatAmount,
+      crypto_amount_wei: BigInt(donationEvent.fullAmount),
+      chainId,
+      transaction_hash: donationEvent.transactionHash,
+      jurisdiction: "CRA",
+      jurisdiction_details: {
         blockNumber: block.number,
-        netAmount: netFiatAmount, // Net donation amount in fiat.
-        fee: feeFiatAmount, // Fee in fiat.
+        netAmount: netFiatAmount,
+        fee: feeFiatAmount,
       },
     });
 
