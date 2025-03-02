@@ -80,7 +80,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
     const amountWei =
       decimals === 18
-        ? BigInt(web3.utils.toWei(tokenAmount.toString(), "ether"))
+        ? BigInt(web3.utils.toWei(tokenAmount.toFixed(18), "ether"))
         : BigInt(Math.floor(tokenAmount * 10 ** decimals));
 
     return {

@@ -33,7 +33,12 @@ export async function POST(request: Request) {
       throw new Error("Invalid Signature");
     }
 
-    console.log("Received webhook body:", JSON.stringify(body));
+    console.log(
+      "Received webhook body:",
+      JSON.stringify(body, (_, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    );
 
     // Only process confirmed transactions.
     const { confirmed, block, chainId } = body;
@@ -113,7 +118,7 @@ export async function POST(request: Request) {
       receipt_number: receiptNumber,
       donation_date: donationDate,
       fiat_amount: fiatAmount,
-      crypto_amount_wei: BigInt(donationEvent.fullAmount),
+      crypto_amount_wei: BigInt(donationEvent.fullAmount), // Ensure BigInt for Prisma
       chainId,
       transaction_hash: donationEvent.transactionHash,
       jurisdiction: "CRA",
@@ -124,25 +129,26 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log("Donation receipt created:", receipt);
+    console.log(
+      "Donation receipt created:",
+      JSON.stringify(receipt, (_, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    );
 
-    // Generate the receipt PDF (You need a function to do this)
+    // Generate the receipt PDF
     const receiptPath = await generateDonationReceiptPDF(receipt);
     console.log("Receipt PDF generated:", receiptPath);
-
-    // Send the receipt via email
-    // await sendDonationReceipt(
-    //   donorRecord.email!,
-    //   donorRecord.first_name || "Donor",
-    //   receiptPath,
-    //   receipt.receipt_number
-    // );
-    // cononsole.log("Donation receipt email sent successfully");
 
     return NextResponse.json(
       {
         message: "Webhook processed and donation receipt created successfully",
-        receipt,
+        receipt: {
+          ...receipt,
+          crypto_amount_wei: (
+            receipt.crypto_amount_wei ?? BigInt(0)
+          ).toString(), // Convert BigInt before sending response
+        },
       },
       { status: 200 }
     );

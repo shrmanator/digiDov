@@ -35,7 +35,8 @@ export function useSendWithFee(
       onSuccess: () => {
         toast({
           title: "Transaction Sent",
-          description: "Your donation transaction has been sent.",
+          description:
+            "Donation sent! You will receive a receipt once the transaction is confirmed.",
         });
       },
       onError: (error) => {
