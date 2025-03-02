@@ -3,14 +3,7 @@
 import { useState, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+
 import {
   Select,
   SelectContent,
@@ -20,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { polygon, ethereum } from "thirdweb/chains";
 import DonorConnectWalletButton from "@/components/connect-wallet-button";
+import { TaxReceiptDrawer } from "@/components/drawer-demo";
 
 interface Charity {
   charity_name?: string | null;
@@ -50,19 +44,7 @@ export default function SideBarAndHeader({
       <SidebarInset className="min-h-screen flex flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
           <div className="flex items-center gap-2">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="#">Donate</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {charity?.charity_name || "Charity Name"}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+            <TaxReceiptDrawer />
           </div>
           <div className="flex items-center gap-4">
             <Select

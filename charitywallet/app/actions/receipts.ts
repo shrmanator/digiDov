@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
-import { donation_receipt } from "@prisma/client";
 
 /**
  * Interface for the input required to create a donation receipt.
