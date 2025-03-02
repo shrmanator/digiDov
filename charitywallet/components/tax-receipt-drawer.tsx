@@ -65,7 +65,7 @@ export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle>Donation Receipts</DrawerTitle>
+            <DrawerTitle>Donation Tax Receipts</DrawerTitle>
             <DrawerDescription>
               View and download your tax receipts.
             </DrawerDescription>
