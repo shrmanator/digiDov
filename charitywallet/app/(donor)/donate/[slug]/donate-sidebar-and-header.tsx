@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-
 import {
   Select,
   SelectContent,
@@ -11,9 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { polygon, ethereum } from "thirdweb/chains";
 import DonorConnectWalletButton from "@/components/connect-wallet-button";
 import { TaxReceiptDrawer } from "@/components/drawer-demo";
+import { Icon } from "@iconify/react";
+import ethIcon from "@iconify/icons-cryptocurrency/eth";
+import maticIcon from "@iconify/icons-cryptocurrency/matic";
+import { polygon, ethereum } from "thirdweb/chains";
 
 interface Charity {
   charity_name?: string | null;
@@ -31,13 +33,18 @@ export default function SideBarAndHeader({
 }: SideBarAndHeaderProps) {
   const [, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
-  const [activeChain, setActiveChain] = useState(polygon);
+  // Set Ethereum as the default chain
+  const [activeChain, setActiveChain] = useState(ethereum);
 
   useEffect(() => {
     if (account && account.address) {
       setIsAuthenticated(true);
     }
   }, [account]);
+
+  // Determine current chain icon and label based on activeChain
+  const currentIcon = activeChain === polygon ? maticIcon : ethIcon;
+  const currentLabel = activeChain === polygon ? "POL" : "ETH";
 
   return (
     <SidebarProvider>
@@ -48,18 +55,38 @@ export default function SideBarAndHeader({
           </div>
           <div className="flex items-center gap-4">
             <Select
+              value={activeChain === polygon ? "polygon" : "ethereum"} // Ensures value is controlled
               onValueChange={(value) =>
                 setActiveChain(value === "ethereum" ? ethereum : polygon)
               }
             >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Select chain" />
+              <SelectTrigger
+                className="w-[100px] h-[52px]"
+                aria-label="Select chain"
+              >
+                <SelectValue>
+                  <div className="flex items-center gap-1">
+                    <Icon icon={currentIcon} width="25" />
+                    <span>{currentLabel}</span>
+                  </div>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="polygon">Polygon</SelectItem>
-                <SelectItem value="ethereum">Ethereum</SelectItem>
+                <SelectItem value="ethereum">
+                  <div className="flex items-center gap-2">
+                    <Icon icon={ethIcon} width="25" />
+                    ETH
+                  </div>
+                </SelectItem>
+                <SelectItem value="polygon">
+                  <div className="flex items-center gap-1">
+                    <Icon icon={maticIcon} width="25" />
+                    POL
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
+
             <DonorConnectWalletButton activeChain={activeChain} />
           </div>
         </header>
