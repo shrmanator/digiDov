@@ -57,7 +57,7 @@ export default function SideBarAndHeader({
               className="w-[100px] h-[52px] flex items-center justify-center gap-2"
               onClick={() => setIsDrawerOpen(true)}
             >
-              <FileText className="w-5 h-5" /> {/* Icon next to text */}
+              <FileText className="w-5 h-5" />
               Receipts
             </Button>
             <TaxReceiptDrawer

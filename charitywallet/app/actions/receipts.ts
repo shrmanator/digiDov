@@ -2,43 +2,26 @@
 
 import prisma from "@/lib/prisma";
 import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import {
+  Prisma,
+  donation_receipt,
+  donation_receipt_counter,
+  charity,
+  donor,
+} from "@prisma/client";
+import { DonationReceipt } from "../types/receipt";
 
 /**
- * Interface for the input required to create a donation receipt.
+ * Retrieves all donation receipts, including related charity and donor details.
  */
-export interface DonationReceiptInput {
-  // Optionally provide a custom receipt number; otherwise, one will be generated.
-  receiptNumber?: string;
-  // Donation date as an ISO string (e.g., "2025-02-26T18:00:00.000Z").
-  donationDate: string;
-  // The fiat amount (in CAD) representing the donation's fair market value.
-  fiatAmount: number;
-  // The crypto amount (in WEI) representing the donation's original value.
-  cryptoAmountWei: bigint;
-  // Transaction hash (useful for tracking crypto donations).
-  transactionHash: string;
-  // Jurisdiction for the receipt; defaults to "CRA".
-  jurisdiction?: "CRA" | "IRS";
-  // Additional details specific to the jurisdiction stored as JSON.
-  jurisdictionDetails?: any;
-  // The blockchain chain identifier (e.g., "0x89" for Polygon, "0x1" for Ethereum).
-  chainId: string;
-  // Optional charity ID to associate this receipt with a charity.
-  charityId?: string;
-  // Optional donor ID to associate this receipt with a donor.
-  donorId?: string;
-}
-
-export async function getDonationReceipts() {
-  return await prisma.donation_receipt.findMany({
+export async function getDonationReceipts(): Promise<DonationReceipt[]> {
+  const receipts = await prisma.donation_receipt.findMany({
     orderBy: { donation_date: "desc" },
     include: {
       charity: {
         select: {
           charity_name: true,
-          registered_office_address: true,
           registration_number: true,
-          contact_name: true,
         },
       },
       donor: {
@@ -46,24 +29,25 @@ export async function getDonationReceipts() {
           first_name: true,
           last_name: true,
           email: true,
-          address: true,
         },
       },
     },
   });
+
+  return receipts.map((receipt) => ({
+    ...receipt,
+    donation_date: receipt.donation_date.toISOString(), // Convert Date -> String
+    charity: receipt.charity ?? null, // Ensure null instead of undefined
+    donor: receipt.donor ?? null, // Ensure null instead of undefined
+  }));
 }
 
 /**
- * Retrieves a donation receipt by its ID, generates a PDF using pdf‑lib,
- * and returns the PDF data as a Base64 encoded string.
- *
- * @param receiptId - The ID of the donation receipt.
- * @returns Base64 encoded PDF string.
+ * Retrieves a donation receipt by its ID, generates a PDF, and returns it as a Base64 string.
  */
 export async function getDonationReceiptPdf(
   receiptId: string
 ): Promise<string> {
-  // Fetch the complete receipt data (with related charity and donor details)
   const receipt = await prisma.donation_receipt.findUnique({
     where: { id: receiptId },
     include: {
@@ -76,17 +60,26 @@ export async function getDonationReceiptPdf(
     throw new Error("Donation receipt not found");
   }
 
-  const pdfBytes = await generateDonationReceiptPDF(receipt);
+  // Ensure `date_of_issue` is present
+  const receiptData: donation_receipt & {
+    charity?: charity | null;
+    donor?: donor | null;
+    date_of_issue: string;
+  } = {
+    ...receipt,
+    date_of_issue: receipt.donation_date.toISOString(),
+  };
+
+  const pdfBytes = await generateDonationReceiptPDF(receiptData);
   return Buffer.from(pdfBytes).toString("base64");
 }
 
 /**
  * Increments the counter for a specific jurisdiction and returns the new value.
- * Creates a new counter starting at 1 if none exists.
  */
 async function incrementJurisdictionCounter(
   jurisdiction: "CRA" | "IRS",
-  tx: any
+  tx: Prisma.TransactionClient
 ): Promise<number> {
   const counterRecord = await tx.donation_receipt_counter.findUnique({
     where: { jurisdiction },
@@ -101,10 +94,7 @@ async function incrementJurisdictionCounter(
     return newCounter;
   } else {
     await tx.donation_receipt_counter.create({
-      data: {
-        jurisdiction,
-        counter: 1,
-      },
+      data: { jurisdiction, counter: 1 },
     });
     return 1;
   }
@@ -124,55 +114,46 @@ function formatReceiptNumber(jurisdiction: string, counter: number): string {
 export async function getNextReceiptNumber(
   jurisdiction: "CRA" | "IRS"
 ): Promise<string> {
-  const newCounter = await prisma.$transaction(async (tx) => {
-    return incrementJurisdictionCounter(jurisdiction, tx);
-  });
+  const newCounter = await prisma.$transaction((tx) =>
+    incrementJurisdictionCounter(jurisdiction, tx)
+  );
 
   return formatReceiptNumber(jurisdiction, newCounter);
 }
 
 /**
  * Creates a new donation receipt in the database.
- *
- * If no receipt number is provided, the function will generate one
- * dynamically using getNextReceiptNumber.
- *
- * @param data - DonationReceiptInput object containing receipt details.
- * @returns The newly created donation receipt record.
+ * If no receipt number is provided, one will be generated.
  */
-export async function createDonationReceipt(data: DonationReceiptInput) {
+export async function createDonationReceipt(
+  data: Omit<donation_receipt, "id" | "created_at" | "updated_at">
+): Promise<donation_receipt> {
   const jurisdiction = data.jurisdiction || "CRA";
-
-  // Generate a receipt number if not provided.
   const receiptNumber =
-    data.receiptNumber || (await getNextReceiptNumber(jurisdiction));
+    data.receipt_number || (await getNextReceiptNumber(jurisdiction));
 
-  const newReceipt = await prisma.donation_receipt.create({
+  return prisma.donation_receipt.create({
     data: {
       receipt_number: receiptNumber,
-      donation_date: new Date(data.donationDate),
-      fiat_amount: data.fiatAmount,
-      crypto_amount_wei: data.cryptoAmountWei,
-      transaction_hash: data.transactionHash,
+      donation_date: new Date(data.donation_date),
+      fiat_amount: data.fiat_amount,
+      crypto_amount_wei: data.crypto_amount_wei,
+      transaction_hash: data.transaction_hash,
       chainId: data.chainId,
       jurisdiction,
-      jurisdiction_details: data.jurisdictionDetails ?? null,
-      // If a charityId is provided, connect the record to the charity.
-      charity: data.charityId ? { connect: { id: data.charityId } } : undefined,
-      // If a donorId is provided, connect the record to the donor.
-      donor: data.donorId ? { connect: { id: data.donorId } } : undefined,
+      jurisdiction_details: data.jurisdiction_details ?? Prisma.JsonNull,
+      charity_id: data.charity_id,
+      donor_id: data.donor_id,
     },
   });
-
-  return newReceipt;
 }
 
 /**
  * Generates a donation receipt PDF and returns it as a base64 string.
  */
-export async function handleDonationReceipt(receiptData: any): Promise<string> {
+export async function handleDonationReceipt(
+  receiptData: donation_receipt
+): Promise<string> {
   const pdfBytes = await generateDonationReceiptPDF(receiptData);
-
-  // Convert to Base64 for safe transfer to the frontend
   return Buffer.from(pdfBytes).toString("base64");
 }

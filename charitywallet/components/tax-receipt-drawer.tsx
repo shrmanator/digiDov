@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Minus, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Bar, BarChart, ResponsiveContainer } from "recharts";
+import { Download } from "lucide-react";
 
 import {
   Drawer,
@@ -14,21 +15,15 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 
-const data = [
-  { goal: 400 },
-  { goal: 300 },
-  { goal: 200 },
-  { goal: 300 },
-  { goal: 200 },
-  { goal: 278 },
-  { goal: 189 },
-  { goal: 239 },
-  { goal: 300 },
-  { goal: 200 },
-  { goal: 278 },
-  { goal: 189 },
-  { goal: 349 },
-];
+// Import Prisma-generated types
+import { donation_receipt, charity, donor } from "@prisma/client";
+
+// Import your server-side functions
+import {
+  getDonationReceipts,
+  getDonationReceiptPdf,
+} from "@/app/actions/receipts";
+import { DonationReceipt } from "@/app/types/receipt";
 
 interface TaxReceiptDrawerProps {
   open: boolean;
@@ -36,10 +31,36 @@ interface TaxReceiptDrawerProps {
 }
 
 export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
-  const [goal, setGoal] = React.useState(350);
+  const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  function onClick(adjustment: number) {
-    setGoal(Math.max(200, Math.min(400, goal + adjustment)));
+  useEffect(() => {
+    if (open) {
+      fetchReceipts();
+    }
+  }, [open]);
+
+  async function fetchReceipts() {
+    setLoading(true);
+    try {
+      const data = await getDonationReceipts();
+      setReceipts(data);
+    } catch (error) {
+      console.error("Error fetching donation receipts:", error);
+    }
+    setLoading(false);
+  }
+
+  async function downloadReceipt(receiptId: string) {
+    try {
+      const pdfBase64 = await getDonationReceiptPdf(receiptId);
+      const link = document.createElement("a");
+      link.href = `data:application/pdf;base64,${pdfBase64}`;
+      link.download = `receipt-${receiptId}.pdf`;
+      link.click();
+    } catch (error) {
+      console.error("Error downloading receipt PDF:", error);
+    }
   }
 
   return (
@@ -47,55 +68,51 @@ export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle>Move Goal</DrawerTitle>
-            <DrawerDescription>Set your daily activity goal.</DrawerDescription>
+            <DrawerTitle>Donation Receipts</DrawerTitle>
+            <DrawerDescription>
+              View and download your tax receipts.
+            </DrawerDescription>
           </DrawerHeader>
           <div className="p-4 pb-0">
-            <div className="flex items-center justify-center space-x-2">
-              <button
-                className="h-8 w-8 shrink-0 rounded-full border border-gray-300 flex items-center justify-center"
-                onClick={() => onClick(-10)}
-                disabled={goal <= 200}
-              >
-                <Minus />
-                <span className="sr-only">Decrease</span>
-              </button>
-              <div className="flex-1 text-center">
-                <div className="text-7xl font-bold tracking-tighter">
-                  {goal}
-                </div>
-                <div className="text-[0.70rem] uppercase text-muted-foreground">
-                  Calories/day
-                </div>
-              </div>
-              <button
-                className="h-8 w-8 shrink-0 rounded-full border border-gray-300 flex items-center justify-center"
-                onClick={() => onClick(10)}
-                disabled={goal >= 400}
-              >
-                <Plus />
-                <span className="sr-only">Increase</span>
-              </button>
-            </div>
-            <div className="mt-3 h-[120px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
-                  <Bar
-                    dataKey="goal"
-                    style={{
-                      fill: "hsl(var(--foreground))",
-                      opacity: 0.9,
-                    }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {loading ? (
+              <p>Loading receipts...</p>
+            ) : receipts.length === 0 ? (
+              <p>No receipts found.</p>
+            ) : (
+              <ul className="space-y-4">
+                {receipts.map((receipt) => (
+                  <li key={receipt.id} className="p-3 border rounded-lg">
+                    <div className="text-sm font-medium">
+                      {receipt.charity?.charity_name ?? "Unknown Charity"} (
+                      {receipt.charity?.registration_number ?? "N/A"})
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Receipt #{receipt.receipt_number} •{" "}
+                      {new Date(receipt.donation_date).toLocaleDateString()}
+                    </div>
+                    <div className="text-xs">
+                      Donor: {receipt.donor?.first_name ?? "Anonymous"}{" "}
+                      {receipt.donor?.last_name ?? ""} (
+                      {receipt.donor?.email ?? "No email provided"})
+                    </div>
+                    <div className="text-xs">
+                      Amount: ${receipt.fiat_amount.toFixed(2)}
+                    </div>
+                    <button
+                      className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
+                      onClick={() => downloadReceipt(receipt.id)}
+                    >
+                      <Download size={14} /> Download PDF
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <DrawerFooter>
-            <button className="border px-4 py-2 rounded">Submit</button>
             <DrawerClose asChild>
               <button className="border px-4 py-2 rounded" onClick={onClose}>
-                Cancel
+                Close
               </button>
             </DrawerClose>
           </DrawerFooter>

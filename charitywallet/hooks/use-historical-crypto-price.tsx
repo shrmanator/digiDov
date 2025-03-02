@@ -1,52 +1,45 @@
-"use client";
+import { getHistoricalPrice } from "@/utils/get-historical-crytpo-price";
 import { useEffect, useState } from "react";
 
+/**
+ * Custom hook to fetch the historical price of a cryptocurrency.
+ *
+ * @param tokenId - The CoinGecko ID of the cryptocurrency (e.g., 'ethereum').
+ * @param timestamp - The timestamp of the transaction.
+ * @param targetCurrency - The target fiat currency (e.g., 'usd'). Defaults to 'usd'.
+ * @returns The historical price or null if not found.
+ */
 export function useHistoricalPrice(
-  tokenSymbol: string,
-  timestamp: string,
-  targetCurrency: string = "usd"
+  tokenId: string,
+  timestamp: string | number | Date,
+  targetCurrency: string
 ): number | null {
   const [price, setPrice] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchHistoricalPrice() {
-      // Convert the transaction timestamp to "dd-mm-yyyy" format required by CoinGecko.
-      const date = new Date(timestamp);
-      const day = String(date.getUTCDate()).padStart(2, "0");
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const year = date.getUTCFullYear();
-      const formattedDate = `${day}-${month}-${year}`;
+    async function getPrice() {
+      if (!tokenId || !timestamp) return;
 
-      try {
-        const res = await fetch(
-          `/api/historical-crypto-price?tokenSymbol=${tokenSymbol}&date=${formattedDate}&targetCurrency=${targetCurrency}`
-        );
-        if (!res.ok) {
-          console.error("Error fetching historical price:", await res.text());
-          return;
-        }
-        const data = await res.json();
-        if (
-          data &&
-          data.market_data &&
-          data.market_data.current_price &&
-          data.market_data.current_price[targetCurrency]
-        ) {
-          setPrice(data.market_data.current_price[targetCurrency]);
-        } else {
-          console.error(
-            "Historical price data missing for",
-            tokenSymbol,
-            formattedDate,
-            targetCurrency
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching historical price:", error);
-      }
+      const date = new Date(timestamp);
+      const formattedDate = `${String(date.getUTCDate()).padStart(
+        2,
+        "0"
+      )}-${String(date.getUTCMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${date.getUTCFullYear()}`;
+
+      const historicalPrice = await getHistoricalPrice(
+        tokenId,
+        formattedDate,
+        targetCurrency
+      );
+
+      setPrice(historicalPrice);
     }
-    fetchHistoricalPrice();
-  }, [tokenSymbol, timestamp, targetCurrency]);
+
+    getPrice();
+  }, [tokenId, timestamp, targetCurrency]);
 
   return price;
 }
