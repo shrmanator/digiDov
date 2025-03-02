@@ -11,12 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DonorConnectWalletButton from "@/components/connect-wallet-button";
-import { TaxReceiptDrawer } from "@/components/drawer-demo";
+import { TaxReceiptDrawer } from "@/components/tax-receipt-drawer";
 import { Icon } from "@iconify/react";
 import ethIcon from "@iconify/icons-cryptocurrency/eth";
 import maticIcon from "@iconify/icons-cryptocurrency/matic";
 import { polygon, ethereum } from "thirdweb/chains";
 import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 interface Charity {
   charity_name?: string | null;
@@ -51,7 +52,12 @@ export default function SideBarAndHeader({
       <SidebarInset className="min-h-screen flex flex-col">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setIsDrawerOpen(true)}>
+            <Button
+              variant="outline"
+              className="w-[100px] h-[52px] flex items-center justify-center gap-2"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <FileText className="w-5 h-5" /> {/* Icon next to text */}
               Receipts
             </Button>
             <TaxReceiptDrawer
@@ -59,6 +65,7 @@ export default function SideBarAndHeader({
               onClose={() => setIsDrawerOpen(false)}
             />
           </div>
+
           <div className="flex items-center gap-4">
             <Select
               value={activeChain === polygon ? "polygon" : "ethereum"}
