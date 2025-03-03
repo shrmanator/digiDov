@@ -3,6 +3,8 @@
 import { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import GooglePlacesAutocomplete from "react-google-places-autocomplete";
+import googlePlacesStyles from "@/styles/google-place-styles";
 
 interface CharityFormStepProps {
   formData: {
@@ -16,6 +18,7 @@ interface CharityFormStepProps {
   errorMessage: string | null;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: (e: FormEvent<HTMLFormElement>) => void;
+  onAddressChange: (address: string) => void;
 }
 
 export function CharityFormStep({
@@ -24,6 +27,7 @@ export function CharityFormStep({
   errorMessage,
   onChange,
   onNext,
+  onAddressChange,
 }: CharityFormStepProps) {
   return (
     <form onSubmit={onNext} className="space-y-4">
@@ -35,13 +39,22 @@ export function CharityFormStep({
         placeholder="Name of Registered Charity"
         required
       />
-      <Input
-        id="registered_address"
-        name="registered_address"
-        value={formData.registered_address}
-        onChange={onChange}
-        placeholder="Registered Office Address"
-        required
+      <GooglePlacesAutocomplete
+        apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!}
+        selectProps={{
+          value: formData.registered_address
+            ? {
+                label: formData.registered_address,
+                value: formData.registered_address,
+              }
+            : null,
+          onChange: (option) => onAddressChange(option?.label || ""),
+          placeholder: "Registered Office Address",
+          styles: googlePlacesStyles,
+        }}
+        autocompletionRequest={{
+          componentRestrictions: { country: ["ca"] },
+        }}
       />
       <Input
         id="registration_number"

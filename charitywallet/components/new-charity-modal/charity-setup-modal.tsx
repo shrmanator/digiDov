@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { upsertCharity } from "@/app/actions/charities"; // This is now a Server Action.
+import { upsertCharity } from "@/app/actions/charities"; // Server Action.
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { CharityFormStep } from "./charity-info-step";
@@ -18,19 +18,30 @@ interface CharitySetupModalProps {
   walletAddress: string;
 }
 
+// Helper function to format phone numbers as (123) 456-7890
+function formatPhoneNumber(value: string) {
+  const phoneNumber = value.replace(/\D/g, ""); // Remove non-numeric characters
+  if (phoneNumber.length <= 3) return phoneNumber;
+  if (phoneNumber.length <= 6)
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+  return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
+    3,
+    6
+  )}-${phoneNumber.slice(6, 10)}`;
+}
+
 export default function CharitySetupModal({
   walletAddress,
 }: CharitySetupModalProps) {
   const { data: profiles } = useProfiles({ client });
   const [charitySlug, setCharitySlug] = useState<string>("");
 
-  // Extract a default email from profiles if available.
+  // Get default email from profiles
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
       : "";
 
-  // Manage modal state and steps.
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<"form" | "confirmation">("form");
 
@@ -39,39 +50,53 @@ export default function CharitySetupModal({
     registered_address: "",
     registration_number: "",
     contact_name: "",
-    contact_email: defaultEmail,
     contact_phone: "",
   });
+
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (defaultEmail && !formData.contact_email) {
-      setFormData((prev) => ({ ...prev, contact_email: defaultEmail }));
-    }
-  }, [defaultEmail, formData.contact_email]);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (name === "contact_phone") {
+      setFormData({ ...formData, [name]: formatPhoneNumber(value) });
+    } else if (name === "registration_number") {
+      if (/^\d{0,15}$/.test(value)) {
+        // Restrict input to 15 digits only
+        setFormData({ ...formData, [name]: value });
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleAddressChange = (address: string) => {
+    setFormData((prev) => ({ ...prev, registered_address: address }));
   };
 
   const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoadingForm(true);
     setErrorMessage(null);
+
+    if (formData.registration_number.length < 9) {
+      setErrorMessage("Ensure valid registration number.");
+      setIsLoadingForm(false);
+      return;
+    }
+
     try {
-      // Call the server action directly.
       const updatedCharity = await upsertCharity({
         wallet_address: walletAddress,
         charity_name: formData.charity_name,
         registered_address: formData.registered_address,
         registration_number: formData.registration_number,
         contact_name: formData.contact_name,
-        contact_email: formData.contact_email,
+        contact_email: defaultEmail,
         contact_phone: formData.contact_phone,
         is_profile_complete: true,
       });
-      // Capture the slug from the updated charity record.
       setCharitySlug(updatedCharity.slug || "");
       setStep("confirmation");
     } catch (err) {
@@ -84,18 +109,10 @@ export default function CharitySetupModal({
     }
   };
 
-  const handleFinish = () => {
-    // The only way to close the modal.
-    setOpen(false);
-  };
+  const handleFinish = () => setOpen(false);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={() => {
-        // Do nothing to ensure modal can only close via Finish.
-      }}
-    >
+    <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="[&>button]:hidden">
         {step === "form" ? (
           <>
@@ -110,11 +127,11 @@ export default function CharitySetupModal({
               isLoading={isLoadingForm}
               errorMessage={errorMessage}
               onChange={handleChange}
+              onAddressChange={handleAddressChange}
               onNext={handleNext}
             />
           </>
         ) : (
-          // Pass both walletAddress and charitySlug to DonationLinkStep.
           <DonationLinkStep charitySlug={charitySlug} onFinish={handleFinish} />
         )}
       </DialogContent>

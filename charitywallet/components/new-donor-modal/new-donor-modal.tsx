@@ -14,7 +14,7 @@ import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { upsertDonor } from "@/app/actions/donors";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
-import googlePlacesStyles from "./google-place-styles";
+import googlePlacesStyles from "../../styles/google-place-styles";
 import { useAuth } from "@/contexts/auth-context";
 
 interface DonorProfileModalProps {
