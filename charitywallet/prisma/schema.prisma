@@ -65,3 +65,48 @@ model donation_receipt_counter {
     jurisdiction Jurisdiction @id
     counter      Int          @default(0)
 }
+
+/// Model representing cryptocurrency donations.
+model CryptoDonation {
+    /// Unique identifier for each donation record.
+    id Int @id @default(autoincrement())
+
+    /// Full name of the donor.
+    donorName String
+
+    /// Mailing address of the donor.
+    donorAddress String
+
+    /// Type of cryptocurrency donated (e.g., Bitcoin, Ethereum).
+    cryptoType String
+
+    /// Amount of cryptocurrency donated.
+    cryptoAmount Float
+
+    /// Date and time when the cryptocurrency was received.
+    donationTimestamp DateTime
+
+    /// Exchange rate applied at the time of conversion from cryptocurrency to CAD.
+    conversionRate Float
+
+    /// Equivalent amount in CAD before deducting any transaction fees.
+    cadAmount Float
+
+    /// Fees incurred during the conversion process.
+    transactionFee Float
+
+    /// Net amount in CAD after deducting transaction fees.
+    netCadAmount Float
+
+    /// Indicates whether an official donation receipt has been issued.
+    receiptIssued Boolean @default(false)
+
+    /// Unique number of the issued receipt, if applicable.
+    receiptNumber String? @unique
+
+    /// Timestamp of when the record was created.
+    createdAt DateTime @default(now())
+
+    /// Timestamp of the last update to the record.
+    updatedAt DateTime @updatedAt
+}
