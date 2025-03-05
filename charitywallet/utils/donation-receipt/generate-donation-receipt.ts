@@ -3,7 +3,7 @@ import { donation_receipt, charity, donor } from "@prisma/client";
 import { weiToEvm } from "../convert-wei-to-evm";
 
 /**
- * Generates a properly formatted PDF receipt for a donation.
+ * Generates a concise, CRA-compliant PDF donation receipt.
  */
 export async function generateDonationReceiptPDF(
   receipt: donation_receipt & {
@@ -11,166 +11,110 @@ export async function generateDonationReceiptPDF(
     donor?: donor | null;
   }
 ): Promise<Uint8Array> {
-  if (!receipt) {
-    throw new Error("Invalid donation receipt data");
-  }
+  if (!receipt) throw new Error("Invalid donation receipt data");
 
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([600, 850]);
-  const { width, height } = page.getSize();
+  const page = pdfDoc.addPage([600, 800]);
+  const { height } = page.getSize();
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  let y = height - 50;
-  const lineSpacing = 20;
-  const sectionSpacing = 30;
-  const leftMargin = 50;
+  let y = height - 60;
+  const lineSpacing = 16;
+  const sectionSpacing = 24;
+  const margin = 50;
 
-  const drawText = (
-    text: string,
-    x: number,
-    y: number,
-    size = 12,
-    bold = false
-  ) => {
+  const draw = (text: string, yPos: number, bold = false, size = 11) =>
     page.drawText(text, {
-      x,
-      y,
+      x: margin,
+      y: yPos,
       size,
       font: bold ? fontBold : fontRegular,
       color: rgb(0, 0, 0),
     });
-  };
 
-  // 🔹 Receipt Header
-  drawText("Official Receipt for Income Tax Purposes", leftMargin, y, 14, true);
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
+
+  // 🔹 Header
+  draw("Official Donation Receipt for Income Tax Purposes", y, true, 13);
   y -= lineSpacing;
-  drawText("(As required by the Canada Revenue Agency)", leftMargin, y, 10);
+  draw("(As required by the Canada Revenue Agency)", y, false, 10);
   y -= sectionSpacing;
 
-  // 🔹 Receipt Details
-  drawText(
-    `Receipt Number: ${receipt.receipt_number}`,
-    leftMargin,
-    y,
-    12,
-    true
-  );
+  // 🔹 Receipt Info
+  draw(`Receipt #: ${receipt.receipt_number}`, y, true);
   y -= lineSpacing;
-  drawText(
-    `Date of Donation: ${receipt.donation_date.toISOString()}`,
-    leftMargin,
-    y
-  );
+  draw(`Donation Date: ${formatDate(receipt.donation_date)}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Donation Details (Fiat & Crypto)
-  drawText("Donation Details", leftMargin, y, 14, true);
+  // 🔹 Donation Details
+  draw("Donation Details", y, true, 12);
   y -= lineSpacing;
 
-  const grossAmount = receipt.fiat_amount;
-  const feeAmount = grossAmount * 0.03;
-  const netAmount = grossAmount - feeAmount;
+  const grossCAD = receipt.fiat_amount;
+  const feeCAD = grossCAD * 0.03;
+  const netCAD = grossCAD - feeCAD;
 
-  drawText(
-    `The gross amount of the conversion was $${grossAmount.toFixed(2)} CAD.`,
-    leftMargin,
-    y
-  );
+  draw(`Gross Donation Amount: $${grossCAD.toFixed(2)} CAD`, y);
   y -= lineSpacing;
-  drawText(
-    `After deducting a 3% fee of $${feeAmount.toFixed(
-      2
-    )} CAD, the net amount of $${netAmount.toFixed(
-      2
-    )} CAD was donated to the charity.`,
-    leftMargin,
-    y
-  );
+  draw(`Administrative Fee (3%): $${feeCAD.toFixed(2)} CAD`, y);
   y -= lineSpacing;
+  draw(`Net Amount Donated: $${netCAD.toFixed(2)} CAD`, y);
+  y -= sectionSpacing;
 
-  // 🔹 Crypto Donation Details
-  if (receipt.crypto_amount_wei) {
-    // Convert wei to main EVM unit
+  if (receipt.crypto_amount_wei && receipt.transaction_hash) {
     const cryptoAmountEvm = weiToEvm(receipt.crypto_amount_wei);
-    // Check chain ID using hexadecimal strings
-    let cryptoUnit: string;
-    if (receipt.chainId === "0x1") {
-      cryptoUnit = "ETH";
-    } else if (receipt.chainId === "0x89") {
-      cryptoUnit = "MATIC";
-    } else {
-      cryptoUnit = "Crypto";
-    }
-    console.log("cryptoAmountEvm:", cryptoAmountEvm);
-    console.log("cryptoUnit:", cryptoUnit);
-    drawText(
-      `Amount in Crypto: ${cryptoAmountEvm.toFixed(5)} ${cryptoUnit}`,
-      leftMargin,
-      y
-    );
+    draw("Crypto Donation Details", y, true, 12);
     y -= lineSpacing;
-    drawText(`Transaction Hash: ${receipt.transaction_hash}`, leftMargin, y);
+
+    const blockchain =
+      receipt.chainId === "0x89"
+        ? "Polygon (POL)"
+        : receipt.chainId === "0x1"
+        ? "Ethereum (ETH)"
+        : `Chain ID ${receipt.chainId ?? "N/A"}`;
+
+    draw(`Blockchain: ${blockchain}`, y);
     y -= lineSpacing;
-    drawText(`Blockchain: ${receipt.chainId ?? "N/A"}`, leftMargin, y);
-    y -= sectionSpacing;
-  } else {
+    draw(`Crypto Amount: ${cryptoAmountEvm} ${blockchain}`, y);
+    y -= lineSpacing;
+    draw(`Transaction Hash: ${receipt.transaction_hash}`, y);
     y -= sectionSpacing;
   }
 
-  // 🔹 Donor Information
-  drawText("Donor Information", leftMargin, y, 14, true);
+  // 🔹 Donor Info
+  draw("Donor Information", y, true, 12);
   y -= lineSpacing;
-  drawText(
-    `Name: ${receipt.donor?.first_name ?? "Unknown"} ${
-      receipt.donor?.last_name ?? ""
-    }`,
-    leftMargin,
-    y
-  );
+
+  const donorName = `${receipt.donor?.first_name ?? ""} ${
+    receipt.donor?.last_name ?? ""
+  }`.trim();
+  draw(`Name: ${donorName || "Anonymous"}`, y);
   y -= lineSpacing;
-  drawText(
-    `Email: ${receipt.donor?.email ?? "No email provided"}`,
-    leftMargin,
-    y
-  );
+  draw(`Email: ${receipt.donor?.email ?? "Not provided"}`, y);
   y -= lineSpacing;
-  drawText(`Address: ${receipt.donor?.address ?? "N/A"}`, leftMargin, y);
+  draw(`Address: ${receipt.donor?.address ?? "Not provided"}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Charity Information
-  drawText("Charity Information", leftMargin, y, 14, true);
+  // 🔹 Charity Info
+  draw("Charity Information", y, true, 12);
   y -= lineSpacing;
-  drawText(receipt.charity?.charity_name ?? "N/A", leftMargin, y, 12, true);
+
+  draw(receipt.charity?.charity_name ?? "N/A", y, true);
   y -= lineSpacing;
-  drawText(
-    `Address: ${receipt.charity?.registered_office_address ?? "N/A"}`,
-    leftMargin,
-    y
-  );
+  draw(`Charity #: ${receipt.charity?.registration_number ?? "N/A"}`, y);
   y -= lineSpacing;
-  drawText(`Phone: ${receipt.charity?.contact_phone ?? "N/A"}`, leftMargin, y);
+  draw(`Address: ${receipt.charity?.registered_office_address ?? "N/A"}`, y);
   y -= lineSpacing;
-  drawText(`Email: ${receipt.charity?.contact_email ?? "N/A"}`, leftMargin, y);
+  draw(`Phone: ${receipt.charity?.contact_phone ?? "N/A"}`, y);
   y -= lineSpacing;
-  drawText(
-    `Registered Charity Number: ${
-      receipt.charity?.registration_number ?? "N/A"
-    }`,
-    leftMargin,
-    y
-  );
+  draw(`Email: ${receipt.charity?.contact_email ?? "N/A"}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Authorized Signature
-  drawText("Authorized Signature", leftMargin, y, 14, true);
+  // 🔹 Signature
+  draw("Authorized Signature", y, true, 12);
   y -= lineSpacing;
-  drawText(
-    receipt.charity?.contact_name ?? "Authorized Representative",
-    leftMargin,
-    y
-  );
-  y -= lineSpacing;
+  draw(receipt.charity?.contact_name ?? "Authorized Representative", y);
 
   return await pdfDoc.save();
 }
