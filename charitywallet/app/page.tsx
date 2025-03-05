@@ -42,7 +42,7 @@ export default function Home() {
               console.log("Logging in!");
               await charityLogin(params);
               // Redirect to the dashboard after successful login
-              router.push("/dashboard/overview");
+              router.push("/dashboard/donations");
             },
             getLoginPayload: async ({ address }) =>
               generatePayload({

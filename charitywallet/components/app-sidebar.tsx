@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ClipboardList, Percent, User } from "lucide-react";
+import { ClipboardList, Coins, Percent, User } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -22,6 +22,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       avatar: charity?.avatar || "avatar",
     },
     navMain: [
+      {
+        title: "Donations",
+        url: "#",
+        icon: Coins,
+      },
       {
         title: "Your Info",
         url: "#",

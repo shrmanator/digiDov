@@ -90,7 +90,7 @@ export default async function Dashboard() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Overview</BreadcrumbPage>
+                    <BreadcrumbPage>Donations</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
