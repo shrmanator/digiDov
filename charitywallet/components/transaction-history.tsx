@@ -33,7 +33,15 @@ function convertWeiToEth(wei: string): string {
 }
 
 function formatDate(timestamp: string): string {
-  return new Date(timestamp).toISOString().split("T")[0];
+  const dateObj = new Date(timestamp);
+  // Get the date string (local format)
+  const date = dateObj.toLocaleDateString();
+  // Get the time string, you can customize options as needed (here using hour and minute)
+  const time = dateObj.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${date}, ${time}`;
 }
 
 const chainToSymbol: { [chain: string]: string } = {
@@ -47,7 +55,6 @@ export default function TransactionHistory({
   if (!transactions.length) {
     return <p className="text-center">No transactions found.</p>;
   }
-
   return (
     <div className="w-full">
       <ScrollArea style={{ height: "70vh" }} className="w-full">
@@ -59,7 +66,6 @@ export default function TransactionHistory({
             const formattedDate = formatDate(tx.block_timestamp);
             const symbol = chainToSymbol[tx.chain] || "Unknown";
 
-            // Use the updated hook to get the historical price in USD.
             const historicalPrice = useHistoricalPrice(
               symbol,
               tx.block_timestamp,
