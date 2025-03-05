@@ -31,11 +31,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           { title: "Billing", url: "#" },
         ],
       },
-      {
-        title: "Auditing",
-        url: "#",
-        icon: ClipboardList,
-      },
+      // {
+      //   title: "Auditing",
+      //   url: "#",
+      //   icon: ClipboardList,
+      // },
       {
         title: "Tax Receipts",
         url: "#",

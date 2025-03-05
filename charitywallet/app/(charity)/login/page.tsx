@@ -40,7 +40,7 @@ export default function Home() {
             doLogin: async (params) => {
               console.log("Logging in!");
               await charityLogin(params);
-              router.push("/dashboard");
+              router.push("/dashboard/overview");
             },
             getLoginPayload: async ({ address }) =>
               generatePayload({
