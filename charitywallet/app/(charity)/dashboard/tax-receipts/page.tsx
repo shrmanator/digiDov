@@ -24,9 +24,6 @@ import Moralis from "moralis";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Control how often Next.js re-fetches data (in seconds)
-export const revalidate = 60;
-
 export default async function Dashboard() {
   // 1) Check user
   const user = await getAuthenticatedUser();
