@@ -24,28 +24,28 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Donations",
-        url: "#",
+        url: "/dashboard/donations",
         icon: Coins,
+      },
+      {
+        title: "Tax Receipts",
+        url: "#",
+        icon: Percent,
       },
       {
         title: "Your Info",
         url: "#",
         icon: User,
-        items: [
-          { title: "Your Info", url: "#" },
-          { title: "Billing", url: "#" },
-        ],
+        // items: [
+        //   { title: "Your Info", url: "#" },
+        //   { title: "Billing", url: "#" },
+        // ],
       },
       // {
       //   title: "Auditing",
       //   url: "#",
       //   icon: ClipboardList,
       // },
-      {
-        title: "Tax Receipts",
-        url: "#",
-        icon: Percent,
-      },
     ],
   };
 

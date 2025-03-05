@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { donation_receipt, charity, donor } from "@prisma/client";
+import { weiToEvm } from "../convert-wei-to-evm";
 
 /**
  * Generates a properly formatted PDF receipt for a donation.
@@ -66,12 +67,45 @@ export async function generateDonationReceiptPDF(
   // 🔹 Donation Details (Fiat & Crypto)
   drawText("Donation Details", leftMargin, y, 14, true);
   y -= lineSpacing;
-  drawText(`Amount in CAD: $${receipt.fiat_amount.toFixed(2)}`, leftMargin, y);
+
+  const grossAmount = receipt.fiat_amount;
+  const feeAmount = grossAmount * 0.03;
+  const netAmount = grossAmount - feeAmount;
+
+  drawText(
+    `The gross amount of the conversion was $${grossAmount.toFixed(2)} CAD.`,
+    leftMargin,
+    y
+  );
+  y -= lineSpacing;
+  drawText(
+    `After deducting a 3% fee of $${feeAmount.toFixed(
+      2
+    )} CAD, the net amount of $${netAmount.toFixed(
+      2
+    )} CAD was donated to the charity.`,
+    leftMargin,
+    y
+  );
   y -= lineSpacing;
 
+  // 🔹 Crypto Donation Details
   if (receipt.crypto_amount_wei) {
+    // Convert wei to main EVM unit
+    const cryptoAmountEvm = weiToEvm(receipt.crypto_amount_wei);
+    // Check chain ID using hexadecimal strings
+    let cryptoUnit: string;
+    if (receipt.chainId === "0x1") {
+      cryptoUnit = "ETH";
+    } else if (receipt.chainId === "0x89") {
+      cryptoUnit = "MATIC";
+    } else {
+      cryptoUnit = "Crypto";
+    }
+    console.log("cryptoAmountEvm:", cryptoAmountEvm);
+    console.log("cryptoUnit:", cryptoUnit);
     drawText(
-      `Amount in Crypto: ${receipt.crypto_amount_wei.toString()} Wei`,
+      `Amount in Crypto: ${cryptoAmountEvm.toFixed(5)} ${cryptoUnit}`,
       leftMargin,
       y
     );
@@ -79,6 +113,8 @@ export async function generateDonationReceiptPDF(
     drawText(`Transaction Hash: ${receipt.transaction_hash}`, leftMargin, y);
     y -= lineSpacing;
     drawText(`Blockchain: ${receipt.chainId ?? "N/A"}`, leftMargin, y);
+    y -= sectionSpacing;
+  } else {
     y -= sectionSpacing;
   }
 
