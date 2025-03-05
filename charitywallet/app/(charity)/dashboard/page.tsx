@@ -98,7 +98,6 @@ export default async function Dashboard() {
             </div>
             <div className="flex flex-col items-end gap-1 mt-5">
               <WalletCopyButton walletAddress={charity.wallet_address} />
-              {/* Pass netWorth as a prop */}
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
           </header>
