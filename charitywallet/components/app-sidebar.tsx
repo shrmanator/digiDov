@@ -29,7 +29,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Tax Receipts",
-        url: "#",
+        url: "/dashboard/tax-receipts",
         icon: Percent,
       },
       {

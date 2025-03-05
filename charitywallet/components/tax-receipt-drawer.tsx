@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Download } from "lucide-react";
-
 import {
   Drawer,
   DrawerClose,
@@ -14,8 +13,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Import your server-side functions
 import {
   getDonationReceipts,
   getDonationReceiptPdf,

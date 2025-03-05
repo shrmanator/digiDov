@@ -1,0 +1,106 @@
+import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
+import TransactionHistory from "@/components/transaction-history";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { WalletCopyButton } from "@/components/wallet-copy-button";
+import CombinedWalletBalance from "@/components/wallet-balance";
+import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
+import Moralis from "moralis";
+import DonationReceiptsList from "@/components/donation-receipt-list";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Control how often Next.js re-fetches data (in seconds)
+export const revalidate = 60;
+
+export default async function Dashboard() {
+  // 1) Check user
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  // 2) Fetch charity from DB
+  const charity = await prisma.charity.findUnique({
+    where: { wallet_address: user.walletAddress },
+  });
+  if (!charity) {
+    return <p>No charity found.</p>;
+  }
+
+  // 4) Fetch net worth and transactions concurrently
+  const [netWorthResult, transactionsResult] = await Promise.allSettled([
+    Moralis.EvmApi.wallets.getWalletNetWorth({
+      address: charity.wallet_address,
+      excludeSpam: true,
+      excludeUnverifiedContracts: true,
+    }),
+    fetchTransactions(charity.wallet_address, "received"),
+  ]);
+
+  let netWorth: string | null = null;
+  if (netWorthResult.status === "fulfilled") {
+    netWorth = netWorthResult.value.raw?.total_networth_usd;
+  } else {
+    console.error("Error fetching net worth:", netWorthResult.reason);
+  }
+
+  let transactions: TransactionWithType[] = [];
+  if (transactionsResult.status === "fulfilled") {
+    transactions = transactionsResult.value;
+  } else {
+    console.error(
+      "Failed to fetch transactions from Moralis:",
+      transactionsResult.reason
+    );
+  }
+
+  // 5) Render the page and pass the data to child components
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset className="h-screen">
+        <div className="flex flex-col h-full">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Tax Receipts</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className="flex flex-col items-end gap-1 mt-5">
+              <WalletCopyButton walletAddress={charity.wallet_address} />
+              <CombinedWalletBalance netWorth={netWorth} />
+            </div>
+          </header>
+          <ScrollArea className="h-full">
+            <DonationReceiptsList />
+          </ScrollArea>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
