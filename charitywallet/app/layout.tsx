@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThirdwebProvider } from "thirdweb/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
-import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
+import {
+  DynamicContextProvider,
+  DynamicWidget,
+} from "@dynamic-labs/sdk-react-core";
+import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,15 +28,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThirdwebProvider>
-          <ThirdwebAutoConnect />
+        <DynamicContextProvider
+          settings={{
+            environmentId: "c92d8f57-07c3-446e-8a94-3001a922f383",
+            walletConnectors: [SolanaWalletConnectors],
+          }}
+        >
+          <DynamicWidget />
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -47,7 +57,7 @@ export default function RootLayout({
               <Toaster />
             </AuthProvider>
           </ThemeProvider>
-        </ThirdwebProvider>
+        </DynamicContextProvider>
         <Analytics />
       </body>
     </html>

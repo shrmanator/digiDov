@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dynamic-labs/sdk-react-core": "^4.8.3",
+    "@dynamic-labs/solana": "^4.8.3",
     "@iconify/icons-cryptocurrency": "^1.2.5",
     "@iconify/react": "^5.2.0",
     "@prisma/client": "^6.4.1",
