@@ -30,6 +30,8 @@ interface DonationFormProps {
 }
 
 export default function DonationForm({ charity }: DonationFormProps) {
+  const { login, account } = useLogin();
+
   // Constants
   const PRESET_USD_AMOUNTS = [10, 20, 50];
   const PROCESSING_FEE_PERCENTAGE = 0.03; // 3%
@@ -53,7 +55,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
   const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
-  const { login, account } = useLogin();
 
   // Open modal if profile not complete
   useEffect(() => {
@@ -335,8 +336,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Donation Click Handler
   const handleDonateClick = async () => {
     if (!walletAddress) {
+      console.error("Wallet address not found");
       await login(); // Trigger Thirdweb login modal
     } else {
+      console.log("Wallet address found:", walletAddress);
       onClick(); // Proceed with donation
     }
   };

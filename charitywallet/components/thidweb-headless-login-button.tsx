@@ -13,6 +13,7 @@ export function useLogin() {
 
   const login = async () => {
     if (!account) {
+      console.log("No account found, opening wallet connection modal");
       connect({ client }); // Open the wallet connection modal
       return;
     }

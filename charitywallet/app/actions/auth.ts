@@ -41,6 +41,8 @@ export async function charityLogin(payload: VerifyLoginPayloadParams) {
 }
 
 export async function donorLogin(payload: VerifyLoginPayloadParams) {
+  console.log("🔥 donorLogin CALLED!");
+
   const verifiedPayload = await thirdwebAuth.verifyPayload(payload);
   console.log("payload", verifiedPayload);
 
