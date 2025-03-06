@@ -79,7 +79,6 @@ export async function generateDonationReceiptPDF(
     false,
     10
   );
-
   y -= sectionSpacing;
 
   // Optional Crypto Details
@@ -163,9 +162,8 @@ export async function generateDonationReceiptPDF(
   // Signature line on its own, name on next line
   draw("_____________________________", y, false, 10);
   y -= lineSpacing;
-
   draw(
-    `${receipt.charity?.contact_name ?? "Authorized Representative"} `,
+    `${receipt.charity?.contact_name ?? "Authorized Representative"}`,
     y,
     false,
     12
@@ -174,6 +172,17 @@ export async function generateDonationReceiptPDF(
 
   // Date of Signing
   draw(`Date of Signing: ${formatDate(receipt.donation_date)}`, y, false, 10);
+  y -= lineSpacing * 2;
+
+  // Thank you message at the bottom
+  draw(
+    `Thank you for supporting ${
+      receipt.charity?.charity_name ?? "our charity"
+    }!`,
+    y,
+    false,
+    10
+  );
 
   // Finalize PDF
   return await pdfDoc.save();
