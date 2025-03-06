@@ -23,6 +23,7 @@ import { charity } from "@prisma/client";
 import DonorProfileModal from "./new-donor-modal/new-donor-modal";
 import { useAuth } from "@/contexts/auth-context";
 import { CheckCircle } from "lucide-react";
+import { useLogin } from "./thidweb-headless-login-button";
 
 interface DonationFormProps {
   charity: charity;
@@ -52,6 +53,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
   const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
+  const { login, account } = useLogin();
 
   // Open modal if profile not complete
   useEffect(() => {
@@ -330,6 +332,15 @@ export default function DonationForm({ charity }: DonationFormProps) {
     );
   };
 
+  // Donation Click Handler
+  const handleDonateClick = async () => {
+    if (!walletAddress) {
+      await login(); // Trigger Thirdweb login modal
+    } else {
+      onClick(); // Proceed with donation
+    }
+  };
+
   return (
     <>
       {donor !== null && walletAddress && !isProfileComplete && (
@@ -353,7 +364,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
           {!tokenPrice ? renderLoadingSkeleton() : renderDonationForm()}
           {tokenPrice && charityReceives > 0 && renderFeeBreakdown()}
         </CardContent>
-
         <CardFooter className="flex flex-col pt-6">
           <p className="text-xs text-muted-foreground mb-3 text-center w-full flex items-center justify-center">
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -362,8 +372,8 @@ export default function DonationForm({ charity }: DonationFormProps) {
           </p>
           <Button
             size="lg"
-            onClick={onClick}
-            disabled={!donationAmountWei || isPending}
+            onClick={handleDonateClick} // Always enabled
+            disabled={isPending} // Only disable during transaction
             className="w-full"
           >
             {buttonLabel}
