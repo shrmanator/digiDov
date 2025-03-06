@@ -5,6 +5,7 @@ import {
   PDFFont,
   LineCapStyle,
   Color,
+  PDFName,
 } from "pdf-lib";
 import { donation_receipt, charity, donor } from "@prisma/client";
 import { weiToEvm } from "../convert-wei-to-evm";
@@ -292,18 +293,52 @@ export async function generateDonationReceiptPDF(
     );
 
     // Right column for transaction hash
-    drawText("Transaction Hash:", config.margin + colWidth + 15, colY, {
+    // Right column for transaction link
+    drawText("Transaction:", config.margin + colWidth + 15, colY, {
       font: fontRegular,
       size: 10,
     });
-    const formattedTxHash = formatTransactionHash(receipt.transaction_hash);
-    drawText(
-      formattedTxHash,
-      config.margin + colWidth + 15,
-      colY - config.lineSpacing,
-      { font: fontRegular, size: 9 }
-    );
-    y = colY - config.sectionSpacing - config.lineSpacing * 3.5;
+
+    // Step 1) Define/link text at a slightly lower y so it doesn't overlap the label
+    const linkText = "View on Blockscan";
+    const linkX = config.margin + colWidth + 15; // same X as label
+    const linkY = colY - config.lineSpacing; // one line below
+    const linkSize = 9;
+
+    page.drawText(linkText, {
+      x: linkX,
+      y: linkY,
+      font: fontRegular,
+      size: linkSize,
+      color: primaryColor,
+    });
+
+    // Step 2) Measure its size to define the annotation rectangle
+    const linkWidth = fontRegular.widthOfTextAtSize(linkText, linkSize);
+    const linkHeight = linkSize; // approximate text height from baseline
+
+    // Step 3) Build the link annotation dictionary manually
+    const linkAnnotation = pdfDoc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      // PDF rectangle format: [left, bottom, right, top]
+      Rect: [linkX, linkY, linkX + linkWidth, linkY + linkHeight],
+      Border: [0, 0, 0], // no border
+      A: {
+        Type: "Action",
+        S: "URI",
+        URI: `https://blockscan.com/tx/${receipt.transaction_hash}`,
+      },
+    });
+
+    // Step 4) Add this link annotation to the page’s Annots array
+    const annots = page.node.Annots() || pdfDoc.context.obj([]);
+    annots.push(linkAnnotation);
+    page.node.set(PDFName.of("Annots"), annots);
+
+    // Optionally adjust y so subsequent sections are spaced nicely
+    // e.g., shift down 4 or 5 lines:
+    y = colY - config.sectionSpacing - config.lineSpacing * 4.5;
   }
 
   // TWO-COLUMN LAYOUT FOR DONOR AND CHARITY INFORMATION
@@ -561,10 +596,9 @@ function getBlockchainInfo(chainId: string | null): {
  * Helper function to format transaction hash for better readability
  */
 function formatTransactionHash(hash: string): string {
-  if (!hash || hash.length < 10) return hash;
-  // Format as 0x1234...5678 if too long
-  if (hash.length > 16) {
-    return `${hash.substring(0, 10)}...${hash.substring(hash.length - 6)}`;
+  if (!hash) return "N/A";
+  if (hash.length > 32) {
+    return `${hash.substring(0, 32)}\n${hash.substring(32)}`; // Split into two lines
   }
   return hash;
 }
