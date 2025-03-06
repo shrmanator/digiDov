@@ -25,6 +25,17 @@ export async function upsertDonor(data: DonorInput) {
   // Determine if any new profile data is provided
   const hasNewProfileData = Boolean(email || firstName || lastName || address);
 
+  if (email) {
+    // Check if email is already taken by another donor
+    const existingEmail = await prisma.donor.findUnique({
+      where: { email },
+    });
+
+    if (existingEmail && existingEmail.wallet_address !== walletAddress) {
+      throw new Error("EMAIL_ALREADY_EXISTS");
+    }
+  }
+
   // Fetch the existing donor (if any)
   const existingDonor = await prisma.donor.findUnique({
     where: { wallet_address: walletAddress },

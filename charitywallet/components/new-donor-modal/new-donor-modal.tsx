@@ -62,6 +62,7 @@ export default function DonorProfileModal({
     e.preventDefault();
     setIsLoadingForm(true);
     setErrorMessage(null);
+
     try {
       await upsertDonor({
         walletAddress,
@@ -72,9 +73,16 @@ export default function DonorProfileModal({
       });
       await updateDonor(walletAddress);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setErrorMessage("Error saving info. Please try again.");
+
+      if (err.message === "EMAIL_ALREADY_EXISTS") {
+        setErrorMessage(
+          "This email is already taken. Please use a different one."
+        );
+      } else {
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoadingForm(false);
     }
