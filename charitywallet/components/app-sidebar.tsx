@@ -33,8 +33,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         icon: Percent,
       },
       {
-        title: "Your Info",
-        url: "#",
+        title: "Charity Profile",
+        url: "/dashboard/your-info",
         icon: User,
         // items: [
         //   { title: "Your Info", url: "#" },

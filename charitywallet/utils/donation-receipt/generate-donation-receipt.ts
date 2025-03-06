@@ -100,7 +100,7 @@ export async function generateDonationReceiptPDF(
   draw("Charity Information", y, true, 12);
   y -= lineSpacing;
 
-  draw(receipt.charity?.charity_name ?? "N/A", y, true);
+  draw(`Charity Name: ${receipt.charity?.charity_name ?? "N/A"}`, y);
   y -= lineSpacing;
   draw(`Charity #: ${receipt.charity?.registration_number ?? "N/A"}`, y);
   y -= lineSpacing;
