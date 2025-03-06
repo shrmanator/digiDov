@@ -280,7 +280,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
             size="lg"
             onClick={onClick}
             disabled={!donationAmountWei || isPending}
-            className="w-full"
+            className="w-full bg-blue-700 hover:bg-blue-700 text-white"
           >
             {buttonLabel}
           </Button>
