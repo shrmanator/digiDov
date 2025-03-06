@@ -12,7 +12,7 @@ import { upsertCharity } from "@/app/actions/charities"; // Server Action.
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { CharityInfoStep } from "./charity-info-step";
-import { DonationLinkStep } from "./wallet-address-step";
+import { DonationUrlStep } from "./donation-url-step";
 import { DelegationAgreementStep } from "./delegation-agreement-step";
 
 interface CharitySetupModalProps {
@@ -45,7 +45,7 @@ export default function CharitySetupModal({
 
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<
-    "charityInfoStep" | "delegationAgreementStep" | "donationLinkStep"
+    "charityInfoStep" | "delegationAgreementStep" | "donationUrlStep"
   >("charityInfoStep");
 
   const [formData, setFormData] = useState({
@@ -115,7 +115,7 @@ export default function CharitySetupModal({
 
   // Once the delegation agreement is accepted, move to the d
   const handleDelegationAgree = () => {
-    setStep("donationLinkStep");
+    setStep("donationUrlStep");
   };
 
   const handleFinish = () => setOpen(false);
@@ -138,8 +138,8 @@ export default function CharitySetupModal({
           <DelegationAgreementStep onAgree={handleDelegationAgree} />
         )}
 
-        {step === "donationLinkStep" && (
-          <DonationLinkStep charitySlug={charitySlug} onFinish={handleFinish} />
+        {step === "donationUrlStep" && (
+          <DonationUrlStep charitySlug={charitySlug} onFinish={handleFinish} />
         )}
       </DialogContent>
     </Dialog>

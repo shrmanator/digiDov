@@ -15,7 +15,7 @@ interface DonationLinkStepProps {
   onFinish: () => void;
 }
 
-export function DonationLinkStep({
+export function DonationUrlStep({
   charitySlug,
   onFinish,
 }: DonationLinkStepProps) {
