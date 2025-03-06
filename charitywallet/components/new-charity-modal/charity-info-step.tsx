@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import googlePlacesStyles from "@/styles/google-place-styles";
 
-interface CharityFormStepProps {
+interface CharityInfoStepProps {
   formData: {
     charity_name: string;
     registered_address: string;
@@ -21,14 +21,14 @@ interface CharityFormStepProps {
   onAddressChange: (address: string) => void;
 }
 
-export function CharityFormStep({
+export function CharityInfoStep({
   formData,
   isLoading,
   errorMessage,
   onChange,
   onNext,
   onAddressChange,
-}: CharityFormStepProps) {
+}: CharityInfoStepProps) {
   return (
     <form onSubmit={onNext} className="space-y-4">
       <Input
@@ -49,7 +49,7 @@ export function CharityFormStep({
               }
             : null,
           onChange: (option) => onAddressChange(option?.label || ""),
-          placeholder: "Registered Office Address",
+          placeholder: "Registered Charity Address",
           styles: googlePlacesStyles,
         }}
         autocompletionRequest={{

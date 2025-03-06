@@ -11,8 +11,9 @@ import {
 import { upsertCharity } from "@/app/actions/charities"; // Server Action.
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
-import { CharityFormStep } from "./charity-info-step";
+import { CharityInfoStep } from "./charity-info-step";
 import { DonationLinkStep } from "./wallet-address-step";
+import { DelegationAgreementStep } from "./delegation-agreement-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -20,7 +21,7 @@ interface CharitySetupModalProps {
 
 // Helper function to format phone numbers as (123) 456-7890
 function formatPhoneNumber(value: string) {
-  const phoneNumber = value.replace(/\D/g, ""); // Remove non-numeric characters
+  const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;
   if (phoneNumber.length <= 6)
     return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
@@ -43,7 +44,9 @@ export default function CharitySetupModal({
       : "";
 
   const [open, setOpen] = useState(true);
-  const [step, setStep] = useState<"form" | "confirmation">("form");
+  const [step, setStep] = useState<"form" | "delegation" | "confirmation">(
+    "form"
+  );
 
   const [formData, setFormData] = useState({
     charity_name: "",
@@ -63,7 +66,6 @@ export default function CharitySetupModal({
       setFormData({ ...formData, [name]: formatPhoneNumber(value) });
     } else if (name === "registration_number") {
       if (/^\d{0,15}$/.test(value)) {
-        // Restrict input to 15 digits only
         setFormData({ ...formData, [name]: value });
       }
     } else {
@@ -75,6 +77,7 @@ export default function CharitySetupModal({
     setFormData((prev) => ({ ...prev, registered_address: address }));
   };
 
+  // After Charity Info is completed, save and then move to the delegation step.
   const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoadingForm(true);
@@ -98,7 +101,8 @@ export default function CharitySetupModal({
         is_profile_complete: true,
       });
       setCharitySlug(updatedCharity.slug || "");
-      setStep("confirmation");
+      // Move to the Delegation Agreement step.
+      setStep("delegation");
     } catch (err) {
       console.error("Error upserting charity:", err);
       setErrorMessage(
@@ -109,12 +113,17 @@ export default function CharitySetupModal({
     }
   };
 
+  // Once the delegation agreement is accepted, move to the final step.
+  const handleDelegationAgree = () => {
+    setStep("confirmation");
+  };
+
   const handleFinish = () => setOpen(false);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="[&>button]:hidden">
-        {step === "form" ? (
+        {step === "form" && (
           <>
             <DialogHeader>
               <DialogTitle>Complete Your Organization Profile</DialogTitle>
@@ -122,7 +131,7 @@ export default function CharitySetupModal({
                 We need this information to generate tax receipts.
               </DialogDescription>
             </DialogHeader>
-            <CharityFormStep
+            <CharityInfoStep
               formData={formData}
               isLoading={isLoadingForm}
               errorMessage={errorMessage}
@@ -131,7 +140,13 @@ export default function CharitySetupModal({
               onNext={handleNext}
             />
           </>
-        ) : (
+        )}
+
+        {step === "delegation" && (
+          <DelegationAgreementStep onAgree={handleDelegationAgree} />
+        )}
+
+        {step === "confirmation" && (
           <DonationLinkStep charitySlug={charitySlug} onFinish={handleFinish} />
         )}
       </DialogContent>
