@@ -113,7 +113,7 @@ export default function CharitySetupModal({
     }
   };
 
-  // Once the delegation agreement is accepted, move to the donation link step.
+  // Once the delegation agreement is accepted, move to the d
   const handleDelegationAgree = () => {
     setStep("donationLinkStep");
   };
