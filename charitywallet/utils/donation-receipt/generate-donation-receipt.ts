@@ -292,7 +292,6 @@ export async function generateDonationReceiptPDF(
       { font: fontBold, size: 10 }
     );
 
-    // Right column for transaction hash
     // Right column for transaction link
     drawText("Transaction:", config.margin + colWidth + 15, colY, {
       font: fontRegular,
@@ -506,18 +505,18 @@ export async function generateDonationReceiptPDF(
   y = certY - config.lineSpacing * 2;
 
   // Adjusted Y position to move the signature box up slightly
-  const signatureBoxY = y - config.signatureBoxHeight + 25; // Moves it up
+  const signatureBoxY = y - config.signatureBoxHeight + 40; // Moves it up
 
   // Signature Box (Better Layout)
-  page.drawRectangle({
-    x: config.margin,
-    y: signatureBoxY,
-    width: contentWidth,
-    height: config.signatureBoxHeight,
-    borderColor: primaryColor,
-    borderWidth: 1.2,
-    borderOpacity: 0.8,
-  });
+  // page.drawRectangle({
+  //   x: config.margin,
+  //   y: signatureBoxY,
+  //   width: contentWidth,
+  //   height: config.signatureBoxHeight,
+  //   borderColor: primaryColor,
+  //   borderWidth: 1.2,
+  //   borderOpacity: 0.8,
+  // });
 
   // Inline Layout: Authorized Representative Name + Label + Date (All inside the box)
   const inlineText = `${
