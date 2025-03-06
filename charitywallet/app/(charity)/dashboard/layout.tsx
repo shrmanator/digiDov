@@ -1,15 +1,16 @@
-import MoralisInitializer from "@/lib/moralis-initializer";
+// app/dashboard/layout.tsx
+import { ReactNode } from "react";
+import { initializeMoralis } from "@/lib/moralis";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
+  await initializeMoralis();
   return (
     <div className="w-full">
-      <MoralisInitializer>
-        <main className="w-full flex-1">{children}</main>
-      </MoralisInitializer>
+      <main className="w-full flex-1">{children}</main>
     </div>
   );
 }

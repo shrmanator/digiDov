@@ -31,7 +31,6 @@ export default async function Dashboard() {
     redirect("/login");
   }
 
-  await initializeMoralis();
 
   // 2) Fetch charity from DB
   const charity = await prisma.charity.findUnique({

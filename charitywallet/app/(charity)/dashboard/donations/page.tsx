@@ -43,10 +43,7 @@ export default async function Dashboard() {
   }
   const isCharityComplete = charity.is_profile_complete ?? false;
 
-  // 3) Initialize Moralis once
-  await initializeMoralis();
-
-  // 4) Fetch net worth and transactions concurrently
+  // 3) Fetch net worth and transactions concurrently
   const [netWorthResult, transactionsResult] = await Promise.allSettled([
     Moralis.EvmApi.wallets.getWalletNetWorth({
       address: charity.wallet_address,
@@ -73,7 +70,7 @@ export default async function Dashboard() {
     );
   }
 
-  // 5) Render the page and pass the data to child components
+  // 4) Render the page and pass the data to child components
   return (
     <SidebarProvider>
       <AppSidebar />
