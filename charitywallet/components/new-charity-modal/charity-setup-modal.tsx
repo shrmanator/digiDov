@@ -44,9 +44,9 @@ export default function CharitySetupModal({
       : "";
 
   const [open, setOpen] = useState(true);
-  const [step, setStep] = useState<"form" | "delegation" | "confirmation">(
-    "form"
-  );
+  const [step, setStep] = useState<
+    "charityInfoStep" | "delegationAgreementStep" | "donationLinkStep"
+  >("charityInfoStep");
 
   const [formData, setFormData] = useState({
     charity_name: "",
@@ -102,7 +102,7 @@ export default function CharitySetupModal({
       });
       setCharitySlug(updatedCharity.slug || "");
       // Move to the Delegation Agreement step.
-      setStep("delegation");
+      setStep("delegationAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
       setErrorMessage(
@@ -115,7 +115,7 @@ export default function CharitySetupModal({
 
   // Once the delegation agreement is accepted, move to the final step.
   const handleDelegationAgree = () => {
-    setStep("confirmation");
+    setStep("delegationAgreementStep");
   };
 
   const handleFinish = () => setOpen(false);
@@ -123,30 +123,22 @@ export default function CharitySetupModal({
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="[&>button]:hidden">
-        {step === "form" && (
-          <>
-            <DialogHeader>
-              <DialogTitle>Complete Your Organization Profile</DialogTitle>
-              <DialogDescription>
-                We need this information to generate tax receipts.
-              </DialogDescription>
-            </DialogHeader>
-            <CharityInfoStep
-              formData={formData}
-              isLoading={isLoadingForm}
-              errorMessage={errorMessage}
-              onChange={handleChange}
-              onAddressChange={handleAddressChange}
-              onNext={handleNext}
-            />
-          </>
+        {step === "charityInfoStep" && (
+          <CharityInfoStep
+            formData={formData}
+            isLoading={isLoadingForm}
+            errorMessage={errorMessage}
+            onChange={handleChange}
+            onAddressChange={handleAddressChange}
+            onNext={handleNext}
+          />
         )}
 
-        {step === "delegation" && (
+        {step === "delegationAgreementStep" && (
           <DelegationAgreementStep onAgree={handleDelegationAgree} />
         )}
 
-        {step === "confirmation" && (
+        {step === "donationLinkStep" && (
           <DonationLinkStep charitySlug={charitySlug} onFinish={handleFinish} />
         )}
       </DialogContent>
