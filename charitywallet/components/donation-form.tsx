@@ -22,6 +22,7 @@ import { useSendWithFee } from "../hooks/use-send-with-fee";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "./new-donor-modal/new-donor-modal";
 import { useAuth } from "@/contexts/auth-context";
+import { CheckCircle } from "lucide-react";
 
 interface DonationFormProps {
   charity: charity;
@@ -60,7 +61,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
-      // Cleanup any modal styles (we are closing the modal based on donor profile completeness, preventing the modal's default cleanup logic).
+      // Cleanup any modal styles
       document.body.style.removeProperty("pointer-events");
       document.body.removeAttribute("data-scroll-locked");
     }
@@ -112,7 +113,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
     // Calculate token amount based on charity's receiving amount
     const tokenAmount = charityAmount / tokenPrice;
-
     const amountWei =
       decimals === 18
         ? BigInt(web3.utils.toWei(tokenAmount.toFixed(18), "ether"))
@@ -158,7 +158,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCoverFee(!coverFee);
   };
 
-  // UI Components
+  // UI: loading skeleton for initial price fetch
   const renderLoadingSkeleton = () => (
     <div className="flex flex-col gap-4">
       <div>
@@ -182,101 +182,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
       </div>
     </div>
   );
-
-  const renderFeeBreakdown = () => {
-    if (charityReceives <= 0) return null;
-
-    return (
-      <div className="mt-6 p-4 bg-muted/50 rounded-md">
-        <h4 className="font-medium mb-2">Donation Summary</h4>
-        <div className="space-y-1 text-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Checkbox
-              id="cover-fee"
-              checked={coverFee}
-              onCheckedChange={handleCoverFeeChange}
-            />
-            <Label
-              htmlFor="cover-fee"
-              className="text-sm font-medium cursor-pointer"
-            >
-              Cover the 3% platform fee
-            </Label>
-          </div>
-
-          {coverFee ? (
-            // User covers the fee
-            <>
-              <div className="flex justify-between">
-                <span>You pay:</span>
-                <span>
-                  $
-                  {selectedUSD !== null
-                    ? selectedUSD
-                    : parseFloat(customUSD || "0").toFixed(2)}{" "}
-                  CAD
-                </span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Processing fee (3%):</span>
-                <span>${feeAmount.toFixed(2)} CAD</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between font-medium">
-                <span>
-                  {(charity.charity_name ?? "Charity").length > 20
-                    ? `${(charity.charity_name ?? "Charity").slice(0, 20)}...`
-                    : charity.charity_name ?? "Charity"}{" "}
-                  receives:
-                </span>
-                <span>${charityReceives.toFixed(2)} CAD</span>
-              </div>
-            </>
-          ) : (
-            // Fee subtracted from donation
-            <>
-              <div className="flex justify-between">
-                <span>You pay:</span>
-                <span>
-                  $
-                  {selectedUSD !== null
-                    ? selectedUSD
-                    : parseFloat(customUSD || "0").toFixed(2)}{" "}
-                  CAD
-                </span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Processing fee (3%):</span>
-                <span>-${feeAmount.toFixed(2)} CAD</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between font-medium">
-                <span>
-                  {(charity.charity_name ?? "Charity").length > 20
-                    ? `${(charity.charity_name ?? "Charity").slice(0, 20)}...`
-                    : charity.charity_name ?? "Charity"}{" "}
-                  receives:
-                </span>
-                <span>${charityReceives.toFixed(2)} CAD</span>
-              </div>
-            </>
-          )}
-
-          <div className="text-xs text-muted-foreground text-right mt-1">
-            ~{tokenFloat.toFixed(5)} {nativeSymbol} sent to charity
-          </div>
-
-          {/* Tax receipt information */}
-          <div className="mt-3 pt-3 border-t border-border text-muted-foreground">
-            <p>
-              A tax receipt will be sent to{" "}
-              {donor?.email || "your email address"}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderDonationForm = () => (
     <div className="flex flex-col gap-4">
@@ -340,6 +245,91 @@ export default function DonationForm({ charity }: DonationFormProps) {
     </div>
   );
 
+  const renderFeeBreakdown = () => {
+    if (charityReceives <= 0) return null;
+
+    return (
+      <div className="mt-6 p-4 bg-muted/50 rounded-md">
+        <h4 className="font-medium mb-2">Donation Summary</h4>
+        <div className="space-y-1 text-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Checkbox
+              id="cover-fee"
+              checked={coverFee}
+              onCheckedChange={handleCoverFeeChange}
+            />
+            <Label
+              htmlFor="cover-fee"
+              className="text-sm font-medium cursor-pointer"
+            >
+              Cover the 3% platform fee
+            </Label>
+          </div>
+
+          {coverFee ? (
+            <>
+              <div className="flex justify-between">
+                <span>You pay:</span>
+                <span>
+                  $
+                  {selectedUSD !== null
+                    ? selectedUSD
+                    : parseFloat(customUSD || "0").toFixed(2)}{" "}
+                  CAD
+                </span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Processing fee (3%):</span>
+                <span>${feeAmount.toFixed(2)} CAD</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-medium">
+                <span>
+                  {(charity.charity_name ?? "Charity").length > 20
+                    ? `${(charity.charity_name ?? "Charity").slice(0, 20)}...`
+                    : charity.charity_name ?? "Charity"}{" "}
+                  receives:
+                </span>
+                <span>${charityReceives.toFixed(2)} CAD</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between">
+                <span>You pay:</span>
+                <span>
+                  $
+                  {selectedUSD !== null
+                    ? selectedUSD
+                    : parseFloat(customUSD || "0").toFixed(2)}{" "}
+                  CAD
+                </span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Processing fee (3%):</span>
+                <span>-${feeAmount.toFixed(2)} CAD</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-medium">
+                <span>
+                  {(charity.charity_name ?? "Charity").length > 20
+                    ? `${(charity.charity_name ?? "Charity").slice(0, 20)}...`
+                    : charity.charity_name ?? "Charity"}{" "}
+                  receives:
+                </span>
+                <span>${charityReceives.toFixed(2)} CAD</span>
+              </div>
+            </>
+          )}
+
+          <div className="text-xs text-muted-foreground text-right mt-1">
+            ~{tokenFloat.toFixed(5)} {nativeSymbol} sent to charity
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {donor !== null && walletAddress && !isProfileComplete && (
@@ -364,7 +354,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
           {tokenPrice && charityReceives > 0 && renderFeeBreakdown()}
         </CardContent>
 
-        <CardFooter className="pt-6">
+        <CardFooter className="flex flex-col pt-6">
+          <p className="text-xs text-muted-foreground mb-3 text-center w-full flex items-center justify-center">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Tax receipt will be sent to{" "}
+            {donor?.email ? donor.email : "your email"}
+          </p>
           <Button
             size="lg"
             onClick={onClick}
