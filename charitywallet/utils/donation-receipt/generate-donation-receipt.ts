@@ -73,6 +73,14 @@ export async function generateDonationReceiptPDF(
   y -= lineSpacing;
   draw(`Eligible Amount For Tax Purposes (97%): $${netCAD.toFixed(2)} CAD`, y);
   y -= sectionSpacing;
+  draw(
+    "Fair market value determination: Based on exchange rate at the time donation was received.",
+    y,
+    false,
+    10
+  );
+
+  y -= sectionSpacing;
 
   // Optional Crypto Details
   if (receipt.crypto_amount_wei && receipt.transaction_hash) {
