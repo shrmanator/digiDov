@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ClipboardList, Coins, Percent, User } from "lucide-react";
+import { BarChart, Coins, Percent, User } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -28,6 +28,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         icon: Coins,
       },
       {
+        title: "Analytics",
+        url: "#",
+        icon: BarChart,
+      },
+      {
         title: "Tax Receipts",
         url: "/dashboard/tax-receipts",
         icon: Percent,
@@ -41,11 +46,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         //   { title: "Billing", url: "#" },
         // ],
       },
-      // {
-      //   title: "Auditing",
-      //   url: "#",
-      //   icon: ClipboardList,
-      // },
     ],
   };
 

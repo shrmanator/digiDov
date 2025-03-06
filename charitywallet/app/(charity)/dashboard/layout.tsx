@@ -1,3 +1,5 @@
+import MoralisInitializer from "@/lib/moralis-initializer";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -5,7 +7,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="w-full">
-      <main className="w-full flex-1">{children}</main>
+      <MoralisInitializer>
+        <main className="w-full flex-1">{children}</main>
+      </MoralisInitializer>
     </div>
   );
 }

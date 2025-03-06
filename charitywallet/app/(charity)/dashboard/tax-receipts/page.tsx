@@ -22,6 +22,7 @@ import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { initializeMoralis } from "@/lib/moralis";
 
 export default async function Dashboard() {
   // 1) Check user
@@ -29,6 +30,8 @@ export default async function Dashboard() {
   if (!user) {
     redirect("/login");
   }
+
+  await initializeMoralis();
 
   // 2) Fetch charity from DB
   const charity = await prisma.charity.findUnique({
