@@ -265,6 +265,14 @@ export default function DonationForm({ charity }: DonationFormProps) {
           <div className="text-xs text-muted-foreground text-right mt-1">
             ~{tokenFloat.toFixed(5)} {nativeSymbol} sent to charity
           </div>
+
+          {/* Tax receipt information */}
+          <div className="mt-3 pt-3 border-t border-border text-muted-foreground">
+            <p>
+              A tax receipt will be sent to{" "}
+              {donor?.email || "your email address"}
+            </p>
+          </div>
         </div>
       </div>
     );
