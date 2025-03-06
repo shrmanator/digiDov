@@ -24,7 +24,8 @@ export async function generateDonationReceiptPDF(
   const sectionSpacing = 24;
   const margin = 50;
 
-  const draw = (text: string, yPos: number, bold = false, size = 11) =>
+  // Helper to draw text
+  const draw = (text: string, yPos: number, bold = false, size = 11): void => {
     page.drawText(text, {
       x: margin,
       y: yPos,
@@ -32,22 +33,30 @@ export async function generateDonationReceiptPDF(
       font: bold ? fontBold : fontRegular,
       color: rgb(0, 0, 0),
     });
+  };
 
+  // Formats date as YYYY-MM-DD
   const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
-  // 🔹 Header
+  // ─────────────────────────────────────────────────────────────
+  // HEADER
+  // ─────────────────────────────────────────────────────────────
   draw("Official Donation Receipt for Income Tax Purposes", y, true, 13);
   y -= lineSpacing;
   draw("(As required by the Canada Revenue Agency)", y, false, 10);
   y -= sectionSpacing;
 
-  // 🔹 Receipt Info
+  // ─────────────────────────────────────────────────────────────
+  // RECEIPT INFO
+  // ─────────────────────────────────────────────────────────────
   draw(`Receipt #: ${receipt.receipt_number}`, y, true);
   y -= lineSpacing;
   draw(`Donation Date: ${formatDate(receipt.donation_date)}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Donation Details
+  // ─────────────────────────────────────────────────────────────
+  // DONATION DETAILS
+  // ─────────────────────────────────────────────────────────────
   draw("Donation Details", y, true, 12);
   y -= lineSpacing;
 
@@ -55,13 +64,17 @@ export async function generateDonationReceiptPDF(
   const feeCAD = grossCAD * 0.03;
   const netCAD = grossCAD - feeCAD;
 
-  draw(`Gross Donation Amount: $${grossCAD.toFixed(2)} CAD`, y);
+  draw(
+    `Fair Market Value of Cryptocurrency Donated: $${grossCAD.toFixed(2)} CAD`,
+    y
+  );
   y -= lineSpacing;
-  draw(`Administrative Fee (3%): $${feeCAD.toFixed(2)} CAD`, y);
+  draw(`Less Administrative Fee (3%): $${feeCAD.toFixed(2)} CAD`, y);
   y -= lineSpacing;
-  draw(`Net Amount Donated: $${netCAD.toFixed(2)} CAD`, y);
+  draw(`Eligible Amount For Tax Purposes (97%): $${netCAD.toFixed(2)} CAD`, y);
   y -= sectionSpacing;
 
+  // Optional Crypto Details
   if (receipt.crypto_amount_wei && receipt.transaction_hash) {
     const cryptoAmountEvm = weiToEvm(receipt.crypto_amount_wei);
     draw("Crypto Donation Details", y, true, 12);
@@ -82,7 +95,9 @@ export async function generateDonationReceiptPDF(
     y -= sectionSpacing;
   }
 
-  // 🔹 Donor Info
+  // ─────────────────────────────────────────────────────────────
+  // DONOR INFO
+  // ─────────────────────────────────────────────────────────────
   draw("Donor Information", y, true, 12);
   y -= lineSpacing;
 
@@ -96,25 +111,62 @@ export async function generateDonationReceiptPDF(
   draw(`Address: ${receipt.donor?.address ?? "Not provided"}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Charity Info
+  // ─────────────────────────────────────────────────────────────
+  // CHARITY INFO
+  // ─────────────────────────────────────────────────────────────
   draw("Charity Information", y, true, 12);
   y -= lineSpacing;
 
   draw(`Charity Name: ${receipt.charity?.charity_name ?? "N/A"}`, y);
   y -= lineSpacing;
-  draw(`Charity #: ${receipt.charity?.registration_number ?? "N/A"}`, y);
-  y -= lineSpacing;
   draw(`Address: ${receipt.charity?.registered_office_address ?? "N/A"}`, y);
+  y -= lineSpacing;
+  draw(
+    `Charitable Registration #: ${
+      receipt.charity?.registration_number ?? "N/A"
+    }`,
+    y
+  );
   y -= lineSpacing;
   draw(`Phone: ${receipt.charity?.contact_phone ?? "N/A"}`, y);
   y -= lineSpacing;
   draw(`Email: ${receipt.charity?.contact_email ?? "N/A"}`, y);
   y -= sectionSpacing;
 
-  // 🔹 Signature
-  draw("Authorized Signature", y, true, 12);
+  // ─────────────────────────────────────────────────────────────
+  // CERTIFICATION & SIGNATURE
+  // ─────────────────────────────────────────────────────────────
+  draw("Certification:", y, true, 12);
   y -= lineSpacing;
-  draw(receipt.charity?.contact_name ?? "Authorized Representative", y);
 
+  const certificationLine1 =
+    "I certify that the information above is accurate and that this donation qualifies";
+  const certificationLine2 =
+    "as a gift in accordance with the regulations of the Canada Revenue Agency.";
+
+  draw(certificationLine1, y, false, 10);
+  y -= lineSpacing;
+  draw(certificationLine2, y, false, 10);
+  y -= lineSpacing * 2;
+
+  draw("Authorized Signature:", y, true, 12);
+  y -= lineSpacing;
+
+  // Signature line on its own, name on next line
+  draw("_____________________________", y, false, 10);
+  y -= lineSpacing;
+
+  draw(
+    `${receipt.charity?.contact_name ?? "Authorized Representative"} `,
+    y,
+    false,
+    12
+  );
+  y -= lineSpacing * 2;
+
+  // Date of Signing
+  draw(`Date of Signing: ${formatDate(receipt.donation_date)}`, y, false, 10);
+
+  // Finalize PDF
   return await pdfDoc.save();
 }
