@@ -29,7 +29,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Analytics",
-        url: "#",
+        url: "/dashboard/analytics",
         icon: BarChart,
       },
       {
