@@ -63,32 +63,51 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [walletAddress, donor, isProfileComplete]);
 
-  // Calculate donation amount
-  const { donationAmountWei, tokenFloat, chosenUSD } = useMemo(() => {
-    if (!tokenPrice) {
-      return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
-    }
+  // Calculate donation amount with fee
+  const { donationAmountWei, tokenFloat, chosenUSD, feeAmount, totalWithFee } =
+    useMemo(() => {
+      if (!tokenPrice) {
+        return {
+          donationAmountWei: null,
+          tokenFloat: 0,
+          chosenUSD: 0,
+          feeAmount: 0,
+          totalWithFee: 0,
+        };
+      }
 
-    const usdValue =
-      selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
+      const usdValue =
+        selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
 
-    if (usdValue <= 0) {
-      return { donationAmountWei: null, tokenFloat: 0, chosenUSD: 0 };
-    }
+      if (usdValue <= 0) {
+        return {
+          donationAmountWei: null,
+          tokenFloat: 0,
+          chosenUSD: 0,
+          feeAmount: 0,
+          totalWithFee: 0,
+        };
+      }
 
-    const tokenAmount = usdValue / tokenPrice;
+      // Calculate fee (3% of donation amount)
+      const fee = usdValue * 0.03;
+      const total = usdValue + fee;
 
-    const amountWei =
-      decimals === 18
-        ? BigInt(web3.utils.toWei(tokenAmount.toFixed(18), "ether"))
-        : BigInt(Math.floor(tokenAmount * 10 ** decimals));
+      const tokenAmount = usdValue / tokenPrice;
 
-    return {
-      donationAmountWei: amountWei,
-      tokenFloat: tokenAmount,
-      chosenUSD: usdValue,
-    };
-  }, [tokenPrice, selectedUSD, customUSD, decimals, web3]);
+      const amountWei =
+        decimals === 18
+          ? BigInt(web3.utils.toWei(tokenAmount.toFixed(18), "ether"))
+          : BigInt(Math.floor(tokenAmount * 10 ** decimals));
+
+      return {
+        donationAmountWei: amountWei,
+        tokenFloat: tokenAmount,
+        chosenUSD: usdValue,
+        feeAmount: fee,
+        totalWithFee: total,
+      };
+    }, [tokenPrice, selectedUSD, customUSD, decimals, web3]);
 
   // Transaction handler
   const { onClick, isPending, transactionResult } = useSendWithFee(
@@ -101,12 +120,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
     if (isPending) return "Processing...";
     if (transactionResult) return "Donation Sent!";
     if (tokenFloat > 0) {
-      return `Donate ${chosenUSD.toFixed(2)} (${tokenFloat.toFixed(
-        3
-      )} ${nativeSymbol})`;
+      return `Donate ${totalWithFee.toFixed(2)} CAD`;
     }
     return "Donate";
-  }, [isPending, transactionResult, tokenFloat, chosenUSD, nativeSymbol]);
+  }, [isPending, transactionResult, tokenFloat, totalWithFee]);
 
   // Event handlers
   const handlePresetClick = (usdVal: number) => {
@@ -143,6 +160,34 @@ export default function DonationForm({ charity }: DonationFormProps) {
       </div>
     </div>
   );
+
+  const renderFeeBreakdown = () => {
+    if (chosenUSD <= 0) return null;
+
+    return (
+      <div className="mt-6 p-4 bg-muted/50 rounded-md">
+        <h4 className="font-medium mb-2">Donation Summary</h4>
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span>Donation amount:</span>
+            <span>${chosenUSD.toFixed(2)} CAD</span>
+          </div>
+          <div className="flex justify-between text-muted-foreground">
+            <span>Processing fee (3%):</span>
+            <span>${feeAmount.toFixed(2)} CAD</span>
+          </div>
+          <Separator className="my-2" />
+          <div className="flex justify-between font-medium">
+            <span>Total amount:</span>
+            <span>${totalWithFee.toFixed(2)} CAD</span>
+          </div>
+          <div className="text-xs text-muted-foreground text-right mt-1">
+            ~{(totalWithFee / (tokenPrice ?? 1)).toFixed(5)} {nativeSymbol}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderDonationForm = () => (
     <div className="flex flex-col gap-4">
@@ -227,6 +272,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
         <CardContent className="mt-4">
           {!tokenPrice ? renderLoadingSkeleton() : renderDonationForm()}
+          {tokenPrice && chosenUSD > 0 && renderFeeBreakdown()}
         </CardContent>
 
         <CardFooter className="pt-6">
