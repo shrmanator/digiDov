@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, FormEvent, ChangeEvent } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { upsertCharity } from "@/app/actions/charities"; // Server Action.
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
@@ -19,7 +13,7 @@ interface CharitySetupModalProps {
   walletAddress: string;
 }
 
-// Helper function to format phone numbers as (123) 456-7890
+// Helper function format phone numbers as (123) 456-7890
 function formatPhoneNumber(value: string) {
   const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;

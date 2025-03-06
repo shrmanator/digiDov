@@ -20,21 +20,21 @@ import { Separator } from "@/components/ui/separator";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
-import { initializeMoralis } from "@/lib/moralis";
 import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 import Moralis from "moralis";
+import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
 
 export default async function Dashboard() {
-  // 1) Check user
+  // 1) Check user authentication
   const user = await getAuthenticatedUser();
   if (!user) {
     redirect("/login");
   }
 
-  // 2) Fetch charity from DB
+  // 2) Fetch charity data
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
   });
@@ -70,7 +70,10 @@ export default async function Dashboard() {
     );
   }
 
-  // 4) Render the page and pass the data to child components
+  // 4) Construct the donation link
+  const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
+
+  // 5) Render the dashboard
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -100,7 +103,11 @@ export default async function Dashboard() {
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
               <header className="mb-8 text-center">
-                <h1 className="text-3xl font-bold">Donations</h1>
+                <h1 className="text-3xl font-bold mb-1">Donations</h1>
+                <DonorLinkCopyButton
+                  donorLink={donationLink}
+                  label="Click to copy your donation page link"
+                />
               </header>
               {isCharityComplete ? (
                 <div className="w-full flex justify-center">

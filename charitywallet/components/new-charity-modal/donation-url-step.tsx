@@ -54,8 +54,6 @@ export function DonationUrlStep({
           etc.—to invite donors to support you.
           <br />
           <br />
-          Currently, we only support tax receipts for POL, but we will be adding
-          support for ETH and many other currencies soon.
         </DialogDescription>
       </DialogHeader>
 

@@ -57,7 +57,7 @@ export default function TransactionHistory({
   }
   return (
     <div className="w-full">
-      <ScrollArea style={{ height: "70vh" }} className="w-full">
+      <ScrollArea style={{ height: "65vh" }} className="w-full">
         <div className="flex flex-col space-y-4">
           {transactions.map((tx) => {
             const nativeValue = convertWeiToEth(tx.value);
