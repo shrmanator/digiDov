@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import SideBarAndHeader from "./donate-sidebar-and-header";
-import DonationForm from "@/components/donation-form";
+import DonationForm from "@/components/donation-form/donation-form";
 import { getCharityBySlug } from "@/app/actions/charities";
 
 export default async function DonatePage({
