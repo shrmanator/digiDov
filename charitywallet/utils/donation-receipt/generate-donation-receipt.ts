@@ -197,7 +197,11 @@ export async function generateDonationReceiptPDF(
       y = drawText(`Transaction Hash: ${hashPart1}`, margin, y);
       y = drawText(hashPart2, margin + 105, y);
     } else {
-      y = drawText(`Transaction Hash: ${hash}`, margin, y);
+      y = drawText(
+        `Transaction Hash: https://blockscan.com/tx/${hash}`,
+        margin,
+        y
+      );
     }
   }
 
