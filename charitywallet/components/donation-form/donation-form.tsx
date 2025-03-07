@@ -1,3 +1,4 @@
+// First, let's update the imports to include some animation utilities
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -21,6 +22,7 @@ import DonorProfileModal from "../new-donor-modal/new-donor-modal";
 import { AmountSelector } from "./amount-selector";
 import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
+import { CheckCircle } from "lucide-react"; // Added CheckCircle icon
 
 // Types
 interface DonationFormProps {
@@ -39,6 +41,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const [calculatedChainId, setCalculatedChainId] = useState<
     number | undefined
   >(undefined);
+  const [donationSuccess, setDonationSuccess] = useState(false); // Added state for donation success animation
 
   // Hooks
   const { donor } = useAuth();
@@ -99,6 +102,18 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [walletAddress, donor]);
 
+  // Handle successful donation animation
+  useEffect(() => {
+    if (transactionResult) {
+      setDonationSuccess(true);
+      // Reset success state after animation completes (5 seconds)
+      const timer = setTimeout(() => {
+        setDonationSuccess(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [transactionResult]);
+
   // Event handlers
   const handlePresetClick = (usdVal: number) => {
     setSelectedUSD(usdVal);
@@ -128,6 +143,13 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const showConversionMessage = calculatedChainId !== activeChain?.id;
   const showDonationSummary = tokenPrice && charityReceives > 0;
 
+  // Success button styles
+  const buttonClasses = `w-full ${
+    donationSuccess
+      ? "bg-green-600 hover:bg-green-700 transition-all duration-500 ease-in-out"
+      : ""
+  }`;
+
   return (
     <>
       {renderDonorProfileModal()}
@@ -141,7 +163,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="mt-4">
+        <CardContent>
           {!tokenPrice ? renderDonationLoading() : renderAmountSelector()}
           {showDonationSummary && renderDonationSummary()}
         </CardContent>
@@ -152,10 +174,25 @@ export default function DonationForm({ charity }: DonationFormProps) {
             size="lg"
             onClick={handleDonationClick}
             disabled={isButtonDisabled}
-            className="w-full"
+            className={buttonClasses}
           >
-            {showConversionMessage ? "Updating conversion..." : buttonLabel}
+            {showConversionMessage ? (
+              "Updating conversion..."
+            ) : (
+              <>
+                {buttonLabel}
+                {donationSuccess && (
+                  <CheckCircle className="ml-2 h-5 w-5 inline-block animate-pulse" />
+                )}
+              </>
+            )}
           </Button>
+
+          {donationSuccess && (
+            <p className="text-green-600 mt-2 text-center font-medium animate-pulse">
+              Thank you for your generosity!
+            </p>
+          )}
         </CardFooter>
       </Card>
     </>
@@ -213,7 +250,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   function renderTaxReceiptMessage() {
     return (
-      <p className="text-xs text-muted-foreground mb-3 text-center w-full">
+      <p className="text-xs text-muted-foreground mb-2 text-center w-full">
         A tax receipt will be emailed to {donor.email}
       </p>
     );
