@@ -22,7 +22,7 @@ import DonorProfileModal from "../new-donor-modal/new-donor-modal";
 import { AmountSelector } from "./amount-selector";
 import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
-import { CheckCircle } from "lucide-react"; // Added CheckCircle icon
+import { CheckCircle, Loader2 } from "lucide-react"; // Added CheckCircle icon
 
 // Types
 interface DonationFormProps {
@@ -181,6 +181,11 @@ export default function DonationForm({ charity }: DonationFormProps) {
           >
             {showConversionMessage ? (
               "Updating conversion..."
+            ) : isPending ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing...
+              </>
             ) : (
               <>
                 {buttonLabel}
