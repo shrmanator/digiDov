@@ -22,15 +22,16 @@ import { AmountSelector } from "./amount-selector";
 import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
 
+// Types
 interface DonationFormProps {
   charity: charity;
 }
 
-export default function DonationForm({ charity }: DonationFormProps) {
-  // Constants
-  const PRESET_USD_AMOUNTS = [10, 20, 50];
+const PRESET_USD_AMOUNTS = [10, 20, 50];
+const FEE_PERCENTAGE = 0.03;
 
-  // State
+export default function DonationForm({ charity }: DonationFormProps) {
+  // State management
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,14 +47,14 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const activeChain = useActiveWalletChain();
   const web3 = useMemo(() => new Web3(), []);
 
-  // Get the native symbol and decimals from the active chain
+  // Chain data
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
-  // Retrieve token price using the active chain's native currency
+  // External data
   const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
 
-  // Calculate donation with fees
+  // Derived calculations
   const {
     donationAmountWei,
     tokenFloat,
@@ -67,10 +68,16 @@ export default function DonationForm({ charity }: DonationFormProps) {
     decimals,
     web3,
     coverFee,
-    feePercentage: 0.03,
+    feePercentage: FEE_PERCENTAGE,
   });
 
-  // Update calculatedChainId whenever activeChain or tokenPrice updates
+  // Transaction handler
+  const { onClick, isPending, transactionResult } = useSendWithFee(
+    donationAmountWei ?? BigInt(0),
+    charity.wallet_address
+  );
+
+  // Update chain ID when chain or price changes
   useEffect(() => {
     if (activeChain?.id && tokenPrice !== null && tokenPrice > 0) {
       setCalculatedChainId(activeChain.id);
@@ -79,7 +86,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [activeChain, tokenPrice, calculatedChainId]);
 
-  // Open modal if profile not complete
+  // Check for incomplete profiles
   useEffect(() => {
     if (!walletAddress || donor === null) return;
 
@@ -92,12 +99,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [walletAddress, donor]);
 
-  // Transaction handler from the hook
-  const { onClick, isPending, transactionResult } = useSendWithFee(
-    donationAmountWei ?? BigInt(0),
-    charity.wallet_address
-  );
-
   // Event handlers
   const handlePresetClick = (usdVal: number) => {
     setSelectedUSD(usdVal);
@@ -109,34 +110,27 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setSelectedUSD(null);
   };
 
-  const handleCoverFeeChange = () => {
-    setCoverFee(!coverFee);
-  };
-
   const handleDonationClick = () => {
     if (calculatedChainId !== activeChain?.id) return;
     onClick();
   };
 
-  // Dynamic button label
+  // Computed values
   const buttonLabel = useMemo(() => {
     if (isPending) return "Processing...";
     if (transactionResult) return "Donation Sent!";
-    if (tokenFloat > 0) {
-      return `Donate ${totalPaid.toFixed(2)} CAD`;
-    }
+    if (tokenFloat > 0) return `Donate ${totalPaid.toFixed(2)} CAD`;
     return "Donate";
   }, [isPending, transactionResult, tokenFloat, totalPaid]);
 
+  const isButtonDisabled =
+    !donationAmountWei || isPending || calculatedChainId !== activeChain?.id;
+  const showConversionMessage = calculatedChainId !== activeChain?.id;
+  const showDonationSummary = tokenPrice && charityReceives > 0;
+
   return (
     <>
-      {donor !== null && walletAddress && !donor.is_profile_complete && (
-        <DonorProfileModal
-          walletAddress={walletAddress}
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      {renderDonorProfileModal()}
       <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
@@ -146,58 +140,82 @@ export default function DonationForm({ charity }: DonationFormProps) {
             Amount will be sent in {nativeSymbol}
           </CardDescription>
         </CardHeader>
-        <CardContent className="mt-4">
-          {!tokenPrice ? (
-            <DonationLoading />
-          ) : (
-            <AmountSelector
-              presetAmounts={PRESET_USD_AMOUNTS}
-              selectedAmount={selectedUSD}
-              customAmount={customUSD}
-              onPresetClick={handlePresetClick}
-              onCustomChange={handleCustomChange}
-              tokenPrice={tokenPrice}
-              nativeSymbol={nativeSymbol}
-              tokenFloat={tokenFloat}
-            />
-          )}
 
-          {tokenPrice && charityReceives > 0 && (
-            <DonationSummary
-              coverFee={coverFee}
-              onCoverFeeChange={handleCoverFeeChange}
-              selectedUSD={selectedUSD}
-              customUSD={customUSD}
-              charityReceives={charityReceives}
-              feeAmount={feeAmount}
-              tokenFloat={tokenFloat}
-              nativeSymbol={nativeSymbol}
-              charityName={charity.charity_name ?? "Charity"}
-            />
-          )}
+        <CardContent className="mt-4">
+          {!tokenPrice ? renderDonationLoading() : renderAmountSelector()}
+          {showDonationSummary && renderDonationSummary()}
         </CardContent>
+
         <CardFooter className="flex flex-col pt-6">
-          {donor?.email && (
-            <p className="text-xs text-muted-foreground mb-3 text-center w-full">
-              A tax receipt will be emailed to {donor.email}
-            </p>
-          )}
+          {donor?.email && renderTaxReceiptMessage()}
           <Button
             size="lg"
             onClick={handleDonationClick}
-            disabled={
-              !donationAmountWei ||
-              isPending ||
-              calculatedChainId !== activeChain?.id
-            }
+            disabled={isButtonDisabled}
             className="w-full"
           >
-            {calculatedChainId !== activeChain?.id
-              ? "Updating conversion..."
-              : buttonLabel}
+            {showConversionMessage ? "Updating conversion..." : buttonLabel}
           </Button>
         </CardFooter>
       </Card>
     </>
   );
+
+  // Component rendering functions
+  function renderDonorProfileModal() {
+    return (
+      donor !== null &&
+      walletAddress &&
+      !donor.is_profile_complete && (
+        <DonorProfileModal
+          walletAddress={walletAddress}
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )
+    );
+  }
+
+  function renderDonationLoading() {
+    return <DonationLoading />;
+  }
+
+  function renderAmountSelector() {
+    return (
+      <AmountSelector
+        presetAmounts={PRESET_USD_AMOUNTS}
+        selectedAmount={selectedUSD}
+        customAmount={customUSD}
+        onPresetClick={handlePresetClick}
+        onCustomChange={handleCustomChange}
+        tokenPrice={tokenPrice ?? 0}
+        nativeSymbol={nativeSymbol}
+        tokenFloat={tokenFloat}
+      />
+    );
+  }
+
+  function renderDonationSummary() {
+    return (
+      <DonationSummary
+        coverFee={coverFee}
+        onCoverFeeChange={() => setCoverFee(!coverFee)}
+        selectedUSD={selectedUSD}
+        customUSD={customUSD}
+        charityReceives={charityReceives}
+        feeAmount={feeAmount}
+        tokenFloat={tokenFloat}
+        nativeSymbol={nativeSymbol}
+        charityName={charity.charity_name ?? "Charity"}
+      />
+    );
+  }
+
+  function renderTaxReceiptMessage() {
+    return (
+      <p className="text-xs text-muted-foreground mb-3 text-center w-full">
+        A tax receipt will be emailed to {donor.email}
+      </p>
+    );
+  }
 }
