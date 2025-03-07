@@ -107,12 +107,21 @@ export default function CharitySetupModal({
     }
   };
 
-  // Once the delegation agreement is accepted, move to the d
+  // Once the delegation agreement is accepted, move to the donation URL step
   const handleDelegationAgree = () => {
     setStep("donationUrlStep");
   };
 
   const handleFinish = () => setOpen(false);
+
+  // Handle back button navigation
+  const handleBack = () => {
+    if (step === "delegationAgreementStep") {
+      setStep("charityInfoStep");
+    } else if (step === "donationUrlStep") {
+      setStep("delegationAgreementStep");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -129,11 +138,19 @@ export default function CharitySetupModal({
         )}
 
         {step === "delegationAgreementStep" && (
-          <DelegationAgreementStep onAgree={handleDelegationAgree} />
+          <DelegationAgreementStep
+            onAgree={handleDelegationAgree}
+            charityName={formData.charity_name}
+            onBack={handleBack}
+          />
         )}
 
         {step === "donationUrlStep" && (
-          <DonationUrlStep charitySlug={charitySlug} onFinish={handleFinish} />
+          <DonationUrlStep
+            charitySlug={charitySlug}
+            onFinish={handleFinish}
+            onBack={handleBack}
+          />
         )}
       </DialogContent>
     </Dialog>

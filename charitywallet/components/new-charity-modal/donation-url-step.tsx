@@ -7,17 +7,19 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DonationLinkStepProps {
   charitySlug: string;
   onFinish: () => void;
+  onBack: () => void;
 }
 
 export function DonationUrlStep({
   charitySlug,
   onFinish,
+  onBack,
 }: DonationLinkStepProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -47,7 +49,9 @@ export function DonationUrlStep({
   return (
     <div className="space-y-4 p-4">
       <DialogHeader>
-        <DialogTitle>Your Donation Wallet</DialogTitle>
+        <div className="flex items-center">
+          <DialogTitle>Your Donation Wallet</DialogTitle>
+        </div>
         <DialogDescription>
           This is your unique donation link for receiving crypto donations. You
           can copy and share it anywhere—on flyers, your website, social media,
@@ -77,7 +81,10 @@ export function DonationUrlStep({
         </Button>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between mt-4">
+        <Button variant="outline" onClick={onBack}>
+          Back
+        </Button>
         <Button onClick={onFinish}>Finish</Button>
       </div>
     </div>

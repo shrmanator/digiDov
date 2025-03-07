@@ -554,11 +554,11 @@ export async function generateDonationReceiptPDF(
   );
 
   // CRA Website (Larger Font & Better Spacing)
-  drawCenteredText(
-    "More info: https://www.canada.ca/en/services/taxes/charities.html",
-    20,
-    { font: fontRegular, size: 10, color: primaryColor }
-  );
+  drawCenteredText("More info: https://www.canada.ca/charities-giving", 20, {
+    font: fontRegular,
+    size: 10,
+    color: primaryColor,
+  });
 
   // Page Number (Lower Position)
   drawCenteredText("Page 1 of 1", 8, {
