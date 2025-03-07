@@ -39,6 +39,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const [customUSD, setCustomUSD] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [coverFee, setCoverFee] = useState(true);
+  // Store the chain id used for the last conversion calculation.
+  const [calculatedChainId, setCalculatedChainId] = useState<
+    number | undefined
+  >(undefined);
 
   // Hooks
   const { donor } = useAuth();
@@ -47,18 +51,28 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const activeChain = useActiveWalletChain();
   const web3 = useMemo(() => new Web3(), []);
 
-  // Derived values
-  const isProfileComplete = donor?.is_profile_complete ?? false;
+  // Get the native symbol and decimals from the active chain.
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
+  // Retrieve token price using the active chain's native currency.
   const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
+
+  // Update calculatedChainId whenever activeChain or tokenPrice updates.
+  useEffect(() => {
+    if (activeChain?.id && tokenPrice !== null && tokenPrice > 0) {
+      setCalculatedChainId(activeChain.id);
+    } else if (activeChain?.id !== calculatedChainId) {
+      // If chain changed but we don't have a valid price yet, clear calculatedChainId
+      setCalculatedChainId(undefined);
+    }
+  }, [activeChain, tokenPrice, calculatedChainId]);
 
   // Open modal if profile not complete
   useEffect(() => {
     if (!walletAddress || donor === null) return;
 
-    if (!isProfileComplete) {
+    if (!donor.is_profile_complete) {
       setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
@@ -66,7 +80,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       document.body.style.removeProperty("pointer-events");
       document.body.removeAttribute("data-scroll-locked");
     }
-  }, [walletAddress, donor, isProfileComplete]);
+  }, [walletAddress, donor]);
 
   // Calculate donation amount with fee
   const {
@@ -128,7 +142,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     };
   }, [tokenPrice, selectedUSD, customUSD, decimals, web3, coverFee]);
 
-  // Transaction handler
+  // Transaction handler from the hook.
   const { onClick, isPending, transactionResult } = useSendWithFee(
     donationAmountWei ?? BigInt(0),
     charity.wallet_address
@@ -157,6 +171,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   const handleCoverFeeChange = () => {
     setCoverFee(!coverFee);
+  };
+
+  const handleDonationClick = () => {
+    // Only proceed if the conversion is up-to-date.
+    if (calculatedChainId !== activeChain?.id) return;
+    onClick();
   };
 
   // UI: loading skeleton for initial price fetch
@@ -333,7 +353,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
   return (
     <>
-      {donor !== null && walletAddress && !isProfileComplete && (
+      {donor !== null && walletAddress && !donor.is_profile_complete && (
         <DonorProfileModal
           walletAddress={walletAddress}
           open={isModalOpen}
@@ -349,12 +369,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
             Amount will be sent in {nativeSymbol}
           </CardDescription>
         </CardHeader>
-
         <CardContent className="mt-4">
           {!tokenPrice ? renderLoadingSkeleton() : renderDonationForm()}
           {tokenPrice && charityReceives > 0 && renderFeeBreakdown()}
         </CardContent>
-
         <CardFooter className="flex flex-col pt-6">
           {donor?.email && (
             <p className="text-xs text-muted-foreground mb-3 text-center w-full">
@@ -363,11 +381,17 @@ export default function DonationForm({ charity }: DonationFormProps) {
           )}
           <Button
             size="lg"
-            onClick={onClick}
-            disabled={!donationAmountWei || isPending}
+            onClick={handleDonationClick}
+            disabled={
+              !donationAmountWei ||
+              isPending ||
+              calculatedChainId !== activeChain?.id
+            }
             className="w-full"
           >
-            {buttonLabel}
+            {calculatedChainId !== activeChain?.id
+              ? "Updating conversion..."
+              : buttonLabel}
           </Button>
         </CardFooter>
       </Card>
