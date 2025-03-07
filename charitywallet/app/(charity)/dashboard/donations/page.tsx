@@ -103,7 +103,7 @@ export default async function Dashboard() {
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
               <header className="mb-8 text-center">
-                <h1 className="text-3xl font-bold mb-1">Donations</h1>
+                <h1 className="text-3xl font-bold mb-2">Donations</h1>
                 <DonorLinkCopyButton
                   donorLink={donationLink}
                   label="Click to copy your donation page link"
