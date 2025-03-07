@@ -1,17 +1,10 @@
-import {
-  PDFDocument,
-  rgb,
-  StandardFonts,
-  PDFFont,
-  LineCapStyle,
-  Color,
-  PDFName,
-} from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { donation_receipt, charity, donor } from "@prisma/client";
 import { weiToEvm } from "../convert-wei-to-evm";
 
 /**
- * Generates a visually appealing, CRA-compliant PDF donation receipt.
+ * Generates a CRA-compliant PDF donation receipt for cryptocurrency donations.
+ * Contains only information required by the Canada Revenue Agency.
  */
 export async function generateDonationReceiptPDF(
   receipt: donation_receipt & {
@@ -21,551 +14,233 @@ export async function generateDonationReceiptPDF(
 ): Promise<Uint8Array> {
   if (!receipt) throw new Error("Invalid donation receipt data");
 
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([612, 842]); // Standard A4 size
-  const { width, height } = page.getSize();
-
-  // Configuration for spacing, margins, and dimensions
-  const config = {
-    margin: 60,
-    lineSpacing: 18,
-    sectionSpacing: 28,
-    headerHeight: 120,
-    receiptBoxHeight: 60,
-    donorBoxHeight: 100,
-    charityBoxHeight: 155,
-    signatureBoxHeight: 70,
+  // Ensure date_of_issue is present
+  const receiptData = {
+    ...receipt,
+    date_of_issue: receipt.created_at || new Date().toISOString(),
   };
-  const contentWidth = width - config.margin * 2;
+
+  // Create PDF document
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([612, 792]); // Standard letter size
+  const { width, height } = page.getSize();
 
   // Load fonts
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-  // Define colors
-  const primaryColor = rgb(0.13, 0.17, 0.43); // Dark blue
-  const accentColor = rgb(0.55, 0.71, 0.85); // Light blue
-  const textColor = rgb(0.2, 0.2, 0.2); // Dark gray
-  const subtleColor = rgb(0.6, 0.6, 0.6); // Subtle gray
+  // Define colors and layout
+  const primaryColor = rgb(0, 0, 0.6); // Dark blue
+  const textColor = rgb(0, 0, 0); // Black
+  const margin = 50;
+  const footerHeight = 40; // Reserved space for footer
 
-  // ─── Helper Functions ─────────────────────────────────────────────
-  // Draw left-aligned text at a given x, y position
+  // Dynamically adjust line height based on content
+  const calculateLineHeight = (contentSize: number) => {
+    // Estimate available space and adjust line height
+    const availableSpace = height - 2 * margin - footerHeight - contentSize;
+    // Default line height is 24, but can be compressed if needed
+    return Math.max(16, Math.min(24, availableSpace / 20)); // 20 is estimated number of lines
+  };
+
+  // Initial estimate of content size for standard sections
+  const initialContentSize = 400; // Estimate for headers, fields, etc.
+  let lineHeight = calculateLineHeight(initialContentSize);
+
+  // Helper functions
   const drawText = (
     text: string,
     x: number,
     y: number,
-    options: { font?: PDFFont; size?: number; color?: Color } = {}
+    options: {
+      font?: typeof fontRegular;
+      size?: number;
+      color?: typeof textColor;
+    } = {}
   ) => {
     const { font = fontRegular, size = 10, color = textColor } = options;
     page.drawText(text, { x, y, font, size, color });
+    return y - lineHeight;
   };
 
-  // Draw centered text using the page width
-  const drawCenteredText = (
+  const drawTitle = (
     text: string,
+    x: number,
     y: number,
-    options: { font?: PDFFont; size?: number; color?: Color } = {}
+    options: { size?: number } = {}
   ) => {
-    const { font = fontRegular, size = 10, color = textColor } = options;
-    const textWidth = font.widthOfTextAtSize(text, size);
-    drawText(text, (width - textWidth) / 2, y, { font, size, color });
+    const { size = 12 } = options;
+    return drawText(text, x, y, { font: fontBold, size, color: primaryColor });
   };
 
-  // Draw right-aligned text with a fixed right margin
-  const drawRightAlignedText = (
-    text: string,
-    y: number,
-    options: { font?: PDFFont; size?: number; color?: Color } = {}
-  ) => {
-    const { font = fontRegular, size = 10, color = textColor } = options;
-    const textWidth = font.widthOfTextAtSize(text, size);
-    drawText(text, width - config.margin - textWidth, y, { font, size, color });
-  };
-
-  // Draw a horizontal line
-  const drawLine = (
-    y: number,
-    lineWidth: number = contentWidth,
-    startX: number = config.margin
-  ) => {
+  const drawLine = (y: number) => {
     page.drawLine({
-      start: { x: startX, y },
-      end: { x: startX + lineWidth, y },
+      start: { x: margin, y },
+      end: { x: width - margin, y },
       thickness: 1,
-      color: accentColor,
-      opacity: 0.8,
-      lineCap: LineCapStyle.Round,
+      color: rgb(0.7, 0.7, 0.7),
     });
+    return y - 10;
   };
 
-  // Draw section title with an underline and return the new y-position
-  const drawSectionTitle = (title: string, y: number): number => {
-    drawText(title, config.margin, y, {
-      font: fontBold,
-      size: 12,
-      color: primaryColor,
-    });
-    const titleWidth = fontBold.widthOfTextAtSize(title, 12);
-    drawLine(y - 5, titleWidth + 10, config.margin);
-    return y - config.lineSpacing - 5;
-  };
-
-  // Format date as "Month Day, Year"
-  const formatDate = (date: Date) =>
-    new Intl.DateTimeFormat("en-CA", {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-CA", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(new Date(date));
+    });
+  };
 
-  // ─── Start Drawing the Receipt ───────────────────────────────────
-  let y = height - config.margin;
+  // Start drawing the receipt
+  let y = height - margin;
 
-  // HEADER SECTION
-  page.drawRectangle({
-    x: 0,
-    y: height - config.headerHeight,
-    width,
-    height: config.headerHeight,
-    color: rgb(0.95, 0.95, 0.98),
-  });
-  page.drawLine({
-    start: { x: 0, y: height - config.headerHeight },
-    end: { x: width, y: height - config.headerHeight },
-    thickness: 4,
-    color: accentColor,
-  });
-  drawCenteredText("OFFICIAL DONATION RECEIPT", y, {
-    font: fontBold,
-    size: 22,
-    color: primaryColor,
-  });
-  y -= config.lineSpacing + 6;
-  drawCenteredText("For Income Tax Purposes", y, {
-    font: fontItalic,
-    size: 14,
-    color: primaryColor,
-  });
-  y -= config.lineSpacing - 2;
-  drawCenteredText("(As required by the Canada Revenue Agency)", y, {
-    font: fontRegular,
-    size: 10,
-    color: subtleColor,
-  });
-  y -= 60; // Extra space after header
+  // Header - CRA Required
+  y = drawTitle("OFFICIAL DONATION RECEIPT", margin, y, { size: 16 });
+  y = drawText("For Income Tax Purposes (Canada Revenue Agency)", margin, y);
+  y = drawLine(y - 10);
 
-  // RECEIPT INFO BOX
-  page.drawRectangle({
-    x: config.margin,
-    y: y - config.receiptBoxHeight,
-    width: contentWidth,
-    height: config.receiptBoxHeight,
-    color: rgb(0.97, 0.97, 1),
-    borderColor: accentColor,
-    borderWidth: 1,
-    borderOpacity: 0.5,
-  });
-  // Left side: Receipt number
-  drawText("Receipt #", config.margin + 10, y - 20, {
-    font: fontBold,
-    size: 10,
-    color: subtleColor,
-  });
-  drawText(receipt.receipt_number, config.margin + 10, y - 38, {
-    font: fontBold,
-    size: 12,
-  });
-  // Right side: Donation Date
-  drawRightAlignedText("Donation Date", y - 20, {
-    font: fontBold,
-    size: 10,
-    color: subtleColor,
-  });
-  drawRightAlignedText(formatDate(receipt.donation_date), y - 38, {
-    font: fontRegular,
-    size: 12,
-  });
-  y -= config.receiptBoxHeight + 30;
-
-  // DONATION DETAILS SECTION
-  y = drawSectionTitle("Donation Details", y);
-  const grossCAD = receipt.fiat_amount;
-  const feeCAD = grossCAD * 0.03;
-  const netCAD = grossCAD - feeCAD;
-
-  // Background for donation details
-  page.drawRectangle({
-    x: config.margin,
-    y: y - 50,
-    width: contentWidth,
-    height: 50,
-    color: rgb(0.97, 0.97, 1),
-    borderColor: accentColor,
-    borderWidth: 1,
-    borderOpacity: 0.3,
-  });
-
-  // Donation amounts table
-  drawText(
-    "Fair Market Value of Cryptocurrency Donated:",
-    config.margin + 5,
-    y,
-    { font: fontRegular, size: 10 }
+  // Receipt Info - CRA Required
+  y = drawText(`Receipt Number: ${receipt.receipt_number}`, margin, y - 10);
+  y = drawText(
+    `Date of Issue: ${formatDate(receiptData.date_of_issue.toISOString())}`,
+    margin,
+    y
   );
-  drawRightAlignedText(`$${grossCAD.toFixed(2)} CAD`, y, {
-    font: fontRegular,
-    size: 10,
-  });
-  y -= config.lineSpacing;
-  drawText("Less Administrative Fee (3%):", config.margin + 5, y, {
-    font: fontRegular,
-    size: 10,
-  });
-  drawRightAlignedText(`$${feeCAD.toFixed(2)} CAD`, y, {
-    font: fontRegular,
-    size: 10,
-    color: subtleColor,
-  });
-  y -= config.lineSpacing;
-  drawLine(y - 2, contentWidth - 10);
-  y -= 10;
-  drawText("Eligible Amount For Tax Purposes (97%):", config.margin + 5, y, {
-    font: fontBold,
-    size: 10,
-  });
-  drawRightAlignedText(`$${netCAD.toFixed(2)} CAD`, y, {
-    font: fontBold,
-    size: 10,
-  });
-  y -= config.lineSpacing + 5;
-  drawText(
-    "Fair market value determination: Based on exchange rate at the time donation was received.",
-    config.margin + 5,
-    y,
-    { font: fontRegular, size: 9, color: subtleColor }
+  y = drawText(
+    `Date of Donation: ${formatDate(receipt.donation_date.toISOString())}`,
+    margin,
+    y
   );
-  y -= config.lineSpacing - 5;
-  drawText(
-    "No advantage was received in exchange for this donation.",
-    config.margin + 5,
-    y,
-    { font: fontRegular, size: 9, color: subtleColor }
+  y = drawLine(y - 10);
+
+  // Charity Information - CRA Required
+  y = drawTitle("CHARITY INFORMATION", margin, y - 10);
+  y = drawText(`Name: ${receipt.charity?.charity_name || "N/A"}`, margin, y);
+  y = drawText(
+    `Registration Number: ${receipt.charity?.registration_number || "N/A"}`,
+    margin,
+    y
   );
-  y -= config.sectionSpacing;
+  y = drawText(
+    `Address: ${receipt.charity?.registered_office_address || "N/A"}`,
+    margin,
+    y
+  );
+  y = drawLine(y - 10);
 
-  // CRYPTOCURRENCY DETAILS (if provided)
-  if (receipt.crypto_amount_wei && receipt.transaction_hash) {
-    y = drawSectionTitle("Cryptocurrency Details", y);
-    const cryptoAmountEvm = weiToEvm(receipt.crypto_amount_wei);
-    const blockchainInfo = getBlockchainInfo(receipt.chainId);
-    const colWidth = contentWidth / 2 - 10;
-
-    // Left column for blockchain and crypto amount
-    let colY = y;
-    drawText("Blockchain:", config.margin + 5, colY, {
-      font: fontRegular,
-      size: 10,
-    });
-    drawText(
-      blockchainInfo.name,
-      config.margin + 5,
-      colY - config.lineSpacing,
-      {
-        font: fontBold,
-        size: 10,
-      }
-    );
-    drawText(
-      "Crypto Amount:",
-      config.margin + 5,
-      colY - config.lineSpacing * 2.5,
-      {
-        font: fontRegular,
-        size: 10,
-      }
-    );
-    drawText(
-      `${cryptoAmountEvm} ${blockchainInfo.symbol}`,
-      config.margin + 5,
-      colY - config.lineSpacing * 3.5,
-      { font: fontBold, size: 10 }
-    );
-
-    // Right column for transaction link
-    drawText("Transaction:", config.margin + colWidth + 15, colY, {
-      font: fontRegular,
-      size: 10,
-    });
-
-    // Step 1) Define/link text at a slightly lower y so it doesn't overlap the label
-    const linkText = "View on Blockscan";
-    const linkX = config.margin + colWidth + 15; // same X as label
-    const linkY = colY - config.lineSpacing; // one line below
-    const linkSize = 9;
-
-    page.drawText(linkText, {
-      x: linkX,
-      y: linkY,
-      font: fontRegular,
-      size: linkSize,
-      color: primaryColor,
-    });
-
-    // Step 2) Measure its size to define the annotation rectangle
-    const linkWidth = fontRegular.widthOfTextAtSize(linkText, linkSize);
-    const linkHeight = linkSize; // approximate text height from baseline
-
-    // Step 3) Build the link annotation dictionary manually
-    const linkAnnotation = pdfDoc.context.obj({
-      Type: "Annot",
-      Subtype: "Link",
-      // PDF rectangle format: [left, bottom, right, top]
-      Rect: [linkX, linkY, linkX + linkWidth, linkY + linkHeight],
-      Border: [0, 0, 0], // no border
-      A: {
-        Type: "Action",
-        S: "URI",
-        URI: `https://blockscan.com/tx/${receipt.transaction_hash}`,
-      },
-    });
-
-    // Step 4) Add this link annotation to the page’s Annots array
-    const annots = page.node.Annots() || pdfDoc.context.obj([]);
-    annots.push(linkAnnotation);
-    page.node.set(PDFName.of("Annots"), annots);
-
-    // Optionally adjust y so subsequent sections are spaced nicely
-    // e.g., shift down 4 or 5 lines:
-    y = colY - config.sectionSpacing - config.lineSpacing * 4.5;
-  }
-
-  // TWO-COLUMN LAYOUT FOR DONOR AND CHARITY INFORMATION
-  const colWidth = contentWidth / 2 - 10;
-  const donorStartY = y;
-  // Donor Info Box
-  page.drawRectangle({
-    x: config.margin,
-    y: donorStartY - config.donorBoxHeight,
-    width: colWidth,
-    height: config.donorBoxHeight,
-    color: rgb(0.97, 0.97, 1),
-    borderColor: accentColor,
-    borderWidth: 1,
-    borderOpacity: 0.3,
-  });
-  let donorY = drawSectionTitle("Donor Information", donorStartY);
-  drawText("Name:", config.margin + 5, donorY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
+  // Donor Information - CRA Required
+  y = drawTitle("DONOR INFORMATION", margin, y - 10);
   const donorName =
-    `${receipt.donor?.first_name ?? ""} ${
-      receipt.donor?.last_name ?? ""
+    `${receipt.donor?.first_name || ""} ${
+      receipt.donor?.last_name || ""
     }`.trim() || "Anonymous";
-  drawText(donorName, config.margin + 5, donorY - config.lineSpacing + 5, {
-    font: fontRegular,
-    size: 10,
-  });
-  donorY -= config.lineSpacing * 1.5;
-  drawText("Email:", config.margin + 5, donorY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.donor?.email ?? "Not provided",
-    config.margin + 5,
-    donorY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
+  y = drawText(`Name: ${donorName}`, margin, y);
+  y = drawText(
+    `Address: ${receipt.donor?.address || "Not provided"}`,
+    margin,
+    y
   );
-  donorY -= config.lineSpacing * 1.5;
-  drawText("Address:", config.margin + 5, donorY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.donor?.address ?? "Not provided",
-    config.margin + 5,
-    donorY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
+  y = drawLine(y - 10);
+
+  // Donation Details - CRA Required
+  y = drawTitle("DONATION DETAILS", margin, y - 10);
+  y = drawText("Type of Donation: Cryptocurrency (Gift in Kind)", margin, y);
+
+  // Calculate donation values
+  const grossCAD = receipt.fiat_amount;
+
+  y = drawText(`Total Amount Received: ${grossCAD.toFixed(2)} CAD`, margin, y);
+
+  y = drawText(
+    `Eligible Amount for Tax Purposes: ${grossCAD.toFixed(2)} CAD`,
+    margin,
+    y,
+    { font: fontBold }
   );
 
-  // Charity Info Box (placed parallel to donor info)
-  const charityStartX = config.margin + colWidth + 20;
-  page.drawRectangle({
-    x: charityStartX,
-    y: donorStartY - config.charityBoxHeight - 10,
-    width: colWidth,
-    height: config.charityBoxHeight,
-    color: rgb(0.97, 0.97, 1),
-    borderColor: accentColor,
-    borderWidth: 1,
-    borderOpacity: 0.3,
-  });
-  let charityY = donorStartY;
-  drawText("Charity Information", charityStartX + 5, charityY, {
-    font: fontBold,
-    size: 12,
-    color: primaryColor,
-  });
-  const charityTitleWidth = fontBold.widthOfTextAtSize(
-    "Charity Information",
-    12
-  );
-  drawLine(charityY - 5, charityTitleWidth + 10, charityStartX + 5);
-  charityY -= config.lineSpacing;
-  drawText("Name:", charityStartX + 5, charityY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.charity?.charity_name ?? "N/A",
-    charityStartX + 5,
-    charityY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
-  );
-  charityY -= config.lineSpacing * 1.5;
-  drawText("Registration #:", charityStartX + 5, charityY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.charity?.registration_number ?? "N/A",
-    charityStartX + 5,
-    charityY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
-  );
-  charityY -= config.lineSpacing * 1.5;
-  drawText("Address:", charityStartX + 5, charityY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.charity?.registered_office_address ?? "N/A",
-    charityStartX + 5,
-    charityY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
-  );
-  charityY -= config.lineSpacing * 1.5;
-  drawText("Contact:", charityStartX + 5, charityY, {
-    font: fontRegular,
-    size: 9,
-    color: subtleColor,
-  });
-  drawText(
-    receipt.charity?.contact_phone ?? "N/A",
-    charityStartX + 5,
-    charityY - config.lineSpacing + 5,
-    { font: fontRegular, size: 10 }
-  );
-  charityY -= config.lineSpacing - 5;
-  if (receipt.charity?.contact_email) {
-    drawText(
-      receipt.charity.contact_email,
-      charityStartX + 5,
-      charityY - config.lineSpacing + 5,
-      { font: fontRegular, size: 10 }
-    );
+  // Check remaining space and adjust spacing if needed
+  const remainingSpace = y - margin - footerHeight;
+  const neededSpaceForRest = 200; // Estimated space needed for remaining content
+
+  // If space is tight, reduce line height for remaining content
+  if (remainingSpace < neededSpaceForRest) {
+    lineHeight = Math.max(14, lineHeight * 0.8);
   }
-  y = donorStartY - config.charityBoxHeight - 30;
 
-  // CERTIFICATION & SIGNATURE
-  y = drawSectionTitle("Certification", y);
-  const certificationText =
-    "I certify that the information above is accurate and that this donation qualifies as a gift in accordance with the regulations of the Canada Revenue Agency.";
-  const words = certificationText.split(" ");
-  let lineBuffer = "";
-  let certY = y;
-  for (const word of words) {
-    const testLine = lineBuffer ? `${lineBuffer} ${word}` : word;
-    const testWidth = fontRegular.widthOfTextAtSize(testLine, 10);
-    if (testWidth > contentWidth - 20 && lineBuffer) {
-      drawText(lineBuffer, config.margin + 5, certY, {
-        font: fontRegular,
-        size: 10,
-      });
-      lineBuffer = word;
-      certY -= config.lineSpacing - 4;
+  y = drawText(
+    "Fair market value determined using CoinGecko exchange rate at time of donation",
+    margin,
+    y,
+    { size: 9 }
+  );
+
+  // Cryptocurrency Details - As supporting information
+  if (receipt.crypto_amount_wei && receipt.transaction_hash) {
+    const shortLine = remainingSpace < neededSpaceForRest ? 5 : 10;
+    y = drawLine(y - shortLine);
+    y = drawTitle("GIFT DESCRIPTION", margin, y - shortLine);
+    const cryptoAmount = weiToEvm(receipt.crypto_amount_wei);
+    const blockchainInfo = getBlockchainInfo(receipt.chainId);
+
+    y = drawText(
+      `Description: ${cryptoAmount} ${blockchainInfo.symbol} cryptocurrency`,
+      margin,
+      y
+    );
+
+    // If transaction hash is long, break it across multiple lines or truncate if very tight on space
+    const hash = receipt.transaction_hash;
+    if (remainingSpace < neededSpaceForRest && hash.length > 40) {
+      const hashPart1 = hash.substring(0, 40);
+      const hashPart2 = hash.substring(40);
+      y = drawText(`Transaction Hash: ${hashPart1}`, margin, y);
+      y = drawText(hashPart2, margin + 105, y);
     } else {
-      lineBuffer = testLine;
+      y = drawText(`Transaction Hash: ${hash}`, margin, y);
     }
   }
-  if (lineBuffer) {
-    drawText(lineBuffer, config.margin + 5, certY, {
-      font: fontRegular,
-      size: 10,
-    });
-  }
-  y = certY - config.lineSpacing * 2;
 
-  // Adjusted Y position to move the signature box up slightly
-  const signatureBoxY = y - config.signatureBoxHeight + 40; // Moves it up
+  // Certification - CRA Required
+  const shortLine = remainingSpace < neededSpaceForRest ? 5 : 10;
+  y = drawLine(y - shortLine);
+  y = drawTitle("CERTIFICATION", margin, y - shortLine);
 
-  // Signature Box (Better Layout)
-  // page.drawRectangle({
-  //   x: config.margin,
-  //   y: signatureBoxY,
-  //   width: contentWidth,
-  //   height: config.signatureBoxHeight,
-  //   borderColor: primaryColor,
-  //   borderWidth: 1.2,
-  //   borderOpacity: 0.8,
-  // });
-
-  // Inline Layout: Authorized Representative Name + Label + Date (All inside the box)
-  const inlineText = `${
-    receipt.charity?.contact_name ?? "Authorized Representative"
-  } | Authorized Representative | Date: ${formatDate(receipt.donation_date)}`;
-  drawCenteredText(inlineText, signatureBoxY + config.signatureBoxHeight / 2, {
-    font: fontBold,
-    size: 10,
-  });
-
-  // FOOTER
-  // Footer background
-  // Footer Background with More Height
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width,
-    height: 50, // More height for better spacing
-    color: rgb(0.95, 0.95, 0.98),
-  });
-
-  // Top border for footer
-  page.drawLine({
-    start: { x: 0, y: 50 },
-    end: { x: width, y: 50 },
-    thickness: 2,
-    color: accentColor,
-  });
-
-  // CRA Information (One Line)
-  drawCenteredText(
-    "Issued under the Canada Revenue Agency (CRA) guidelines",
-    35,
-    { font: fontRegular, size: 9, color: subtleColor }
+  // Adjust certification text size if space is tight
+  const certTextSize = remainingSpace < neededSpaceForRest ? 9 : 10;
+  y = drawText(
+    "I certify that this donation qualifies as a gift in accordance with the requirements of the Income Tax Act (Canada).",
+    margin,
+    y,
+    { size: certTextSize }
   );
 
-  // CRA Website (Larger Font & Better Spacing)
-  drawCenteredText("More info: https://www.canada.ca/charities-giving", 20, {
-    font: fontRegular,
-    size: 10,
-    color: primaryColor,
-  });
+  // Skip space for signature - adjust based on remaining space
+  const signatureSpace = remainingSpace < neededSpaceForRest ? 25 : 40;
+  y = y - signatureSpace;
 
-  // Page Number (Lower Position)
-  drawCenteredText("Page 1 of 1", 8, {
-    font: fontRegular,
-    size: 8,
-    color: subtleColor,
-  });
+  // // Draw signature line
+  // page.drawLine({
+  //   start: { x: margin, y: y + 15 },
+  //   end: { x: margin + 200, y: y + 15 },
+  //   thickness: 1,
+  //   color: rgb(0, 0, 0),
+  // });
+
+  // Add signature text UNDER the line
+  const signerName =
+    receipt.charity?.contact_name || "Authorized Representative";
+  y = drawText(signerName, margin, y, { font: fontBold });
+  y = drawText("Authorized Representative", margin, y, { size: 9 });
+
+  // Footer - CRA Required - fixed position at bottom with safe margin
+  const footerY = margin;
+  drawLine(footerY + 10);
+  drawText(
+    "This receipt is an official receipt for income tax purposes.",
+    margin,
+    footerY
+  );
 
   return await pdfDoc.save();
 }
@@ -587,17 +262,6 @@ function getBlockchainInfo(chainId: string | null): {
     case "0xa4b1":
       return { name: "Arbitrum One", symbol: "ARB" };
     default:
-      return { name: `Chain ID ${chainId ?? "N/A"}`, symbol: "CRYPTO" };
+      return { name: `Chain ID ${chainId ?? "Unknown"}`, symbol: "CRYPTO" };
   }
-}
-
-/**
- * Helper function to format transaction hash for better readability
- */
-function formatTransactionHash(hash: string): string {
-  if (!hash) return "N/A";
-  if (hash.length > 32) {
-    return `${hash.substring(0, 32)}\n${hash.substring(32)}`; // Split into two lines
-  }
-  return hash;
 }

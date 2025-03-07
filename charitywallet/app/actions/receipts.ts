@@ -5,7 +5,6 @@ import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-do
 import {
   Prisma,
   donation_receipt,
-  donation_receipt_counter,
   charity,
   donor,
 } from "@prisma/client";
