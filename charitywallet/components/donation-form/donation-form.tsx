@@ -136,10 +136,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Computed values
   const buttonLabel = useMemo(() => {
     if (isPending) return "Processing...";
-    if (transactionResult) return "Donation Sent!";
+    if (donationSuccess) return "Donation Sent!";
     if (tokenFloat > 0) return `Donate ${totalPaid.toFixed(2)} CAD`;
     return "Donate";
-  }, [isPending, transactionResult, tokenFloat, totalPaid]);
+  }, [isPending, donationSuccess, tokenFloat, totalPaid]);
 
   const isButtonDisabled =
     !donationAmountWei || isPending || calculatedChainId !== activeChain?.id;
