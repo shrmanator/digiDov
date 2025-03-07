@@ -102,13 +102,16 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [walletAddress, donor]);
 
-  // Handle successful donation animation
+  // Handle successful donation animation and form reset
   useEffect(() => {
     if (transactionResult) {
       setDonationSuccess(true);
-      // Reset success state after animation completes (5 seconds)
+      // Reset success state and form after animation completes (5 seconds)
       const timer = setTimeout(() => {
         setDonationSuccess(false);
+        // Reset form values
+        setSelectedUSD(null);
+        setCustomUSD("");
       }, 5000);
       return () => clearTimeout(timer);
     }
