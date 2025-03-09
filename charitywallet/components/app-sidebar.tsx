@@ -1,16 +1,25 @@
 "use client";
 
 import * as React from "react";
-import { BarChart, Coins, Percent, User } from "lucide-react";
+import {
+  BarChart,
+  BookDashed,
+  Coins,
+  GalleryVerticalEnd,
+  Percent,
+  User,
+} from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useCharity } from "@/hooks/use-charity";
+import { TeamSwitcher } from "./team-switcher";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { charity } = useCharity();
@@ -21,6 +30,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       email: charity?.contact_email || "default@example.com",
       avatar: charity?.avatar || "avatar",
     },
+    teams: [
+      {
+        name: "SuperMint",
+        logo: BookDashed,
+        plan: "Enterprise",
+      },
+    ],
     navMain: [
       {
         title: "Donations",
@@ -51,6 +67,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <TeamSwitcher teams={navData.teams} />
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
       </SidebarContent>
