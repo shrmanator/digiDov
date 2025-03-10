@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import "@/lib/moralis"; // This is just here so Moralis is initialized
 
 export default async function DashboardLayout({
   children,
