@@ -1,7 +1,9 @@
 import Moralis from "moralis";
 
+let isInitialized = false;
+
 export const initializeMoralis = async () => {
-  if (!Moralis.Core.isStarted) {
+  if (!isInitialized && !Moralis.Core.isStarted) {
     const apiKey = process.env.MORALIS_API_KEY;
     if (!apiKey) {
       throw new Error(
@@ -10,5 +12,9 @@ export const initializeMoralis = async () => {
     }
     await Moralis.start({ apiKey });
     console.log("Moralis initialized successfully.");
+    isInitialized = true;
   }
 };
+
+// Initialize Moralis once at server startup
+initializeMoralis().catch(console.error);
