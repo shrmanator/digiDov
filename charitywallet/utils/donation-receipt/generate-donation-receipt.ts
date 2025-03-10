@@ -4,7 +4,7 @@ import { weiToEvm } from "../convert-wei-to-evm";
 
 /**
  * Generates a CRA-compliant PDF donation receipt for cryptocurrency donations.
- * Contains only information required by the Canada Revenue Agency.
+ * Contains all information required by the Canada Revenue Agency.
  */
 export async function generateDonationReceiptPDF(
   receipt: donation_receipt & {
@@ -152,6 +152,8 @@ export async function generateDonationReceiptPDF(
 
   y = drawText(`Total Amount Received: ${grossCAD.toFixed(2)} CAD`, margin, y);
 
+  // Statement of Advantage - CRA Required
+  y = drawText(`Advantage Amount: 0.00 CAD`, margin, y);
   y = drawText(
     `Eligible Amount for Tax Purposes: ${grossCAD.toFixed(2)} CAD`,
     margin,
@@ -168,8 +170,36 @@ export async function generateDonationReceiptPDF(
     lineHeight = Math.max(14, lineHeight * 0.8);
   }
 
+  // FMV Determination details - CRA Required
+  // Use the transaction timestamp for the valuation time, not the current time
+  const valuationTime = new Date(
+    receipt.updated_at || receipt.donation_date
+  ).toLocaleTimeString("en-CA", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+
+  // Calculate exchange rate if not stored directly
+  let exchangeRate = "N/A";
+  if (receipt.fiat_amount && receipt.crypto_amount_wei) {
+    const cryptoAmount = weiToEvm(receipt.crypto_amount_wei);
+    if (cryptoAmount > 0) {
+      exchangeRate = (receipt.fiat_amount / cryptoAmount).toFixed(2);
+    }
+  }
+
   y = drawText(
-    "Fair market value determined using CoinGecko exchange rate at time of donation",
+    `Fair market value determined using CoinGecko exchange rate at time of donation: ${valuationTime}`,
+    margin,
+    y,
+    { size: 9 }
+  );
+  y = drawText(
+    `Exchange rate used: ${exchangeRate || "N/A"} CAD per ${
+      getBlockchainInfo(receipt.chainId).symbol
+    }`,
     margin,
     y,
     { size: 9 }
@@ -223,13 +253,13 @@ export async function generateDonationReceiptPDF(
   const signatureSpace = remainingSpace < neededSpaceForRest ? 25 : 40;
   y = y - signatureSpace;
 
-  // // Draw signature line
-  // page.drawLine({
-  //   start: { x: margin, y: y + 15 },
-  //   end: { x: margin + 200, y: y + 15 },
-  //   thickness: 1,
-  //   color: rgb(0, 0, 0),
-  // });
+  // Draw signature line
+  page.drawLine({
+    start: { x: margin, y: y + 15 },
+    end: { x: margin + 200, y: y + 15 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
 
   // Add signature text UNDER the line
   const signerName =
@@ -239,11 +269,19 @@ export async function generateDonationReceiptPDF(
 
   // Footer - CRA Required - fixed position at bottom with safe margin
   const footerY = margin;
-  drawLine(footerY + 10);
+  drawLine(footerY + 30);
   drawText(
     "This receipt is an official receipt for income tax purposes.",
     margin,
-    footerY
+    footerY + 15
+  );
+
+  // CRA website reference - Required
+  drawText(
+    "For information on all registered charities in Canada under the Income Tax Act, please visit: canada.ca/charities-giving",
+    margin,
+    footerY,
+    { size: 8 }
   );
 
   return await pdfDoc.save();
