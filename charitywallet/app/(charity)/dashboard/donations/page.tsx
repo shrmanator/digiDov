@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
-import TransactionHistory from "@/components/transaction-history/transaction-history";
+import TransactionHistory from "@/components/transaction-history";
 import {
   SidebarProvider,
   SidebarInset,

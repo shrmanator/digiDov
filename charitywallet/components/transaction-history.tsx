@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { WalletCopyButton } from "../wallet-copy-button";
+import { WalletCopyButton } from "./wallet-copy-button";
 import Web3 from "web3";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
 
