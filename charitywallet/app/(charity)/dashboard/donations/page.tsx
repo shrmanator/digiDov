@@ -97,7 +97,7 @@ export default async function Dashboard() {
             <div className="flex flex-col items-end gap-1 mt-5">
               <DonorLinkCopyButton
                 donorLink={donationLink}
-                label="Copy your donation page link"
+                label="Click to copy donation page link"
               />{" "}
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
