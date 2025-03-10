@@ -17,7 +17,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
 import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";

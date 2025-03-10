@@ -29,10 +29,7 @@ interface SideBarAndHeaderProps {
   children?: React.ReactNode;
 }
 
-export default function SideBarAndHeader({
-  charity,
-  children,
-}: SideBarAndHeaderProps) {
+export default function SideBarAndHeader({ children }: SideBarAndHeaderProps) {
   const [, setIsAuthenticated] = useState(false);
   const account = useActiveAccount();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
