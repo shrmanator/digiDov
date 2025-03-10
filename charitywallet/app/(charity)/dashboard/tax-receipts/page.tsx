@@ -18,7 +18,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { WalletCopyButton } from "@/components/wallet-copy-button";
 import CombinedWalletBalance from "@/components/wallet-balance";
-import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
+import { fetchTransactions } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -39,7 +39,7 @@ export default async function Dashboard() {
   }
 
   // 4) Fetch net worth and transactions concurrently
-  const [netWorthResult, transactionsResult] = await Promise.allSettled([
+  const [netWorthResult] = await Promise.allSettled([
     Moralis.EvmApi.wallets.getWalletNetWorth({
       address: charity.wallet_address,
       excludeSpam: true,
@@ -55,17 +55,6 @@ export default async function Dashboard() {
     console.error("Error fetching net worth:", netWorthResult.reason);
   }
 
-  let transactions: TransactionWithType[] = [];
-  if (transactionsResult.status === "fulfilled") {
-    transactions = transactionsResult.value;
-  } else {
-    console.error(
-      "Failed to fetch transactions from Moralis:",
-      transactionsResult.reason
-    );
-  }
-
-  // 5) Render the page and pass the data to child components
   return (
     <SidebarProvider>
       <AppSidebar />
