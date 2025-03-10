@@ -58,7 +58,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/aws-sdk": "^2.7.4",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
