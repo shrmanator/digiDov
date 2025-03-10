@@ -253,13 +253,13 @@ export async function generateDonationReceiptPDF(
   const signatureSpace = remainingSpace < neededSpaceForRest ? 25 : 40;
   y = y - signatureSpace;
 
-  // Draw signature line
-  page.drawLine({
-    start: { x: margin, y: y + 15 },
-    end: { x: margin + 200, y: y + 15 },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
+  // // Draw signature line
+  // page.drawLine({
+  //   start: { x: margin, y: y + 15 },
+  //   end: { x: margin + 200, y: y + 15 },
+  //   thickness: 1,
+  //   color: rgb(0, 0, 0),
+  // });
 
   // Add signature text UNDER the line
   const signerName =
