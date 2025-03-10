@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  BarChart,
-  BookDashed,
-  Coins,
-  GalleryVerticalEnd,
-  Percent,
-  User,
-} from "lucide-react";
+import { BarChart, BookDashed, Coins, Percent, User } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {

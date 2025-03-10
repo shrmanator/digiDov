@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Copy, Check, ArrowLeft } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DonationLinkStepProps {

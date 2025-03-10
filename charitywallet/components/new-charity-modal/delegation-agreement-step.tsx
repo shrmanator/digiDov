@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ScrollText, ArrowLeft } from "lucide-react";
+import { ScrollText } from "lucide-react";
 
 interface DelegationAgreementStepProps {
   onAgree: () => void;
@@ -49,17 +49,18 @@ export function DelegationAgreementStep({
               <div>
                 <p className="font-medium">Agreement Terms</p>
                 <p>
-                  This Delegation Agreement ("Agreement") is made between{" "}
+                  This Delegation Agreement (&ldquo;Agreement&rdquo;) is made
+                  between{" "}
                   <span className="bg-primary/10 px-1 rounded">
                     {charityName || "Charity Name"}
                   </span>{" "}
-                  ("the Charity") and{" "}
+                  (&ldquo;the Charity&rdquo;) and{" "}
                   <span className="bg-primary/10 px-1 rounded">
                     Delegate Name
                   </span>{" "}
-                  ("the Delegate"). The Charity hereby delegates authority to
-                  the Delegate to issue official donation receipts on its
-                  behalf.
+                  (&ldquo;the Delegate&rdquo;). The Charity hereby delegates
+                  authority to the Delegate to issue official donation receipts
+                  on its behalf.
                 </p>
               </div>
             </div>
@@ -75,7 +76,7 @@ export function DelegationAgreementStep({
                   Ensuring that each donation qualifies as a gift under the
                   Income Tax Act
                 </li>
-                <li>Safeguarding the Charity's registration number</li>
+                <li>Safeguarding the Charity&apos;s registration number</li>
               </ul>
 
               <p className="mt-4">

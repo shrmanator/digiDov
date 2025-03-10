@@ -73,10 +73,10 @@ export default function DonorProfileModal({
       });
       await updateDonor(walletAddress);
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
 
-      if (err.message === "EMAIL_ALREADY_EXISTS") {
+      if (err instanceof Error && err.message === "EMAIL_ALREADY_EXISTS") {
         setErrorMessage(
           "This email is already taken. Please use a different one."
         );
