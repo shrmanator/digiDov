@@ -43,7 +43,7 @@ export async function upsertCharity(data: CharityInput) {
       charity_name: data.charity_name ?? undefined,
       registered_office_address: data.registered_address ?? undefined,
       registration_number: data.registration_number ?? undefined,
-      contact_name: data.contact_name ?? undefined,
+      contact_first_name: data.contact_name ?? undefined,
       contact_email: data.contact_email ?? undefined,
       contact_mobile_phone: data.contact_phone ?? undefined,
       ...(typeof data.is_profile_complete !== "undefined"
