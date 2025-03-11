@@ -45,7 +45,7 @@ export async function upsertCharity(data: CharityInput) {
       registration_number: data.registration_number ?? undefined,
       contact_name: data.contact_name ?? undefined,
       contact_email: data.contact_email ?? undefined,
-      contact_phone: data.contact_phone ?? undefined,
+      contact_mobile_phone: data.contact_phone ?? undefined,
       ...(typeof data.is_profile_complete !== "undefined"
         ? { is_profile_complete: data.is_profile_complete }
         : {}),
@@ -57,7 +57,7 @@ export async function upsertCharity(data: CharityInput) {
       registration_number: data.registration_number ?? null,
       contact_name: data.contact_name ?? null,
       contact_email: data.contact_email ?? null,
-      contact_phone: data.contact_phone ?? null,
+      contact_mobile_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
       is_profile_complete: data.is_profile_complete ?? false,
       slug: slug ?? null,
