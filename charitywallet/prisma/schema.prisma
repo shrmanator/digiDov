@@ -17,7 +17,7 @@ enum Jurisdiction {
 
 model charity {
     id                        String             @id @default(uuid())
-    charity_first_name        String?
+    charity_name              String?
     registered_office_address String?
     registration_number       String?
     contact_first_name        String?
