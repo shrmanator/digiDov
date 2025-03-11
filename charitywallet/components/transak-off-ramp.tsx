@@ -11,7 +11,6 @@ const InstantOffRampEventsSDK = () => {
       isTransakStreamOffRamp: true,
       cryptoCurrencyCode: "ETH",
       network: "ethereum",
-      isAutoFillUserData: true,
     });
 
     transak.init();

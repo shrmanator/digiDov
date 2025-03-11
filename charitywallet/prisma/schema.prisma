@@ -17,12 +17,19 @@ enum Jurisdiction {
 
 model charity {
     id                        String             @id @default(uuid())
-    charity_name              String?
+    charity_first_name        String?
     registered_office_address String?
     registration_number       String?
-    contact_name              String?
+    contact_first_name        String?
+    contact_last_name         String?
     contact_email             String?
-    contact_phone             String?
+    contact_mobile_phone      String?
+    date_of_birth             String? // Eg. 1990-01-01
+    addressLine               String? // Eg. 342, Drive Ave, South York
+    city                      String?
+    state                     String?
+    postCode                  String?
+    countryCode               String? // Eg. Canada, United States Of America
     wallet_address            String             @unique
     is_profile_complete       Boolean            @default(false)
     slug                      String?            @unique
