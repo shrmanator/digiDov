@@ -18,14 +18,13 @@ enum Jurisdiction {
 model charity {
     id                        String             @id @default(uuid())
     charity_name              String?
-    registered_office_address String?
     registration_number       String?
     contact_first_name        String?
     contact_last_name         String?
     contact_email             String?
     contact_mobile_phone      String?
+    registered_office_address String?
     date_of_birth             String? // Eg. 1990-01-01
-    addressLine               String? // Eg. 342, Drive Ave, South York
     city                      String?
     state                     String?
     postCode                  String?
