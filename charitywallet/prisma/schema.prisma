@@ -16,24 +16,25 @@ enum Jurisdiction {
 }
 
 model charity {
-    id                        String             @id @default(uuid())
-    charity_name              String?
-    registration_number       String?
-    contact_first_name        String?
-    contact_last_name         String?
-    contact_email             String?
-    contact_mobile_phone      String?
-    registered_office_address String?
-    date_of_birth             String? // Eg. 1990-01-01
-    city                      String?
-    state                     String?
-    postCode                  String?
-    countryCode               String? // Eg. Canada, United States Of America
-    wallet_address            String             @unique
-    is_profile_complete       Boolean            @default(false)
-    slug                      String?            @unique
-    created_at                DateTime           @default(now())
-    donation_receipts         donation_receipt[]
+    id                            String             @id @default(uuid())
+    charity_name                  String?
+    registration_number           String?
+    contact_first_name            String?
+    contact_last_name             String?
+    contact_email                 String?
+    contact_mobile_phone          String?
+    registered_office_address     String?
+    date_of_birth                 String? // Eg. 1990-01-01
+    city                          String?
+    state                         String?
+    postCode                      String?
+    countryCode                   String? // Eg. Canada, United States Of America
+    wallet_address                String             @unique // Wallet address for receiving donations
+    transak_stream_wallet_address String?            @unique // Wallet address for off-ramping
+    is_profile_complete           Boolean            @default(false)
+    slug                          String?            @unique
+    created_at                    DateTime           @default(now())
+    donation_receipts             donation_receipt[]
 }
 
 model donor {

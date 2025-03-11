@@ -102,7 +102,7 @@ export default async function Dashboard() {
               />{" "}
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
-            <InstantOffRampEventsSDK />
+            {/* <InstantOffRampEventsSDK /> */}
           </header>
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
