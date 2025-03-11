@@ -1,16 +1,17 @@
+"use client";
+
 import { Transak } from "@transak/transak-sdk";
 import { useEffect } from "react";
 
 const InstantOffRampEventsSDK = () => {
-  const globalStagingAPIKey = "a2374be4-c59a-400e-809b-72c226c74b8f";
-
   useEffect(() => {
     const transak = new Transak({
-      apiKey: globalStagingAPIKey,
+      apiKey: "7d01c05c-0073-46fa-8665-1329ff6d8244",
       environment: Transak.ENVIRONMENTS.STAGING,
       isTransakStreamOffRamp: true,
-      cryptoCurrencyCode: "USDT",
+      cryptoCurrencyCode: "ETH",
       network: "ethereum",
+      isAutoFillUserData: true,
     });
 
     transak.init();

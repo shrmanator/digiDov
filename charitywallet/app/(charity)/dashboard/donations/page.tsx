@@ -22,6 +22,7 @@ import CombinedWalletBalance from "@/components/wallet-balance";
 import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
+import InstantOffRampEventsSDK from "@/components/transak-off-ramp";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
@@ -101,6 +102,7 @@ export default async function Dashboard() {
               />{" "}
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
+            <InstantOffRampEventsSDK />
           </header>
           <main className="flex flex-1 p-6">
             <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
