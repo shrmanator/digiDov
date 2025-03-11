@@ -55,7 +55,7 @@ export async function upsertCharity(data: CharityInput) {
       charity_name: data.charity_name ?? null,
       registered_office_address: data.registered_address ?? null,
       registration_number: data.registration_number ?? null,
-      contact_name: data.contact_name ?? null,
+      contact_first_name: data.contact_name ?? null,
       contact_email: data.contact_email ?? null,
       contact_mobile_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
