@@ -19,7 +19,7 @@ model charity {
     id                            String             @id @default(uuid())
     charity_name                  String?
     registration_number           String?
-    contact_first_name            String?
+    contact_name                  String? // the first or full name
     contact_last_name             String?
     contact_email                 String?
     contact_mobile_phone          String?
