@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ethers } from "ethers";
 import { useSendCrypto } from "@/hooks/use-send-without-fee";
+import { AccountBalance, AccountProvider } from "thirdweb/react";
+import { ethereum } from "thirdweb/chains";
+import { client } from "@/lib/thirdwebClient";
 
 interface FormData {
   toAddress: string;
@@ -70,6 +73,9 @@ export function TransactionModal() {
             )}
           </div>
           <div>
+            {/* <AccountProvider address="0x..." client={client}>
+              <AccountBalance chain={ethereum} />
+            </AccountProvider> */}
             <label>Amount (ETH)</label>
             <Input
               {...register("amount", { required: "Amount is required." })}
