@@ -58,7 +58,7 @@ export function useSendWithFee(
     sendTx(transaction, {
       onSuccess: () => {
         toast({
-          title: "Transaction Sent",
+          title: "Donation Sent",
           description:
             "Donation sent! You will receive a receipt once the transaction is confirmed.",
         });
