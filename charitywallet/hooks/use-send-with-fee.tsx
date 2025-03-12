@@ -15,8 +15,22 @@ export function useSendWithFee(
   // Retrieve the fee-enabled contract instance based on the active chain.
   const feeContract = useMemo(() => {
     if (!activeChain) return null;
+
+    let contractAddress = "";
+    // Check the chain ID: 1 for Ethereum, 137 for Polygon.
+    if (activeChain.id === 1) {
+      // Ethereum mainnet
+      contractAddress = "0x27fEde2dC50C03EF8C90Bf1Aa9Cf69A3D181c9DF";
+    } else if (activeChain.id === 137) {
+      // Polygon mainnet
+      contractAddress = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
+    } else {
+      console.error("Unsupported chain:", activeChain.id);
+      return null;
+    }
+
     return getContract({
-      address: "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0",
+      address: contractAddress,
       chain: activeChain,
       client,
     });
