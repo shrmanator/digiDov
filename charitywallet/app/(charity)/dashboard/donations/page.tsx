@@ -22,6 +22,9 @@ import CombinedWalletBalance from "@/components/wallet-balance";
 import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import OverviewSection from "@/components/dashboard-overview";
+import { TransactionModal } from "@/components/send-no-fee-transaction-modal";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
@@ -104,13 +107,17 @@ export default async function Dashboard() {
           </header>
           <main className="flex flex-1 p-6">
             <div className="w-full mx-auto flex flex-col items-center">
-              <header className="mb-8 text-center w-full">
+              <header className="mb-8 w-full">
                 <h1 className="text-3xl font-bold mb-2">Donations</h1>
+                <TransactionModal />
               </header>
               {isCharityComplete ? (
-                <div className="w-full">
-                  <TransactionHistory transactions={transactions} />
-                </div>
+                <>
+                  {/* Transaction History */}
+                  <div className="w-full">
+                    <TransactionHistory transactions={transactions} />
+                  </div>
+                </>
               ) : (
                 <>
                   <p className="text-center">No donations found.</p>
