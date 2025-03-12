@@ -263,7 +263,7 @@ export async function generateDonationReceiptPDF(
 
   // Add signature text UNDER the line
   const signerName =
-    receipt.charity?.contact_name || "Authorized Representative";
+    receipt.charity?.contact_first_name || "Authorized Representative";
   y = drawText(signerName, margin, y, { font: fontBold });
   y = drawText("Authorized Representative", margin, y, { size: 9 });
 
