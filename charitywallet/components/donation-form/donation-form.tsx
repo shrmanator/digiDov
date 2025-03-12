@@ -1,4 +1,3 @@
-// First, let's update the imports to include some animation utilities
 "use client";
 
 import { useEffect, useState, useMemo } from "react";

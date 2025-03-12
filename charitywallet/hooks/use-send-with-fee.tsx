@@ -12,23 +12,14 @@ export function useSendWithFee(
 ) {
   const activeChain = useActiveWalletChain();
 
-  // Retrieve the fee-enabled contract instance based on the active chain.
+  // Only support Ethereum for USDC donations
   const feeContract = useMemo(() => {
-    if (!activeChain) return null;
-
-    let contractAddress = "";
-    // Check the chain ID: 1 for Ethereum, 137 for Polygon.
-    if (activeChain.id === 1) {
-      // Ethereum mainnet
-      contractAddress = "0x27fEde2dC50C03EF8C90Bf1Aa9Cf69A3D181c9DF";
-    } else if (activeChain.id === 137) {
-      // Polygon mainnet
-      contractAddress = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
-    } else {
-      console.error("Unsupported chain:", activeChain.id);
+    if (!activeChain || activeChain.id !== 1) {
+      console.error("Unsupported chain: Please use the Ethereum network.");
       return null;
     }
-
+    // FeeDeductionUSDC contract address on Ethereum
+    const contractAddress = "0x738A564459c8D49576c9abd40304e75C064e78d7";
     return getContract({
       address: contractAddress,
       chain: activeChain,
@@ -44,15 +35,17 @@ export function useSendWithFee(
 
   const onClick = () => {
     if (!feeContract) {
-      console.error("Active chain not available for fee contract.");
+      console.error("Fee contract is not available.");
       return;
     }
 
+    // Prepare the contract call for USDC donations.
+    // The contract method is defined as:
+    // function sendWithFeeToken(uint256 donationAmount, address recipient)
     const transaction = prepareContractCall({
       contract: feeContract,
-      method: "function sendWithFee(address recipient) payable",
-      params: [recipientAddress],
-      value: donationValue,
+      method: "function sendWithFeeToken(uint256,address)",
+      params: [donationValue, recipientAddress],
     });
 
     sendTx(transaction, {

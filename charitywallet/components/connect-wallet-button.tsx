@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
-import { ethereum, polygon, Chain } from "thirdweb/chains";
+import { ethereum, Chain } from "thirdweb/chains"; // Removed polygon
 import { client } from "@/lib/thirdwebClient";
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
 import { useAuth } from "@/contexts/auth-context";
@@ -31,7 +31,7 @@ export default function DonorConnectWalletButton({
 
   return (
     <ConnectButton
-      chains={[ethereum, polygon]}
+      chains={[ethereum]} // Only Ethereum network supported now
       client={client}
       connectModal={{
         showThirdwebBranding: false,
@@ -42,11 +42,9 @@ export default function DonorConnectWalletButton({
         // Check both activeAccount and our context's user to support auto connect.
         isLoggedIn: async (address: string) => {
           const normalized = address.toLowerCase();
-          // If thirdweb has an active account matching the address, consider it logged in.
           if (activeAccount?.address.toLowerCase() === normalized) {
             return true;
           }
-          // Otherwise, fallback to our context user.
           return user?.walletAddress === normalized;
         },
         doLogin: async (params: VerifyLoginPayloadParams) => {
@@ -55,10 +53,9 @@ export default function DonorConnectWalletButton({
           router.refresh();
         },
         getLoginPayload: async ({ address }: { address: string }) =>
-          // You can keep your existing generatePayload logic if needed.
           generatePayload({
             address: address.toLowerCase(),
-            chainId: activeChain.id,
+            chainId: ethereum.id, // Directly set to Ethereum chain id
           }),
         doLogout: async () => {
           console.log("Logging out!");
