@@ -109,7 +109,7 @@ export default function TransactionHistory({
 
   return (
     <div className="w-full">
-      <ScrollArea style={{ height: "65vh" }} className="w-full">
+      <ScrollArea style={{ height: "78vh" }} className="w-full">
         <div className="flex flex-col space-y-4">
           {transactions.map((tx) => (
             <TransactionItem key={tx.hash + tx.chain} transaction={tx} />

@@ -103,15 +103,13 @@ export default async function Dashboard() {
             </div>
           </header>
           <main className="flex flex-1 p-6">
-            <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
-              <header className="mb-8 text-center">
+            <div className="w-full mx-auto flex flex-col items-center">
+              <header className="mb-8 text-center w-full">
                 <h1 className="text-3xl font-bold mb-2">Donations</h1>
               </header>
               {isCharityComplete ? (
-                <div className="w-full flex justify-center">
-                  <div className="w-full max-w-2xl mx-auto">
-                    <TransactionHistory transactions={transactions} />
-                  </div>
+                <div className="w-full">
+                  <TransactionHistory transactions={transactions} />
                 </div>
               ) : (
                 <>
