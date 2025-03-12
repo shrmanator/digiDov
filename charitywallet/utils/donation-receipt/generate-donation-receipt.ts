@@ -4,7 +4,7 @@ import { weiToEvm } from "../convert-wei-to-evm";
 
 /**
  * Generates a CRA-compliant PDF donation receipt for cryptocurrency donations.
- * Contains all information required by the Canada Revenue Agency.
+ * Contains only information required by the Canada Revenue Agency.
  */
 export async function generateDonationReceiptPDF(
   receipt: donation_receipt & {
