@@ -1,32 +1,17 @@
 "use client";
 
-import { useSendTransaction, useActiveWalletChain } from "thirdweb/react";
-import { getContract, prepareContractCall } from "thirdweb";
-import { useMemo } from "react";
-import { client } from "@/lib/thirdwebClient";
+import { useSendTransaction } from "thirdweb/react";
+import { prepareContractCall } from "thirdweb";
+import { customContract } from "@/utils/get-transaction-with-fee-contract";
 import { toast } from "@/hooks/use-toast";
+
+// USDC token address on polygon mainnet
+const USDC_ADDRESS = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
 
 export function useSendWithFee(
   donationValue: bigint,
   recipientAddress: string
 ) {
-  const activeChain = useActiveWalletChain();
-
-  // Only support Ethereum for USDC donations
-  const feeContract = useMemo(() => {
-    if (!activeChain || activeChain.id !== 1) {
-      console.error("Unsupported chain: Please use the Ethereum network.");
-      return null;
-    }
-    // FeeDeductionUSDC contract address on Ethereum
-    const contractAddress = "0x738A564459c8D49576c9abd40304e75C064e78d7";
-    return getContract({
-      address: contractAddress,
-      chain: activeChain,
-      client,
-    });
-  }, [activeChain]);
-
   const {
     mutate: sendTx,
     isPending,
@@ -34,18 +19,23 @@ export function useSendWithFee(
   } = useSendTransaction();
 
   const onClick = () => {
-    if (!feeContract) {
-      console.error("Fee contract is not available.");
+    if (!customContract) {
+      console.error("Custom contract is not available.");
       return;
     }
 
-    // Prepare the contract call for USDC donations.
-    // The contract method is defined as:
+    // Prepare the contract call for USDC donation.
+    // The method is defined as:
     // function sendWithFeeToken(uint256 donationAmount, address recipient)
+    // We add the erc20Value field so the transaction is paid in USDC.
     const transaction = prepareContractCall({
-      contract: feeContract,
+      contract: customContract,
       method: "function sendWithFeeToken(uint256,address)",
       params: [donationValue, recipientAddress],
+      erc20Value: {
+        tokenAddress: USDC_ADDRESS,
+        amountWei: donationValue,
+      },
     });
 
     sendTx(transaction, {

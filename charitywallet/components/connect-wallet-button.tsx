@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
-import { ethereum, Chain } from "thirdweb/chains"; // Removed polygon
+import { ethereum, Chain, polygon } from "thirdweb/chains"; // Removed polygon
 import { client } from "@/lib/thirdwebClient";
 import { VerifyLoginPayloadParams } from "thirdweb/auth";
 import { useAuth } from "@/contexts/auth-context";
@@ -11,6 +11,7 @@ import { generatePayload } from "@/app/actions/auth";
 
 const wallets = [
   createWallet("io.metamask"),
+  
   createWallet("com.coinbase.wallet"),
   createWallet("com.trustwallet.app"),
   createWallet("com.ledger"),
@@ -31,7 +32,7 @@ export default function DonorConnectWalletButton({
 
   return (
     <ConnectButton
-      chains={[ethereum]} // Only Ethereum network supported now
+      chains={[ethereum, polygon]}
       client={client}
       connectModal={{
         showThirdwebBranding: false,
