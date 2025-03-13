@@ -124,7 +124,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
       <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-2xl font-bold capitalize">
             Donate to {charity.charity_name}
           </CardTitle>
           <CardDescription className="mt-1">
@@ -149,7 +149,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
             </div>
 
             <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
+              <div className="absolute left-0 top-0 h-full flex items-center justify-center px-3 bg-muted border-r border-input rounded-l-md text-sm">
                 USDC
               </div>
               <input
@@ -157,7 +157,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 placeholder="Custom amount"
                 value={customAmount}
                 onChange={handleCustomChange}
-                className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-14"
+                className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-16"
                 min="0"
                 step="0.01"
               />
