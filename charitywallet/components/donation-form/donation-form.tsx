@@ -148,8 +148,8 @@ export default function DonationForm({ charity }: DonationFormProps) {
               ))}
             </div>
 
-            <div className="relative">
-              <div className="absolute left-0 top-0 h-full flex items-center justify-center px-3 bg-muted border-r border-input rounded-l-md text-sm">
+            <div className="relative flex">
+              <div className="flex items-center justify-center px-4 bg-muted border border-input rounded-l-md text-sm">
                 USDC
               </div>
               <input
@@ -157,7 +157,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                 placeholder="Custom amount"
                 value={customAmount}
                 onChange={handleCustomChange}
-                className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-16"
+                className="flex-1 h-10 px-4 py-2 rounded-r-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 min="0"
                 step="0.01"
               />
