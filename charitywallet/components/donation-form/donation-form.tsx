@@ -16,6 +16,7 @@ import { useSendWithFee } from "@/hooks/use-send-with-fee";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "../new-donor-modal/new-donor-modal";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { USDCAmountInput } from "./usdc-amount-input";
 
 // Types
 interface DonationFormProps {
@@ -32,6 +33,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [coverFee, setCoverFee] = useState(true);
   const [donationSuccess, setDonationSuccess] = useState(false);
+  const [isCustomAmountValid, setIsCustomAmountValid] = useState(true);
 
   // Hooks
   const { donor } = useAuth();
@@ -91,9 +93,9 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCustomAmount("");
   };
 
-  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomAmount(e.target.value);
-    setSelectedAmount(null);
+  const handleCustomAmountChange = (value: string, isValid: boolean) => {
+    setCustomAmount(value);
+    setIsCustomAmountValid(isValid);
   };
 
   // Button state
@@ -148,22 +150,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
               ))}
             </div>
 
-            <div className="relative flex">
-              <div className="flex items-center justify-center px-4 bg-muted border border-input rounded-l-md text-sm">
-                USDC
-              </div>
-              <input
-                type="number"
-                placeholder="Custom amount"
-                value={customAmount}
-                onChange={handleCustomChange}
-                className="flex-1 h-10 px-4 py-2 rounded-r-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                min="0"
-                step="0.01"
-              />
-            </div>
+            <USDCAmountInput
+              value={customAmount}
+              onChange={handleCustomAmountChange}
+              minAmount={0.001}
+            />
           </div>
-
           {/* Donation Summary */}
           {donationAmount > 0 && (
             <div className="mt-6 space-y-2 p-4 border rounded-md bg-background">
@@ -193,7 +185,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   <span>You pay:</span>
                   <span>{totalAmount.toFixed(2)} USDC</span>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-sm text-muted-foreground capitalize">
                   <span>{charity.charity_name} receives:</span>
                   <span>{charityReceives.toFixed(2)} USDC</span>
                 </div>
