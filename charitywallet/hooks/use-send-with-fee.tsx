@@ -28,6 +28,7 @@ export function useSendWithFee(
     // The method is defined as:
     // function sendWithFeeToken(uint256 donationAmount, address recipient)
     // We add the erc20Value field so the transaction is paid in USDC.
+    console.log("donation value", donationValue);
     const transaction = prepareContractCall({
       contract: customContract,
       method: "function sendWithFeeToken(uint256,address)",
