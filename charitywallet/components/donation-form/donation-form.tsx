@@ -171,7 +171,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
           {showDonationSummary && renderDonationSummary()}
         </CardContent>
 
-        <CardFooter className="flex flex-col pt-6">
+        <CardFooter className="flex flex-col">
           {donor?.email && renderTaxReceiptMessage()}
           <Button
             size="lg"
