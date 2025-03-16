@@ -172,7 +172,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         </CardContent>
 
         <CardFooter className="flex flex-col">
-          {donor?.email && renderTaxReceiptMessage()}
+          {renderTaxReceiptMessage()}
           <Button
             size="lg"
             onClick={handleDonationClick}
@@ -259,7 +259,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   function renderTaxReceiptMessage() {
     return (
       <p className="text-xs text-muted-foreground mb-2 text-center w-full">
-        A tax receipt will be emailed to {donor.email}
+        A tax receipt will be emailed to {donor?.email ?? "your email"}
       </p>
     );
   }
