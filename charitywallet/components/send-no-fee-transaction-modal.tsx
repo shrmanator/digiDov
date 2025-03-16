@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import Web3 from "web3";
+import { ethers } from "ethers";
 import {
   Dialog,
   DialogContent,
@@ -19,16 +19,10 @@ interface FormData {
   amount: string;
 }
 
-// Extend the global Window interface to include ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
 export function TransactionModal() {
   const [open, setOpen] = useState(false);
-  const [balance, setBalance] = useState<string>("0.0");
+  const [balance, setBalance] = useState("0.0");
+
   const {
     register,
     handleSubmit,
@@ -41,20 +35,21 @@ export function TransactionModal() {
   const [amount, setAmount] = useState<string>("0");
   const sendCrypto = useSendCrypto(BigInt(amount), recipient ?? "");
 
-  // Fetch wallet balance using web3
+  // Fetch wallet balance using ethers v6
   useEffect(() => {
     async function fetchBalance() {
-      if (typeof window !== "undefined" && window.ethereum) {
+      if (typeof window !== "undefined" && (window as any).ethereum) {
         try {
-          const web3 = new Web3(window.ethereum);
+          // Create an ethers provider using BrowserProvider (ethers v6)
+          const provider = new ethers.BrowserProvider((window as any).ethereum);
           // Request account access
-          await window.ethereum.request({ method: "eth_requestAccounts" });
-          const accounts = await web3.eth.getAccounts();
-          if (accounts.length > 0) {
-            const balanceWei = await web3.eth.getBalance(accounts[0]);
-            const balanceEth = web3.utils.fromWei(balanceWei, "ether");
-            setBalance(balanceEth);
-          }
+          await provider.send("eth_requestAccounts", []);
+          const signer = await provider.getSigner();
+          const address = await signer.getAddress();
+          const balanceBigInt = await provider.getBalance(address);
+          // Format the balance using the standalone formatEther function
+          const formattedBalance = ethers.formatEther(balanceBigInt);
+          setBalance(formattedBalance);
         } catch (error) {
           console.error("Failed to fetch balance:", error);
         }
@@ -64,15 +59,12 @@ export function TransactionModal() {
   }, []);
 
   const onSubmit = (data: FormData) => {
-    if (window.ethereum) {
-      const web3 = new Web3(window.ethereum);
-      // Convert the entered amount from ETH to Wei using web3
-      const amountWei = web3.utils.toWei(data.amount, "ether");
-
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      // Convert the ETH amount to Wei using ethers.parseEther (v6)
+      const amountWei = ethers.parseEther(data.amount);
       // Set recipient and amount for sending
       setRecipient(data.toAddress);
-      setAmount(amountWei);
-
+      setAmount(amountWei.toString());
       // Trigger the send function from your custom hook
       sendCrypto.onClick();
     }

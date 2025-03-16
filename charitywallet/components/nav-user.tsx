@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown, LogOut } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,7 +18,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { logout } from "@/app/actions/auth";
-import { useDisconnect, useActiveWallet } from "thirdweb/react";
 
 export function NavUser({
   user,
@@ -28,25 +26,21 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    walletAddress: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const { disconnect } = useDisconnect();
-  const wallet = useActiveWallet();
 
   const handleLogout = async () => {
     await logout();
-    if (wallet) {
-      disconnect(wallet);
-    }
     router.push("/login");
   };
 
   // Helper function to get the first letter of the user's name
   const getInitial = (name: string) =>
     name ? name.charAt(0).toUpperCase() : "?";
-
+  console.log("userss", user);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -65,6 +59,9 @@ export function NavUser({
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
+                {user.walletAddress && (
+                  <span className="truncate text-xs">{user.walletAddress}</span>
+                )}
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -86,6 +83,7 @@ export function NavUser({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs">{user.walletAddress}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

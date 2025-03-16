@@ -16,12 +16,14 @@ import { TeamSwitcher } from "./team-switcher";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { charity } = useCharity();
+  console.log("charity", charity);
 
   const navData = {
     user: {
       name: charity?.charity_name || "Default Charity Name",
       email: charity?.contact_email || "default@example.com",
       avatar: charity?.avatar || "avatar",
+      walletAddress: charity?.wallet_address || "No Wallet Address",
     },
     teams: [
       {
@@ -50,10 +52,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         title: "Charity Profile",
         url: "/dashboard/your-info",
         icon: User,
-        // items: [
-        //   { title: "Your Info", url: "#" },
-        //   { title: "Billing", url: "#" },
-        // ],
       },
     ],
   };
