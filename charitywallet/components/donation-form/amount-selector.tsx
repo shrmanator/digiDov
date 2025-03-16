@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface AmountSelectorProps {
   presetAmounts: number[];
@@ -27,10 +28,10 @@ export function AmountSelector({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Label className="mb-2 block text-sm font-semibold">
+        <Label className="mb-2 block text-sm font-medium">
           Choose an amount
         </Label>
-        <div className="space-y-2">
+        <div className="grid gap-2">
           {presetAmounts.map((usdVal) => {
             const isSelected = selectedAmount === usdVal;
             const approxTokens = (usdVal / tokenPrice).toFixed(3);
@@ -39,46 +40,43 @@ export function AmountSelector({
                 key={usdVal}
                 variant={isSelected ? "default" : "outline"}
                 onClick={() => onPresetClick(usdVal)}
-                className="w-full justify-between h-10"
+                className="w-full justify-between py-6"
               >
-                <span>${usdVal}</span>
-                <span className="text-xs">
-                  (~{approxTokens} {nativeSymbol})
-                </span>
+                <span className="text-base font-medium">${usdVal}</span>
+                <Badge variant="secondary" className="font-normal">
+                  ~{approxTokens} {nativeSymbol}
+                </Badge>
               </Button>
             );
           })}
         </div>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center my-1">
         <Separator className="flex-1" />
-        <span className="mx-2 text-sm font-medium text-muted-foreground">
+        <span className="mx-3 text-xs font-medium text-muted-foreground px-2">
           OR
         </span>
         <Separator className="flex-1" />
       </div>
       <div>
-        <Label
-          htmlFor="custom-usd"
-          className="mb-1 block text-sm font-semibold"
-        >
+        <Label htmlFor="custom-usd" className="mb-2 block text-sm font-medium">
           Enter your own
         </Label>
-        <div className="relative group">
-          <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">
-            $
-          </span>
+        <div className="relative">
+          <div className="absolute left-3 inset-y-0 flex items-center pointer-events-none">
+            <span className="text-sm font-medium text-muted-foreground">$</span>
+          </div>
           <Input
             id="custom-usd"
             type="number"
             placeholder="e.g. 100"
             value={customAmount}
             onChange={onCustomChange}
-            className="h-10 pl-6"
+            className="pl-6 h-10"
           />
         </div>
         {tokenFloat > 0 && selectedAmount === null && (
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             ~{tokenFloat.toFixed(3)} {nativeSymbol}
           </p>
         )}
