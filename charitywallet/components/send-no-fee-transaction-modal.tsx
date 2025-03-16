@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ethers } from "ethers";
 import {
@@ -13,6 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSendCrypto } from "@/hooks/use-send-without-fee";
+import { AccountBalance, AccountProvider } from "thirdweb/react";
+import { ethereum } from "thirdweb/chains";
+import { client } from "@/lib/thirdwebClient";
 
 interface FormData {
   toAddress: string;
@@ -21,7 +24,6 @@ interface FormData {
 
 export function TransactionModal() {
   const [open, setOpen] = useState(false);
-  const [balance, setBalance] = useState("0.0");
 
   const {
     register,
@@ -34,29 +36,6 @@ export function TransactionModal() {
   const [recipient, setRecipient] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("0");
   const sendCrypto = useSendCrypto(BigInt(amount), recipient ?? "");
-
-  // Fetch wallet balance using ethers v6
-  useEffect(() => {
-    async function fetchBalance() {
-      if (typeof window !== "undefined" && (window as any).ethereum) {
-        try {
-          // Create an ethers provider using BrowserProvider (ethers v6)
-          const provider = new ethers.BrowserProvider((window as any).ethereum);
-          // Request account access
-          await provider.send("eth_requestAccounts", []);
-          const signer = await provider.getSigner();
-          const address = await signer.getAddress();
-          const balanceBigInt = await provider.getBalance(address);
-          // Format the balance using the standalone formatEther function
-          const formattedBalance = ethers.formatEther(balanceBigInt);
-          setBalance(formattedBalance);
-        } catch (error) {
-          console.error("Failed to fetch balance:", error);
-        }
-      }
-    }
-    fetchBalance();
-  }, []);
 
   const onSubmit = (data: FormData) => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
@@ -81,11 +60,16 @@ export function TransactionModal() {
         <DialogHeader>
           <DialogTitle>Send Cryptocurrency</DialogTitle>
         </DialogHeader>
-        {/* Display the current wallet balance */}
         <div className="mb-4">
-          <p>
-            <strong>Wallet Balance:</strong> {balance} ETH
-          </p>
+          <AccountProvider
+            address="0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
+            client={client}
+          >
+            <AccountBalance
+              chain={ethereum}
+              loadingComponent={<span>Loading...</span>}
+            />
+          </AccountProvider>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>

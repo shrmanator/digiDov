@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronsUpDown, LogOut, Copy, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ChevronsUpDown, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -31,16 +32,24 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     router.push("/login");
   };
 
-  // Helper function to get the first letter of the user's name
+  const handleCopy = async () => {
+    if (user.walletAddress) {
+      await navigator.clipboard.writeText(user.walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const getInitial = (name: string) =>
     name ? name.charAt(0).toUpperCase() : "?";
-  console.log("userss", user);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -59,19 +68,18 @@ export function NavUser({
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
-                {user.walletAddress && (
-                  <span className="truncate text-xs">{user.walletAddress}</span>
-                )}
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
+            {/* User Info Section */}
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
@@ -83,11 +91,39 @@ export function NavUser({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
-                  <span className="truncate text-xs">{user.walletAddress}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
+
+            {/* Wallet Address Section */}
+            {user.walletAddress && (
+              <div
+                onClick={handleCopy}
+                className="
+                  group
+                  flex items-center 
+                  cursor-pointer 
+                  text-xs 
+                  max-w-[150px]
+                  mx-3
+                  my-1
+                  whitespace-nowrap 
+                  overflow-hidden 
+                  text-ellipsis
+                "
+                title={user.walletAddress}
+              >
+                <span className="font-bold mr-1">Wallet Addr:</span>
+                <span className="truncate flex-1">{user.walletAddress}</span>
+                <div className="ml-1">
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </div>
+              </div>
+            )}
+
+            {/* Logout Section */}
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
