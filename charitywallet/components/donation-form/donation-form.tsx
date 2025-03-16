@@ -137,7 +137,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const buttonLabel = useMemo(() => {
     if (isPending) return "Processing...";
     if (donationSuccess) return "Donation Sent!";
-    if (tokenFloat > 0) return `Donate ${totalPaid.toFixed(2)} USD`;
+    if (tokenFloat > 0) return `Donate $${totalPaid.toFixed(2)} USD`;
     return "Donate";
   }, [isPending, donationSuccess, tokenFloat, totalPaid]);
 
