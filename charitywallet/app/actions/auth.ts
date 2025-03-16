@@ -3,7 +3,7 @@ import { VerifyLoginPayloadParams } from "thirdweb/auth";
 import { cookies } from "next/headers";
 import thirdwebAuth from "@/lib/thirdwebAuth";
 import { upsertCharity } from "./charities";
-import { addWalletAddressToMoralis } from "./moralis";
+// import { addWalletAddressToMoralis } from "./moralis";
 import { upsertDonor } from "./donors";
 
 export const generatePayload = thirdwebAuth.generatePayload;
@@ -27,7 +27,7 @@ export async function charityLogin(payload: VerifyLoginPayloadParams) {
     });
 
     try {
-      await addWalletAddressToMoralis(walletAddress);
+      // await addWalletAddressToMoralis(walletAddress);
       console.log(
         `Wallet address ${walletAddress} added to Moralis successfully.`
       );
@@ -58,7 +58,7 @@ export async function donorLogin(payload: VerifyLoginPayloadParams) {
     });
 
     try {
-      await addWalletAddressToMoralis(walletAddress);
+      // await addWalletAddressToMoralis(walletAddress);
       console.log(
         `Wallet address ${walletAddress} added to Moralis successfully.`
       );

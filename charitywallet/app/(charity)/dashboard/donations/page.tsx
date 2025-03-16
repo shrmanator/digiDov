@@ -113,7 +113,7 @@ export default async function Dashboard() {
                 <>
                   {/* Transaction History */}
                   <div className="w-full">
-                    <TransactionHistory transactions={transactions} />
+                    {/* <TransactionHistory transactions={transactions} /> */}
                   </div>
                 </>
               ) : (

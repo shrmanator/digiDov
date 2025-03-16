@@ -28,7 +28,6 @@ export function TransactionModal() {
     formState: { errors },
   } = useForm<FormData>();
 
-  // ⬇️ Move useSendCrypto to the top of the component (fixes the error)
   const [recipient, setRecipient] = useState<string | null>(null);
   const [amount, setAmount] = useState<bigint | null>(null);
   const sendCrypto = useSendCrypto(amount ?? BigInt(0), recipient ?? "");
