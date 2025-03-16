@@ -107,7 +107,7 @@ export default async function Dashboard() {
             <div className="w-full mx-auto flex flex-col items-center">
               <header className="mb-8 w-full">
                 <h1 className="text-3xl font-bold mb-2">Donations</h1>
-                <TransactionModal />
+                <TransactionModal user={user} />
               </header>
               {isCharityComplete ? (
                 <>

@@ -96,7 +96,6 @@ export function NavUser({
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-
             {/* Wallet Address Section */}
             {user.walletAddress && (
               <div

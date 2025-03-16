@@ -17,12 +17,21 @@ import { AccountBalance, AccountProvider } from "thirdweb/react";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 
+interface User {
+  walletAddress: string;
+  // Add any other user properties you need
+}
+
+interface TransactionModalProps {
+  user: User;
+}
+
 interface FormData {
   toAddress: string;
   amount: string;
 }
 
-export function TransactionModal() {
+export function TransactionModal({ user }: TransactionModalProps) {
   const [open, setOpen] = useState(false);
 
   const {
@@ -61,10 +70,7 @@ export function TransactionModal() {
           <DialogTitle>Send Cryptocurrency</DialogTitle>
         </DialogHeader>
         <div className="mb-4">
-          <AccountProvider
-            address="0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
-            client={client}
-          >
+          <AccountProvider address={user.walletAddress} client={client}>
             <AccountBalance
               chain={ethereum}
               loadingComponent={<span>Loading...</span>}
