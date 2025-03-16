@@ -112,7 +112,7 @@ export default async function Dashboard() {
               {isCharityComplete ? (
                 <>
                   <div className="w-full">
-                    {/* <TransactionHistory transactions={transactions} /> */}
+                    <TransactionHistory transactions={transactions} />
                   </div>
                 </>
               ) : (
