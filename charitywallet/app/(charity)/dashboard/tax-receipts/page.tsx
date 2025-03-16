@@ -22,6 +22,7 @@ import { fetchTransactions } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 
 export default async function Dashboard() {
   // 1) Check user
@@ -55,6 +56,8 @@ export default async function Dashboard() {
     console.error("Error fetching net worth:", netWorthResult.reason);
   }
 
+  const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -77,7 +80,10 @@ export default async function Dashboard() {
               </Breadcrumb>
             </div>
             <div className="flex flex-col items-end gap-1 mt-5">
-              <WalletCopyButton walletAddress={charity.wallet_address} />
+              <DonorLinkCopyButton
+                donorLink={donationLink}
+                label="Click to copy donation page link"
+              />{" "}
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
           </header>
