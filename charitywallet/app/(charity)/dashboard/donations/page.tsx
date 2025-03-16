@@ -111,9 +111,8 @@ export default async function Dashboard() {
               </header>
               {isCharityComplete ? (
                 <>
-                  {/* Transaction History */}
                   <div className="w-full">
-                    {/* <TransactionHistory transactions={transactions} /> */}
+                    <TransactionHistory transactions={transactions} />
                   </div>
                 </>
               ) : (
