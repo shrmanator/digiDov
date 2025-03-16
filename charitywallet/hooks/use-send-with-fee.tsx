@@ -1,12 +1,14 @@
 "use client";
 
 import { useSendTransaction } from "thirdweb/react";
-import { prepareContractCall } from "thirdweb";
-import { customContract } from "@/utils/get-transaction-with-fee-contract";
+import { getContract, prepareContractCall } from "thirdweb";
 import { toast } from "@/hooks/use-toast";
+import { client } from "@/lib/thirdwebClient";
+import { polygon } from "thirdweb/chains";
 
-// USDC token address on polygon mainnet
-const USDC_ADDRESS = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
+const USDC_POLYGON_MAINNET_ADDRESS =
+  "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359";
+const CUSTOM_CONTRACT_ADDRESS = "0x7C80328071C13026A299561d19042004ab899c4f";
 
 export function useSendWithFee(
   donationValue: bigint,
@@ -19,17 +21,18 @@ export function useSendWithFee(
   } = useSendTransaction();
 
   const onClick = () => {
-    if (!customContract) {
-      console.error("Custom contract is not available.");
-      return;
-    }
+    const customContract = getContract({
+      client,
+      address: CUSTOM_CONTRACT_ADDRESS,
+      chain: polygon,
+    });
 
     const transaction = prepareContractCall({
       contract: customContract,
-      method: "function sendWithFeeToken(uint256,address)",
-      params: [donationValue, recipientAddress],
+      method: "function sendWithFeeToken(uint256,address,address)",
+      params: [donationValue, recipientAddress, USDC_POLYGON_MAINNET_ADDRESS],
       erc20Value: {
-        tokenAddress: USDC_ADDRESS,
+        tokenAddress: USDC_POLYGON_MAINNET_ADDRESS,
         amountWei: donationValue,
       },
     });

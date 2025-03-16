@@ -157,7 +157,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
             <USDCAmountInput
               value={customAmount}
               onChange={handleCustomAmountChange}
-              minAmount={0.001}
+              minAmount={0.02}
             />
           </div>
           {/* Donation Summary */}
