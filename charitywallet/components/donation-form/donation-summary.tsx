@@ -51,21 +51,23 @@ export function DonationSummary({
 
         <div className="flex justify-between">
           <span>You pay:</span>
-          <span>${donorAmount.toFixed(2)} CAD</span>
+          <span>${donorAmount.toFixed(2)} USD</span>
         </div>
 
         <div className="flex justify-between text-muted-foreground">
           <span>Processing fee (3%):</span>
           <span>
-            {coverFee ? "" : "-"}${feeAmount.toFixed(2)} CAD
+            {coverFee ? "" : "-"}${feeAmount.toFixed(2)} USD
           </span>
         </div>
 
         <Separator className="my-2" />
 
         <div className="flex justify-between font-medium">
-          <span>{shortenedCharityName} receives:</span>
-          <span>${charityReceives.toFixed(2)} CAD</span>
+          <span>
+            <span className="capitalize">{shortenedCharityName}</span> receives:
+          </span>
+          <span>${charityReceives.toFixed(2)} USD</span>
         </div>
 
         <div className="text-xs text-muted-foreground text-right mt-1">

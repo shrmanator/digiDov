@@ -28,7 +28,7 @@ export function AmountSelector({
     <div className="flex flex-col gap-4">
       <div>
         <Label className="mb-2 block text-sm font-semibold">
-          Choose an amount (CAD)
+          Choose an amount
         </Label>
         <div className="space-y-2">
           {presetAmounts.map((usdVal) => {
@@ -62,7 +62,7 @@ export function AmountSelector({
           htmlFor="custom-usd"
           className="mb-1 block text-sm font-semibold"
         >
-          Enter your own (CAD)
+          Enter your own
         </Label>
         <div className="relative group">
           <span className="absolute left-2 inset-y-0 flex items-center pointer-events-none text-sm font-semibold text-muted-foreground group-focus-within:text-card-foreground">

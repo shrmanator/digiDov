@@ -55,7 +55,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
 
   // External data
-  const tokenPrice = usePriceWebSocket(nativeSymbol, "CAD");
+  const tokenPrice = usePriceWebSocket(nativeSymbol, "USD");
 
   // Derived calculations
   const {
@@ -137,7 +137,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const buttonLabel = useMemo(() => {
     if (isPending) return "Processing...";
     if (donationSuccess) return "Donation Sent!";
-    if (tokenFloat > 0) return `Donate ${totalPaid.toFixed(2)} CAD`;
+    if (tokenFloat > 0) return `Donate ${totalPaid.toFixed(2)} USD`;
     return "Donate";
   }, [isPending, donationSuccess, tokenFloat, totalPaid]);
 
@@ -158,7 +158,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       {renderDonorProfileModal()}
       <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-2xl font-bold capitalize">
             Donate to {charity.charity_name}
           </CardTitle>
           <CardDescription className="mt-1">
