@@ -1,4 +1,3 @@
-// customContract.js
 import { client } from "@/lib/thirdwebClient";
 import { getContract } from "thirdweb";
 import { polygon } from "thirdweb/chains";

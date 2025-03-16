@@ -10,7 +10,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 import { useAuth } from "@/contexts/auth-context";
 import { useSendWithFee } from "@/hooks/use-send-with-fee";
 import { charity } from "@prisma/client";
@@ -39,11 +39,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const { donor } = useAuth();
   const activeAccount = useActiveAccount();
   const walletAddress = activeAccount?.address;
-  const activeChain = useActiveWalletChain();
 
   // Calculate donation amounts
-  const donationAmount =
-    selectedAmount || (customAmount ? parseFloat(customAmount) : 0);
+  const donationAmount = customAmount
+    ? parseFloat(customAmount)
+    : selectedAmount || 0;
+
   // If covering fee, calculate how much extra is needed to ensure charity gets full amount
   const feeAmount = coverFee
     ? (donationAmount * FEE_PERCENTAGE) / (1 - FEE_PERCENTAGE)
@@ -96,6 +97,9 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const handleCustomAmountChange = (value: string, isValid: boolean) => {
     setCustomAmount(value);
     setIsCustomAmountValid(isValid);
+    if (value) {
+      setSelectedAmount(null);
+    }
   };
 
   // Button state
