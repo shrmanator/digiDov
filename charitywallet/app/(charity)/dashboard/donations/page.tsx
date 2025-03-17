@@ -50,7 +50,7 @@ export default async function Dashboard() {
       excludeSpam: true,
       excludeUnverifiedContracts: true,
     }),
-    fetchTransactions(charity.wallet_address, "received"),
+    fetchTransactions(charity.wallet_address),
   ]);
 
   let netWorth: string | null = null;
