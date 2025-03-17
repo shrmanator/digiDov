@@ -149,6 +149,9 @@ importers:
       web3:
         specifier: ^4.16.0
         version: 4.16.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.2)
+      websocket:
+        specifier: ^1.0.35
+        version: 1.0.35
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3

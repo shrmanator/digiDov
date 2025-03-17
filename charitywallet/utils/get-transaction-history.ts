@@ -1,54 +1,72 @@
+import { alchemyEth, alchemyPolygon } from "@/lib/alchemy";
 import {
   Alchemy,
-  Network,
   AssetTransfersCategory,
   AssetTransfersResponse,
 } from "alchemy-sdk";
 
 /**
- * Fetches asset transfers for a given wallet address on a specified network.
- * @param alchemy - The Alchemy instance connected to the desired network.
- * @param networkName - The name of the network (e.g., 'Ethereum', 'Polygon').
- * @param walletAddress - The wallet address to fetch transactions for.
- * @returns A promise that resolves to an array of asset transfers.
+ * Fetches asset transfers for a given wallet address on a specific network.
+ * @param alchemy - The Alchemy instance for the network.
+ * @param networkName - The name of the network.
+ * @param walletAddress - The wallet address.
+ * @returns An array of transactions.
  */
 export async function fetchTransfers(
   alchemy: Alchemy,
   networkName: string,
   walletAddress: string
-): Promise<void> {
+): Promise<AssetTransfersResponse> {
+  console.log(
+    `fetchTransfers called with network: ${networkName}, walletAddress: ${walletAddress}`
+  );
+
   try {
     const transfers: AssetTransfersResponse =
       await alchemy.core.getAssetTransfers({
-        fromAddress: walletAddress,
+        // fromAddress: walletAddress,
         toAddress: walletAddress,
         category: [
           AssetTransfersCategory.EXTERNAL,
           AssetTransfersCategory.INTERNAL,
-        //   AssetTransfersCategory.ERC20,
-        //   AssetTransfersCategory.ERC721,
-        //   AssetTransfersCategory.ERC1155,
+          AssetTransfersCategory.ERC20,
         ],
         withMetadata: true,
-        excludeZeroValue: true,
+        // excludeZeroValue: true,
         maxCount: 100,
       });
 
-    console.log(`\n${networkName} Transfers for ${walletAddress}:`);
-    console.log(transfers.transfers);
+    console.log(`${networkName} EREREER`, transfers);
+    return transfers;
   } catch (error) {
-    console.error(
-      `Error fetching ${networkName} transfers for ${walletAddress}:`,
-      error
-    );
+    console.error(`Error fetching ${networkName} transfers:`, error);
+    return { transfers: [] }; // Return empty array on failure
   }
 }
 
 /**
- * Fetches asset transfers for a given wallet address on both Ethereum and Polygon networks.
- * @param walletAddress - The wallet address to fetch transactions for.
+ * Fetches asset transfers for a given wallet address on Ethereum and Polygon.
+ * @param walletAddress - The wallet address.
+ * @returns An array of transactions.
  */
-export async function fetchAllTransfers(walletAddress: string): Promise<void> {
-  await fetchTransfers(alchemyEth, "Ethereum", walletAddress);
-  await fetchTransfers(alchemyPolygon, "Polygon", walletAddress);
+export async function fetchAllTransfers(
+  walletAddress: string
+): Promise<AssetTransfersResponse[]> {
+  console.log("fetchAllTransfers called with walletAddress:", walletAddress);
+
+  const ethTransfers = await fetchTransfers(
+    alchemyEth,
+    "Ethereum",
+    walletAddress
+  );
+  const polygonTransfers = await fetchTransfers(
+    alchemyPolygon,
+    "Polygon",
+    walletAddress
+  );
+
+  console.log("ethTransfers", ethTransfers);
+  console.log("polygonTransfers", polygonTransfers);
+
+  return [ethTransfers, polygonTransfers];
 }

@@ -1,121 +1,115 @@
 "use client";
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { WalletCopyButton } from "./wallet-copy-button";
-import Web3 from "web3";
-import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
-
-const web3 = new Web3();
+import { fetchAllTransfers } from "@/utils/get-transaction-history";
+import { useState, useEffect } from "react";
 
 interface Transaction {
   hash: string;
-  value: string;
-  from_address: string;
-  to_address: string;
-  block_timestamp: string;
-  type: "Received" | "Sent";
-  chain: "0x1" | "0x89";
+  asset: string;
+  category: string;
+  value?: string;
+  from: string;
+  to: string | null;
+  blockTimestamp: string; // Flatten metadata
 }
 
 interface TransactionHistoryProps {
-  transactions: Transaction[];
+  walletAddress: string;
 }
 
-function convertWeiToEth(wei: string): string {
-  try {
-    return web3.utils.fromWei(wei, "ether");
-  } catch (error) {
-    console.error("Error converting wei to eth:", error);
-    return "0";
-  }
-}
+const TransactionHistory: React.FC<TransactionHistoryProps> = ({
+  walletAddress,
+}) => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-function formatDate(timestamp: string): string {
-  const dateObj = new Date(timestamp);
-  // Get the date string (local format)
-  const date = dateObj.toLocaleDateString();
-  // Get the time string, you can customize options as needed (here using hour and minute)
-  const time = dateObj.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${date}, ${time}`;
-}
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-const chainToSymbol: { [chain: string]: string } = {
-  "0x1": "ETH",
-  "0x89": "POL",
-};
+        // Fetch transactions
+        // console.log("Fetching transactions for wallet:", walletAddress);
+        const transferResponses = await fetchAllTransfers(walletAddress);
+        console.log("transferResponses", transferResponses);
+        // Convert Alchemy response to our Transaction type
+        const allTransfers: Transaction[] = transferResponses.flatMap(
+          (response) =>
+            response.transfers.map((tx) => ({
+              hash: tx.hash,
+              asset: tx.asset || "Unknown",
+              category: tx.category,
+              value: tx.value ? tx.value.toString() : "N/A",
+              from: tx.from,
+              to: tx.to,
+              blockTimestamp: "Unknown",
+            }))
+        );
 
-// Create a separate transaction item component to use hooks properly
-function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const symbol = chainToSymbol[transaction.chain] || "Unknown";
-  const nativeValue = convertWeiToEth(transaction.value);
-  const addressToCopy =
-    transaction.type === "Received"
-      ? transaction.from_address
-      : transaction.to_address;
-  const formattedDate = formatDate(transaction.block_timestamp);
+        setTransactions(allTransfers);
+      } catch (err) {
+        setError("Failed to fetch transactions.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Now the hook is called at the component level, not in a callback
-  const historicalPrice = useHistoricalPrice(
-    symbol,
-    transaction.block_timestamp,
-    "usd"
-  );
-
-  const usdValue =
-    historicalPrice && !isNaN(parseFloat(nativeValue))
-      ? parseFloat(nativeValue) * historicalPrice
-      : 0;
+    if (walletAddress) {
+      fetchTransactions();
+    }
+  }, [walletAddress]);
 
   return (
-    <Card
-      key={transaction.hash + transaction.chain}
-      className="w-full rounded-xl border border-border bg-background hover:shadow-xl transition"
-    >
-      <CardContent className="flex flex-col p-4">
-        <div className="flex items-center space-x-3">
-          <span className="text-xl font-semibold">
-            ${usdValue.toFixed(2)}{" "}
-            <span className="text-base font-normal">
-              ({nativeValue} {symbol})
-            </span>
-          </span>
-          {transaction.type === "Received" ? (
-            <ArrowDownLeft className="text-green-500 h-6 w-6" />
-          ) : (
-            <ArrowUpRight className="text-red-500 h-6 w-6" />
-          )}
-        </div>
-        <div className="flex flex-wrap justify-between items-center gap-2 mt-2">
-          <p className="text-sm text-muted-foreground">{formattedDate}</p>
-          <WalletCopyButton walletAddress={addressToCopy} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+    <div className="p-4 bg-gray-900 text-white rounded-lg shadow-md">
+      <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
 
-export default function TransactionHistory({
-  transactions,
-}: TransactionHistoryProps) {
-  if (!transactions.length) {
-    return <p className="text-center">No transactions found.</p>;
-  }
+      {loading && <p>Loading transactions...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+      {!loading && transactions.length === 0 && <p>No transactions found.</p>}
 
-  return (
-    <div className="w-full">
-      <ScrollArea style={{ height: "78vh" }} className="w-full">
-        <div className="flex flex-col space-y-4">
-          {transactions.map((tx) => (
-            <TransactionItem key={tx.hash + tx.chain} transaction={tx} />
-          ))}
-        </div>
-      </ScrollArea>
+      <ul className="space-y-4">
+        {transactions.map((tx, index) => (
+          <li
+            key={tx.hash || index}
+            className="border p-2 rounded-md bg-gray-800"
+          >
+            <p>
+              <strong>Asset:</strong> {tx.asset}
+            </p>
+            <p>
+              <strong>Value:</strong> {tx.value}
+            </p>
+            <p>
+              <strong>From:</strong> {tx.from}
+            </p>
+            <p>
+              <strong>To:</strong> {tx.to}
+            </p>
+            <p>
+              <strong>Category:</strong> {tx.category}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {new Date(tx.blockTimestamp).toLocaleString()}
+            </p>
+            <p>
+              <strong>Tx Hash:</strong>{" "}
+              <a
+                href={`https://etherscan.io/tx/${tx.hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                {tx.hash.slice(0, 8)}...{tx.hash.slice(-8)}
+              </a>
+            </p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
+
+export default TransactionHistory;
