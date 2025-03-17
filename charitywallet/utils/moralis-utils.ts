@@ -17,12 +17,15 @@ const fetchChainTransactions = async (
   chain: string,
   walletAddress: string
 ): Promise<any> => {
-  const url = `https://${chain}.insight.thirdweb.com/v1/transactions?filter[from_address]=${walletAddress}&filter[to_address]=${walletAddress}`;
-  const response = await fetch(url, {
-    headers: {
-      "x-client-id": client.clientId,
-    },
-  });
+  const response = await fetch(
+    `https://insight.thirdweb.com/v1/transactions?filter_to_address=${walletAddress}&chain=1&chain=137&sort_by=block_timestamp&sort_order=desc&limit=20`,
+    {
+      headers: {
+        "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
+      },
+    }
+  );
+
   if (!response.ok) {
     // Read the error text so we can include it in the thrown error.
     const errorText = await response.text();
@@ -33,11 +36,27 @@ const fetchChainTransactions = async (
   return await response.json();
 };
 
+// Helper to format a UNIX timestamp (seconds) to a readable string.
+const formatTimestamp = (
+  timestampSec: string
+): { formatted: string; raw: number } => {
+  const rawTimestamp = Number(timestampSec) * 1000; // Convert seconds to ms
+  const formatted = new Date(rawTimestamp).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return { formatted, raw: rawTimestamp };
+};
+
 /**
  * Fetch transactions from Ethereum (0x1) and Polygon (0x89), filtered by type.
  * @param walletAddress - The wallet address to fetch transactions for.
  * @param filter - Can be 'sent', 'received', or 'all'.
- * @returns A filtered list of transactions.
+ * @returns A filtered list of transactions with formatted timestamps.
  */
 export async function fetchTransactions(
   walletAddress: string,
@@ -45,18 +64,17 @@ export async function fetchTransactions(
 ): Promise<TransactionWithType[]> {
   try {
     const chains = ["1", "137"]; // Ethereum mainnet and Polygon
-    const clientId = client.clientId; // Your thirdweb API key
 
     // Fetch transactions for each chain in parallel using our helper
     const promises = chains.map((chain) =>
       fetchChainTransactions(chain, walletAddress)
     );
     const results = await Promise.allSettled(promises);
-    console.log("Fetch results:", results);
+    console.log("the results", JSON.stringify(results, null, 2)[0]);
 
-    // Process only successful responses
-    const transactions: TransactionWithType[] = results.flatMap(
-      (result, index) => {
+    // We'll temporarily include a rawTimestamp property for sorting.
+    const transactions: (TransactionWithType & { rawTimestamp: number })[] =
+      results.flatMap((result, index) => {
         if (result.status !== "fulfilled") {
           console.warn(
             `Failed to fetch transactions for chain ${chains[index]}:`,
@@ -64,12 +82,15 @@ export async function fetchTransactions(
           );
           return [];
         }
-        // Assuming the response JSON has a `data` property that contains the transactions
+        // Process each transaction
         return result.value.data.flatMap((tx: any) => {
           const type: "Sent" | "Received" =
             tx.from_address.toLowerCase() === walletAddress.toLowerCase()
               ? "Sent"
               : "Received";
+
+          // Convert and format the block_timestamp properly.
+          const { formatted, raw } = formatTimestamp(tx.block_timestamp);
 
           // Apply the filter while mapping
           return filter === "all" || filter.toLowerCase() === type.toLowerCase()
@@ -80,24 +101,23 @@ export async function fetchTransactions(
                   from_address: tx.from_address,
                   to_address: tx.to_address,
                   block_number: tx.block_number,
-                  block_timestamp: tx.block_timestamp,
+                  block_timestamp: formatted, // now a human-readable string
                   type,
                   chain: chains[index] === "1" ? "0x1" : "0x89",
+                  rawTimestamp: raw, // temporary property for sorting
                 },
               ]
             : [];
         });
-      }
-    );
+      });
 
-    // Sort transactions by timestamp (most recent first)
-    transactions.sort(
-      (a, b) =>
-        new Date(b.block_timestamp).getTime() -
-        new Date(a.block_timestamp).getTime()
-    );
+    // Sort transactions by raw timestamp (most recent first)
+    transactions.sort((a, b) => b.rawTimestamp - a.rawTimestamp);
 
-    return transactions;
+    // Remove the temporary rawTimestamp property before returning
+    const finalTransactions = transactions.map(({ rawTimestamp, ...tx }) => tx);
+
+    return finalTransactions;
   } catch (error) {
     console.error("Failed to fetch transactions:", error);
     throw error;
