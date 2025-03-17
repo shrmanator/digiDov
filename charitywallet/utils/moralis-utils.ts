@@ -1,4 +1,8 @@
 import { client } from "@/lib/thirdwebClient";
+import {
+  fetchChainTransactions,
+  fetchDonationsToWallet,
+} from "./fetch-contract-transactions";
 
 // Extended interface with transaction type and chain info
 export interface TransactionWithType {
@@ -13,28 +17,26 @@ export interface TransactionWithType {
 }
 
 // Helper function to fetch transactions from a single chain with proper error checking
-const fetchChainTransactions = async (
-  chain: string,
-  walletAddress: string
-): Promise<any> => {
-  const response = await fetch(
-    `https://insight.thirdweb.com/v1/transactions?filter_to_address=${walletAddress}&chain=1&chain=137&sort_by=block_timestamp&sort_order=desc&limit=20`,
-    {
-      headers: {
-        "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
-      },
-    }
-  );
+// Helper function to fetch transactions from the new Thirdweb endpoint with proper error checking
+// const fetchChainTransactions = async (
+//   chain: string,
+//   walletAddress: string
+// ): Promise<any> => {
+//   const url = `https://insight.thirdweb.com/v1/events/0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0?chain=137&limit=20`;
 
-  if (!response.ok) {
-    // Read the error text so we can include it in the thrown error.
-    const errorText = await response.text();
-    throw new Error(
-      `Error fetching chain ${chain}: ${response.status} ${response.statusText} - ${errorText}`
-    );
-  }
-  return await response.json();
-};
+//   const response = await fetch(url, {
+//     headers: {
+//       "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
+//     },
+//   });
+//   if (!response.ok) {
+//     const errorText = await response.text();
+//     throw new Error(
+//       `Error fetching transactions for wallet ${walletAddress} on chain ${chain}: ${response.status} ${response.statusText} - ${errorText}`
+//     );
+//   }
+//   return await response.json();
+// };
 
 // Helper to format a UNIX timestamp (seconds) to a readable string.
 const formatTimestamp = (
@@ -67,10 +69,11 @@ export async function fetchTransactions(
 
     // Fetch transactions for each chain in parallel using our helper
     const promises = chains.map((chain) =>
-      fetchChainTransactions(chain, walletAddress)
+      fetchDonationsToWallet(chain, walletAddress)
     );
+
     const results = await Promise.allSettled(promises);
-    console.log("the results", JSON.stringify(results, null, 2)[0]);
+    console.log("the32 main results", JSON.stringify(results, null, 2));
 
     // We'll temporarily include a rawTimestamp property for sorting.
     const transactions: (TransactionWithType & { rawTimestamp: number })[] =
