@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { ethers } from "ethers";
+import { Eip1193Provider, ethers } from "ethers";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +47,10 @@ export function TransactionModal({ user }: TransactionModalProps) {
   const sendCrypto = useSendCrypto(BigInt(amount), recipient ?? "");
 
   const onSubmit = (data: FormData) => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    if (
+      typeof window !== "undefined" &&
+      (window as { ethereum?: Eip1193Provider }).ethereum
+    ) {
       // Convert the ETH amount to Wei using ethers.parseEther (v6)
       const amountWei = ethers.parseEther(data.amount);
       // Set recipient and amount for sending

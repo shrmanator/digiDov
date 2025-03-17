@@ -99,7 +99,7 @@ export default async function Dashboard() {
               <DonorLinkCopyButton
                 donorLink={donationLink}
                 label="Click to copy donation page link"
-              />{" "}
+              />
               <CombinedWalletBalance netWorth={netWorth} />
             </div>
           </header>
