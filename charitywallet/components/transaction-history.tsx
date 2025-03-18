@@ -58,11 +58,16 @@ export default function DonationHistory({ donations }: DonationHistoryProps) {
     return <p className="text-center">No donations found.</p>;
   }
 
+  // Sort donations so that the most recent comes first (descending order)
+  const sortedDonations = donations
+    .slice()
+    .sort((a, b) => b.timestamp.raw - a.timestamp.raw);
+
   return (
     <div className="w-full">
       <ScrollArea style={{ height: "78vh" }} className="w-full">
         <div className="flex flex-col space-y-4">
-          {donations.map((donation) => (
+          {sortedDonations.map((donation) => (
             <DonationItem key={donation.transactionHash} donation={donation} />
           ))}
         </div>
