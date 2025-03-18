@@ -10,7 +10,7 @@ const DONATION_FORWARDED_TOPIC_HASH = web3.utils.keccak256(
 // Address of the contract emitting DonationForwarded events
 const CONTRACT_ADDRESS = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
 
-interface DonationEvent {
+export interface DonationEvent {
   donor: string;
   charity: string;
   fullAmount: string;

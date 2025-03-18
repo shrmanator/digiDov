@@ -19,10 +19,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import CombinedWalletBalance from "@/components/wallet-balance";
-import { fetchTransactions, TransactionWithType } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 import { TransactionModal } from "@/components/send-no-fee-transaction-modal";
+import {
+  DonationEvent,
+  fetchDonationsToWallet,
+} from "@/utils/fetch-contract-transactions";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
@@ -34,7 +37,7 @@ export default async function Dashboard() {
     redirect("/login");
   }
 
-  // 2) Fetch charity data
+  // 2) Fetch charity data using the user's wallet address
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
   });
@@ -43,34 +46,31 @@ export default async function Dashboard() {
   }
   const isCharityComplete = charity.is_profile_complete ?? false;
 
-  // 3) Fetch net worth and transactions concurrently
-  const [netWorthResult, transactionsResult] = await Promise.allSettled([
+  // 3) Fetch net worth and donation events concurrently
+  const [netWorthResult, donationsResult] = await Promise.allSettled([
     Moralis.EvmApi.wallets.getWalletNetWorth({
       address: charity.wallet_address,
       excludeSpam: true,
       excludeUnverifiedContracts: true,
     }),
-    fetchTransactions(charity.wallet_address),
+    fetchDonationsToWallet("polygon", charity.wallet_address),
   ]);
 
   let netWorth: string | null = null;
   if (netWorthResult.status === "fulfilled") {
-    netWorth = netWorthResult.value.raw?.total_networth_usd;
+    netWorth = netWorthResult.value.raw?.total_networth_usd || null;
   } else {
     console.error("Error fetching net worth:", netWorthResult.reason);
   }
 
-  let transactions: TransactionWithType[] = [];
-  if (transactionsResult.status === "fulfilled") {
-    transactions = transactionsResult.value;
+  let donations: DonationEvent[] = [];
+  if (donationsResult.status === "fulfilled") {
+    donations = donationsResult.value;
   } else {
-    console.error(
-      "Failed to fetch transactions from Moralis:",
-      transactionsResult.reason
-    );
+    console.error("Failed to fetch donation events:", donationsResult.reason);
   }
 
-  // 4) Construct the donation link
+  // 4) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
   // 5) Render the dashboard
@@ -110,11 +110,9 @@ export default async function Dashboard() {
                 <TransactionModal user={user} />
               </header>
               {isCharityComplete ? (
-                <>
-                  <div className="w-full">
-                    <TransactionHistory transactions={transactions} />
-                  </div>
-                </>
+                <div className="w-full">
+                  <TransactionHistory donations={donations} />
+                </div>
               ) : (
                 <>
                   <p className="text-center">No donations found.</p>
