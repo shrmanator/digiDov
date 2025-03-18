@@ -16,7 +16,7 @@ enum Jurisdiction {
 }
 
 model charity {
-    id                            String             @id @default(uuid())
+    id                            String                  @id @default(uuid())
     charity_name                  String?
     registration_number           String?
     contact_first_name            String?
@@ -29,12 +29,27 @@ model charity {
     state                         String?
     postCode                      String?
     countryCode                   String? // Eg. Canada, United States Of America
-    wallet_address                String             @unique // Wallet address for receiving donations
-    transak_stream_wallet_address String?            @unique // Wallet address for off-ramping
-    is_profile_complete           Boolean            @default(false)
-    slug                          String?            @unique
-    created_at                    DateTime           @default(now())
+    wallet_address                String                  @unique // Wallet address for receiving donations
+    transak_stream_wallet_address String?                 @unique // Wallet address for off-ramping
+    is_profile_complete           Boolean                 @default(false)
+    slug                          String?                 @unique
+    created_at                    DateTime                @default(now())
     donation_receipts             donation_receipt[]
+    charity_fund_transfer         charity_fund_transfer[]
+}
+
+model charity_fund_transfer {
+    id                 String   @id @default(uuid())
+    charity_id         String
+    charity            charity  @relation(fields: [charity_id], references: [id])
+    amount_wei         BigInt // Amount in Wei
+    fiat_equivalent    Float? // Optional: Fiat value at the time of transfer
+    transaction_hash   String   @unique
+    destination_wallet String
+    chain_id           String?
+    gas_fee_wei        BigInt? // Optional: Gas fee for transaction
+    transfer_reason    String? // Optional: Description of transfer
+    created_at         DateTime @default(now())
 }
 
 model donor {

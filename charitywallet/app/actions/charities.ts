@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { getHistoricalCryptoToFiatPrice } from "@/utils/get-historical-crytpo-price";
 import slugify from "slugify";
 
 export interface CharityInput {
@@ -91,4 +92,53 @@ export async function getCharitySlugByWalletAddress(wallet_address: string) {
     select: { slug: true },
   });
   return charity?.slug;
+}
+
+export async function logCharityFundTransfer({
+  charityId,
+  amountWei,
+  destinationWallet,
+  transactionHash,
+  chainId,
+  tokenId = "ethereum", // Default to ETH, update as needed
+  fiatCurrency = "usd", // Default to USD, update as needed
+}: {
+  charityId: string;
+  amountWei: string;
+  destinationWallet: string;
+  transactionHash: string;
+  chainId: string;
+  tokenId?: string;
+  fiatCurrency?: string;
+}) {
+  try {
+    // Convert the amount to ETH (assumes 18 decimals for ETH-based tokens)
+    const amountEth = Number(amountWei) / 1e18;
+
+    // Get the historical price
+    const timestamp = new Date().toISOString();
+    const historicalPrice = await getHistoricalCryptoToFiatPrice(
+      tokenId,
+      timestamp,
+      fiatCurrency
+    );
+
+    const fiatEquivalent = historicalPrice ? amountEth * historicalPrice : null;
+
+    const newTransfer = await prisma.charity_fund_transfer.create({
+      data: {
+        charity_id: charityId,
+        amount_wei: BigInt(amountWei),
+        fiat_equivalent: fiatEquivalent,
+        destination_wallet: destinationWallet,
+        transaction_hash: transactionHash,
+        chain_id: chainId,
+      },
+    });
+
+    return { success: true, transfer: newTransfer };
+  } catch (error) {
+    console.error("Error logging transaction:", error);
+    return { success: false, error: "Failed to log transaction" };
+  }
 }
