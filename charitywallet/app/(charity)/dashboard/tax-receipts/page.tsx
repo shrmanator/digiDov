@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CombinedWalletBalance from "@/components/wallet-balance";
-import { fetchTransactions } from "@/utils/moralis-utils";
 import Moralis from "moralis";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,7 +44,6 @@ export default async function Dashboard() {
       excludeSpam: true,
       excludeUnverifiedContracts: true,
     }),
-    fetchTransactions(charity.wallet_address, "received"),
   ]);
 
   let netWorth: string | null = null;
