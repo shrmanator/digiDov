@@ -97,10 +97,3 @@ export const formatTimestamp = (
   });
   return { formatted, raw: rawTimestamp };
 };
-
-// // Example usage:
-// (async () => {
-//   const walletAddress = "0xYourWalletAddressHere"; // replace with your wallet address
-//   const donations = await fetchDonationsToWallet("polygon", walletAddress);
-//   console.log("Sorted Donations by Date:", donations);
-// })();
