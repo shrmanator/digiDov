@@ -29,7 +29,7 @@ export default function CombinedWalletBalance({
   const [calculatedNetWorth, setCalculatedNetWorth] = useState<number | null>(
     null
   );
-  const [priceData, setPriceData] = useState(initialPriceData);
+  const [priceData] = useState(initialPriceData);
 
   // Fetch wallet balances for each chain
   const ethBalance = useWalletBalance({

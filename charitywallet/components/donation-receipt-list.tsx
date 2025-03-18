@@ -72,16 +72,7 @@ export default function DonationReceiptsList() {
       .reduce((sum, receipt) => sum + receipt.fiat_amount, 0)
       .toFixed(2);
   };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-    }).format(date);
-  };
-
+  
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center p-6 text-muted-foreground">
