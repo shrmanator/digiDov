@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import CombinedWalletBalance from "@/components/wallet-balance";
-import Moralis from "moralis";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import {
@@ -29,9 +27,20 @@ import {
 import { polygon, ethereum } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceipts } from "@/app/actions/receipts";
+import { client } from "@/lib/thirdwebClient";
+import CombinedWalletBalance, {
+  SupportedChain,
+} from "@/components/combine-wallet-balance-usd";
+import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
+
+// Explicitly type COIN_IDS with SupportedChain keys.
+const COIN_IDS: Record<SupportedChain, string> = {
+  ethereum: "ethereum",
+  polygon: "matic-network",
+};
 
 export default async function Dashboard() {
   // 1) Check user authentication
@@ -50,13 +59,8 @@ export default async function Dashboard() {
   const isCharityComplete = charity.is_profile_complete ?? false;
 
   // 3) Fetch net worth and donation events concurrently from two different chains
-  const [netWorthResult, donationsResultPolygon, donationsResultEthereum] =
+  const [donationsResultPolygon, donationsResultEthereum] =
     await Promise.allSettled([
-      Moralis.EvmApi.wallets.getWalletNetWorth({
-        address: charity.wallet_address,
-        excludeSpam: true,
-        excludeUnverifiedContracts: true,
-      }),
       fetchDonationsToWallet(
         polygon.id,
         "0x1c8ed2efaed9f2d4f13e8f95973ac8b50a862ef0",
@@ -68,13 +72,6 @@ export default async function Dashboard() {
         charity.wallet_address
       ),
     ]);
-
-  let netWorth: string | null = null;
-  if (netWorthResult.status === "fulfilled") {
-    netWorth = netWorthResult.value.raw?.total_networth_usd || null;
-  } else {
-    console.error("Error fetching net worth:", netWorthResult.reason);
-  }
 
   let donations: DonationEvent[] = [];
   if (donationsResultPolygon.status === "fulfilled") {
@@ -105,7 +102,12 @@ export default async function Dashboard() {
   // 5) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
-  // 6) Render the dashboard
+  // 6) Fetch price data on the server
+  const chains: SupportedChain[] = ["ethereum", "polygon"];
+  const coinIds = chains.map((chain) => COIN_IDS[chain]).join(",");
+  const initialPriceData = await fetchPrices(coinIds, "usd");
+
+  // 7) Render the dashboard
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -132,7 +134,12 @@ export default async function Dashboard() {
                 donorLink={donationLink}
                 label="Click to copy donation page link"
               />
-              <CombinedWalletBalance netWorth={netWorth} />
+              <CombinedWalletBalance
+                initialPriceData={initialPriceData} // Pass the fetched price data here
+                address={charity.wallet_address}
+                client={client}
+                currency="usd"
+              />
             </div>
           </header>
           <main className="flex flex-1 p-6">

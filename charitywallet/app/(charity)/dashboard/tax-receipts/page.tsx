@@ -16,11 +16,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import CombinedWalletBalance from "@/components/wallet-balance";
-import Moralis from "moralis";
+
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
+import { client } from "@/lib/thirdwebClient";
+import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
+import CombinedWalletBalance, {
+  SupportedChain,
+} from "@/components/combine-wallet-balance-usd";
 
 export default async function Dashboard() {
   // 1) Check user
@@ -37,23 +41,17 @@ export default async function Dashboard() {
     return <p>No charity found.</p>;
   }
 
-  // 4) Fetch net worth and transactions concurrently
-  const [netWorthResult] = await Promise.allSettled([
-    Moralis.EvmApi.wallets.getWalletNetWorth({
-      address: charity.wallet_address,
-      excludeSpam: true,
-      excludeUnverifiedContracts: true,
-    }),
-  ]);
-
-  let netWorth: string | null = null;
-  if (netWorthResult.status === "fulfilled") {
-    netWorth = netWorthResult.value.raw?.total_networth_usd;
-  } else {
-    console.error("Error fetching net worth:", netWorthResult.reason);
-  }
-
+  // 3) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
+
+  // 4) Fetch price data on the server using the new system
+  const chains: SupportedChain[] = ["ethereum", "polygon"];
+  const COIN_IDS: Record<SupportedChain, string> = {
+    ethereum: "ethereum",
+    polygon: "matic-network",
+  };
+  const coinIds = chains.map((chain) => COIN_IDS[chain]).join(",");
+  const initialPriceData = await fetchPrices(coinIds, "usd");
 
   return (
     <SidebarProvider>
@@ -81,7 +79,12 @@ export default async function Dashboard() {
                 donorLink={donationLink}
                 label="Click to copy donation page link"
               />
-              <CombinedWalletBalance netWorth={netWorth} />
+              <CombinedWalletBalance
+                initialPriceData={initialPriceData}
+                address={charity.wallet_address}
+                client={client}
+                currency="usd"
+              />
             </div>
           </header>
           <ScrollArea className="h-full mt-6">
