@@ -28,10 +28,10 @@ import { polygon, ethereum } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceipts } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
+import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
   SupportedChain,
-} from "@/components/combine-wallet-balance-usd";
-import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
+} from "@/components/combine-wallet-balance";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;

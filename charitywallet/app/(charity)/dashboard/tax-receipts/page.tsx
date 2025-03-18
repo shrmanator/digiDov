@@ -24,7 +24,7 @@ import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
   SupportedChain,
-} from "@/components/combine-wallet-balance-usd";
+} from "@/components/combine-wallet-balance";
 
 export default async function Dashboard() {
   // 1) Check user
