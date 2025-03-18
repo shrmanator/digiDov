@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   Dialog,
@@ -21,9 +21,9 @@ import {
 import { sepolia } from "thirdweb/chains";
 import { prepareTransaction, toWei } from "thirdweb";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
-import { ArrowUpRight, AlertCircle } from "lucide-react";
+import { ArrowUpRight, AlertCircle, CheckCircle } from "lucide-react";
 
-interface TransactionModalProps {
+interface SendingFundsModalProps {
   user: { walletAddress: string };
 }
 
@@ -32,7 +32,7 @@ interface FormData {
   amount: string;
 }
 
-export function TransactionModal({ user }: TransactionModalProps) {
+export function SendingFundsModal({ user }: SendingFundsModalProps) {
   const [open, setOpen] = useState(false);
   const {
     register,
@@ -53,6 +53,17 @@ export function TransactionModal({ user }: TransactionModalProps) {
   } = useSendTransaction();
 
   const [isTransactionInProgress, setIsTransactionInProgress] = useState(false);
+  const [transactionSuccess, setTransactionSuccess] = useState(false);
+  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Clean up timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeout) {
+        clearTimeout(closeTimeout);
+      }
+    };
+  }, [closeTimeout]);
 
   const onSubmit = (data: FormData) => {
     if (!activeAccount) {
@@ -61,6 +72,7 @@ export function TransactionModal({ user }: TransactionModalProps) {
     }
 
     setIsTransactionInProgress(true);
+    setTransactionSuccess(false);
 
     // Prepare the transaction using thirdweb utilities:
     const transaction = prepareTransaction({
@@ -74,11 +86,20 @@ export function TransactionModal({ user }: TransactionModalProps) {
     sendTx(transaction, {
       onSuccess: () => {
         setIsTransactionInProgress(false);
+        setTransactionSuccess(true);
         reset();
-        setOpen(false);
+
+        // Set a timeout to close the modal after 10 seconds
+        const timeout = setTimeout(() => {
+          setOpen(false);
+          setTransactionSuccess(false);
+        }, 10000);
+
+        setCloseTimeout(timeout);
       },
       onError: () => {
         setIsTransactionInProgress(false);
+        setTransactionSuccess(false);
       },
       onSettled: () => {
         setIsTransactionInProgress(false);
@@ -86,17 +107,29 @@ export function TransactionModal({ user }: TransactionModalProps) {
     });
   };
 
+  // Handle manual dialog close
+  const handleDialogChange = (newOpen: boolean) => {
+    // Only allow closing if no transaction is in progress
+    if (isTransactionInProgress && newOpen === false) {
+      return;
+    }
+
+    // Clear any pending timeouts when manually closing
+    if (closeTimeout && !newOpen) {
+      clearTimeout(closeTimeout);
+      setCloseTimeout(null);
+    }
+
+    setOpen(newOpen);
+
+    // Reset transaction success state when closing
+    if (!newOpen) {
+      setTransactionSuccess(false);
+    }
+  };
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(newOpen) => {
-        // Only allow closing if no transaction is in progress
-        if (isTransactionInProgress && newOpen === false) {
-          return;
-        }
-        setOpen(newOpen);
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <ArrowUpRight size={16} />
@@ -141,6 +174,7 @@ export function TransactionModal({ user }: TransactionModalProps) {
               })}
               placeholder="0x..."
               className="font-mono text-sm"
+              disabled={transactionSuccess}
             />
             {errors.withdrawalAddress && (
               <div className="flex items-center gap-1 text-xs text-red-500">
@@ -163,6 +197,7 @@ export function TransactionModal({ user }: TransactionModalProps) {
               placeholder="0.0"
               type="text"
               inputMode="decimal"
+              disabled={transactionSuccess}
             />
             {errors.amount && (
               <div className="flex items-center gap-1 text-xs text-red-500">
@@ -172,22 +207,39 @@ export function TransactionModal({ user }: TransactionModalProps) {
             )}
           </div>
 
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button
+            type="submit"
+            disabled={isPending || transactionSuccess}
+            className="w-full"
+          >
             {isPending ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></span>
                 Processing...
+              </span>
+            ) : transactionSuccess ? (
+              <span className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-primary" />
+                Transaction Successful
               </span>
             ) : (
               "Withdraw Funds"
             )}
           </Button>
 
-          {transactionResult && (
-            <div className="mt-4 p-3 bg-muted border rounded text-sm">
-              <p className="font-medium">Transaction submitted!</p>
-              <p className="mt-1 text-xs font-mono break-all">
+          {transactionResult && transactionSuccess && (
+            <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-md text-sm">
+              <div className="flex items-center gap-2 text-primary">
+                <CheckCircle size={16} />
+                <p className="font-medium">
+                  Transaction submitted successfully!
+                </p>
+              </div>
+              <p className="mt-2 text-xs font-mono break-all text-foreground">
                 Hash: {transactionResult.transactionHash}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                This dialog will close automatically in 10 seconds...
               </p>
             </div>
           )}
