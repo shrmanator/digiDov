@@ -26,7 +26,9 @@ import {
   DonationEvent,
   fetchDonationsToWallet,
 } from "@/utils/fetch-contract-transactions";
-import { polygon, ethereum } from "thirdweb/chains"; // Import additional chain
+import { polygon, ethereum } from "thirdweb/chains";
+import { DonationReceipt } from "@/app/types/receipt";
+import { getDonationReceipts } from "@/app/actions/receipts";
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
@@ -92,10 +94,18 @@ export default async function Dashboard() {
     );
   }
 
-  // 4) Construct the donation link for sharing
+  // 4) Fetch donation receipts from the database
+  let receipts: DonationReceipt[] = [];
+  try {
+    receipts = await getDonationReceipts();
+  } catch (error) {
+    console.error("Error fetching donation receipts:", error);
+  }
+
+  // 5) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
-  // 5) Render the dashboard
+  // 6) Render the dashboard
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -133,7 +143,10 @@ export default async function Dashboard() {
               </header>
               {isCharityComplete ? (
                 <div className="w-full">
-                  <TransactionHistory donations={donations} />
+                  <TransactionHistory
+                    donations={donations}
+                    receipts={receipts}
+                  />
                 </div>
               ) : (
                 <>
