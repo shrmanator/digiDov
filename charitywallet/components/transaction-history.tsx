@@ -15,14 +15,29 @@ interface DonationHistoryProps {
   donations: DonationEvent[];
 }
 
+// Helper function to map chain IDs to their native token symbols
+const getChainSymbol = (chain: number): string => {
+  switch (chain) {
+    case 1:
+      return "ETH";
+    case 137:
+      return "POL";
+    // Add additional chains as needed:
+    // case 56: return "BNB";
+    default:
+      return "N/A"; // default fallback
+  }
+};
+
 function DonationItem({ donation }: { donation: DonationEvent }) {
-  // Convert donation.netAmount (a string in wei) to ETH
+  // Convert donation.netAmount (a string in wei) to a native value
   const nativeValue = web3.utils.fromWei(donation.netAmount, "ether");
   const formattedDate = donation.timestamp.formatted;
+  const chainSymbol = getChainSymbol(donation.chain);
 
   // Get historical price using the donation's timestamp (converted to ISO string)
   const historicalPrice = useHistoricalPrice(
-    "ETH",
+    chainSymbol,
     new Date(donation.timestamp.raw).toISOString(),
     "usd"
   );
@@ -40,7 +55,9 @@ function DonationItem({ donation }: { donation: DonationEvent }) {
         <div className="flex items-center space-x-3">
           <span className="text-xl font-semibold">
             ${usdValue.toFixed(2)}{" "}
-            <span className="text-base font-normal">({nativeValue} ETH)</span>
+            <span className="text-base font-normal">
+              ({nativeValue} {chainSymbol})
+            </span>
           </span>
           <ArrowDownLeft className="text-green-500 h-6 w-6" />
         </div>

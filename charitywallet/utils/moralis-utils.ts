@@ -1,8 +1,4 @@
-import { client } from "@/lib/thirdwebClient";
-import {
-  fetchChainTransactions,
-  fetchDonationsToWallet,
-} from "./fetch-contract-transactions";
+import { fetchDonationsToWallet } from "./fetch-contract-transactions";
 
 // Extended interface with transaction type and chain info
 export interface TransactionWithType {
@@ -15,28 +11,6 @@ export interface TransactionWithType {
   type: "Received" | "Sent";
   chain: "0x1" | "0x89";
 }
-
-// Helper function to fetch transactions from a single chain with proper error checking
-// Helper function to fetch transactions from the new Thirdweb endpoint with proper error checking
-// const fetchChainTransactions = async (
-//   chain: string,
-//   walletAddress: string
-// ): Promise<any> => {
-//   const url = `https://insight.thirdweb.com/v1/events/0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0?chain=137&limit=20`;
-
-//   const response = await fetch(url, {
-//     headers: {
-//       "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
-//     },
-//   });
-//   if (!response.ok) {
-//     const errorText = await response.text();
-//     throw new Error(
-//       `Error fetching transactions for wallet ${walletAddress} on chain ${chain}: ${response.status} ${response.statusText} - ${errorText}`
-//     );
-//   }
-//   return await response.json();
-// };
 
 // Helper to format a UNIX timestamp (seconds) to a readable string.
 const formatTimestamp = (

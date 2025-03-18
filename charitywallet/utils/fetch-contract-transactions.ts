@@ -2,13 +2,10 @@ import Web3 from "web3";
 
 const web3 = new Web3();
 
-// Hardcoded topic0 hash for DonationForwarded event
+// Hardcoded topic0 hash for DonationForwarded event remains unchanged
 const DONATION_FORWARDED_TOPIC_HASH = web3.utils.keccak256(
   "DonationForwarded(address,address,uint256,uint256,uint256)"
 );
-
-// Address of the contract emitting DonationForwarded events
-const CONTRACT_ADDRESS = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
 
 export interface DonationEvent {
   donor: string;
@@ -18,10 +15,14 @@ export interface DonationEvent {
   fee: string;
   transactionHash: string;
   timestamp: { formatted: string; raw: number };
+  chain: number;
 }
 
-export const fetchChainTransactions = async (chain: string): Promise<any[]> => {
-  const url = `https://insight.thirdweb.com/v1/events/${CONTRACT_ADDRESS}?chain=137&limit=50`;
+export const fetchChainTransactions = async (
+  chain: number,
+  contractAddress: string
+): Promise<any[]> => {
+  const url = `https://insight.thirdweb.com/v1/events/${contractAddress}?chain=${chain}&limit=50`;
   const response = await fetch(url, {
     headers: {
       "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
@@ -39,11 +40,12 @@ export const fetchChainTransactions = async (chain: string): Promise<any[]> => {
 };
 
 export const fetchDonationsToWallet = async (
-  chain: string,
+  chain: number,
+  contractAddress: string,
   walletAddress: string
 ): Promise<DonationEvent[]> => {
   try {
-    const events = await fetchChainTransactions(chain);
+    const events = await fetchChainTransactions(chain, contractAddress);
 
     const donations: DonationEvent[] = events
       .filter(
@@ -52,7 +54,10 @@ export const fetchDonationsToWallet = async (
           ("0x" + log.topics[2].slice(-40)).toLowerCase() ===
             walletAddress.toLowerCase()
       )
-      .map((log: any) => decodeDonationLog(log));
+      .map((log: any) => {
+        const donation = decodeDonationLog(log);
+        return { ...donation, chain }; // attach the chain info
+      });
 
     // Sort donations by timestamp (ascending)
     donations.sort((a, b) => a.timestamp.raw - b.timestamp.raw);
@@ -80,6 +85,7 @@ export const decodeDonationLog = (log: any): DonationEvent => {
     fee,
     transactionHash: log.transaction_hash,
     timestamp: formatTimestamp(log.block_timestamp),
+    chain: 1, // default value; will be overwritten in fetchDonationsToWallet
   };
 };
 

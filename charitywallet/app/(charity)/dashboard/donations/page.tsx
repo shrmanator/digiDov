@@ -26,6 +26,7 @@ import {
   DonationEvent,
   fetchDonationsToWallet,
 } from "@/utils/fetch-contract-transactions";
+import { polygon, ethereum } from "thirdweb/chains"; // Import additional chain
 
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
@@ -46,15 +47,25 @@ export default async function Dashboard() {
   }
   const isCharityComplete = charity.is_profile_complete ?? false;
 
-  // 3) Fetch net worth and donation events concurrently
-  const [netWorthResult, donationsResult] = await Promise.allSettled([
-    Moralis.EvmApi.wallets.getWalletNetWorth({
-      address: charity.wallet_address,
-      excludeSpam: true,
-      excludeUnverifiedContracts: true,
-    }),
-    fetchDonationsToWallet("polygon", charity.wallet_address),
-  ]);
+  // 3) Fetch net worth and donation events concurrently from two different chains
+  const [netWorthResult, donationsResultPolygon, donationsResultEthereum] =
+    await Promise.allSettled([
+      Moralis.EvmApi.wallets.getWalletNetWorth({
+        address: charity.wallet_address,
+        excludeSpam: true,
+        excludeUnverifiedContracts: true,
+      }),
+      fetchDonationsToWallet(
+        polygon.id,
+        "0x1c8ed2efaed9f2d4f13e8f95973ac8b50a862ef0",
+        charity.wallet_address
+      ),
+      fetchDonationsToWallet(
+        ethereum.id,
+        "0x27fede2dc50c03ef8c90bf1aa9cf69a3d181c9df",
+        charity.wallet_address
+      ),
+    ]);
 
   let netWorth: string | null = null;
   if (netWorthResult.status === "fulfilled") {
@@ -64,10 +75,21 @@ export default async function Dashboard() {
   }
 
   let donations: DonationEvent[] = [];
-  if (donationsResult.status === "fulfilled") {
-    donations = donationsResult.value;
+  if (donationsResultPolygon.status === "fulfilled") {
+    donations = donations.concat(donationsResultPolygon.value);
   } else {
-    console.error("Failed to fetch donation events:", donationsResult.reason);
+    console.error(
+      "Failed to fetch donation events from Polygon:",
+      donationsResultPolygon.reason
+    );
+  }
+  if (donationsResultEthereum.status === "fulfilled") {
+    donations = donations.concat(donationsResultEthereum.value);
+  } else {
+    console.error(
+      "Failed to fetch donation events from Ethereum:",
+      donationsResultEthereum.reason
+    );
   }
 
   // 4) Construct the donation link for sharing
