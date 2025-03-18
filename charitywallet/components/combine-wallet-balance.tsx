@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useWalletBalance } from "thirdweb/react";
 import { ethereum, polygon } from "thirdweb/chains";
+import { ThirdwebClient } from "thirdweb";
 
 export type SupportedChain = "ethereum" | "polygon";
 
@@ -11,11 +12,17 @@ const COIN_IDS: Record<SupportedChain, string> = {
   polygon: "matic-network",
 };
 
+interface PriceData {
+  [coinId: string]: {
+    [currency: string]: number;
+  };
+}
+
 interface CombinedWalletBalanceProps {
-  initialPriceData: any;
+  initialPriceData: PriceData;
   chains?: SupportedChain[];
   address: string;
-  client: any;
+  client: ThirdwebClient; // Replace with proper type from thirdweb when possible
   currency?: string;
 }
 
@@ -83,7 +90,7 @@ export default function CombinedWalletBalance({
 
     calculateTotalValue();
   }, [chains, requestedBalances, isLoading, isError, currency, priceData]);
-  console.log("calculatedNetWorth", calculatedNetWorth);
+
   return (
     <div className="text-sm font-mono mr-2.5">
       Total donations: ~
