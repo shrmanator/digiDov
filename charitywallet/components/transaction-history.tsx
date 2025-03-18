@@ -82,7 +82,7 @@ export default function DonationHistory({ donations }: DonationHistoryProps) {
 
   return (
     <div className="w-full">
-      <ScrollArea style={{ height: "78vh" }} className="w-full">
+      <ScrollArea style={{ height: "74vh" }} className="w-full">
         <div className="flex flex-col space-y-4">
           {sortedDonations.map((donation) => (
             <DonationItem key={donation.transactionHash} donation={donation} />
