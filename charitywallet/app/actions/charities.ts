@@ -111,21 +111,19 @@ export async function getCharitySlugByWalletAddress(wallet_address: string) {
   return charity?.slug;
 }
 
-export async function logCharityFundTransfer({
+export async function addCharityFundTransferToDb({
   charityId,
   amountWei,
   destinationWallet,
   transactionHash,
   chainId,
-  tokenId = "ethereum", // Default to ETH, update as needed
-  fiatCurrency = "usd", // Default to USD, update as needed
+  fiatCurrency = "usd", // Default to USD
 }: {
   charityId: string;
   amountWei: string;
   destinationWallet: string;
   transactionHash: string;
-  chainId: string;
-  tokenId?: string;
+  chainId: number;
   fiatCurrency?: string;
 }) {
   try {
@@ -135,7 +133,7 @@ export async function logCharityFundTransfer({
     // Get the historical price
     const timestamp = new Date().toISOString();
     const historicalPrice = await getHistoricalCryptoToFiatPrice(
-      tokenId,
+      chainId,
       timestamp,
       fiatCurrency
     );
@@ -149,7 +147,7 @@ export async function logCharityFundTransfer({
         fiat_equivalent: fiatEquivalent,
         destination_wallet: destinationWallet,
         transaction_hash: transactionHash,
-        chain_id: chainId,
+        chain_id: chainId.toString(),
       },
     });
 

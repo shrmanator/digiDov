@@ -1,34 +1,37 @@
 import axios from "axios";
+import { getCoingeckoIdFromChainId } from "./get-coingecko-id-from-chain-id";
 
 /**
  * Fetches the historical fiat value of a cryptocurrency on a specific date.
  *
- * @param tokenId - The CoinGecko ID of the cryptocurrency (e.g., 'ethereum').
+ * @param chainId - The blockchain chain ID (e.g., 1 for Ethereum, 137 for Polygon).
  * @param date - The date in 'dd-mm-yyyy' format.
  * @param targetCurrency - The target fiat currency (e.g., 'usd', 'eur'). Defaults to 'usd'.
  * @returns The historical price of the cryptocurrency in the specified fiat currency, or null if not found.
  */
 export async function getHistoricalCryptoToFiatPrice(
-  tokenId: string,
+  chainId: number,
   date: string,
-  targetCurrency: string
+  targetCurrency: string = "usd"
 ): Promise<number | null> {
-  const url = `https://api.coingecko.com/api/v3/coins/${tokenId}/history?date=${date}`;
+  const coingeckoId = getCoingeckoIdFromChainId(chainId);
+
+  if (!coingeckoId) {
+    console.error(`Unknown chain ID: ${chainId}`);
+    return null;
+  }
+
+  const url = `https://api.coingecko.com/api/v3/coins/${coingeckoId}/history?date=${date}`;
 
   try {
     const response = await axios.get(url);
     const data = response.data;
 
-    if (
-      data &&
-      data.market_data &&
-      data.market_data.current_price &&
-      data.market_data.current_price[targetCurrency]
-    ) {
+    if (data?.market_data?.current_price?.[targetCurrency]) {
       return data.market_data.current_price[targetCurrency];
     } else {
       console.error(
-        `Historical price data missing for ${tokenId} on ${date} in ${targetCurrency}`
+        `Historical price data missing for chain ID ${chainId} (${coingeckoId}) on ${date} in ${targetCurrency}`
       );
       return null;
     }

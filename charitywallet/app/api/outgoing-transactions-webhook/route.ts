@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
-import { logCharityFundTransfer } from "@/app/actions/charities";
+import { addCharityFundTransferToDb } from "@/app/actions/charities";
 
 const web3 = new Web3();
 
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     console.log("Fiat Equivalent:", fiatEquivalent);
 
     // Log the charity fund transfer via our server action.
-    const logResponse = await logCharityFundTransfer({
+    const logResponse = await addCharityFundTransferToDb({
       charityId: charityWallet, // The charity sending funds.
       amountWei,
       destinationWallet,

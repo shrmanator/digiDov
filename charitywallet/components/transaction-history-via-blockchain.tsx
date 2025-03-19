@@ -95,7 +95,7 @@ function DonationCard({
 
   // Get historical price
   const historicalPrice = useHistoricalPrice(
-    chainSymbol,
+    donation.chain,
     new Date(donation.timestamp.raw).toISOString(),
     "usd"
   );

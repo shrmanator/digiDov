@@ -94,7 +94,7 @@ export default async function Dashboard() {
   // 4) Fetch donation receipts from the database
   let receipts: DonationReceipt[] = [];
   try {
-    receipts = await getDonationReceipts();
+    receipts = await getDonationReceipts(user.walletAddress);
   } catch (error) {
     console.error("Error fetching donation receipts:", error);
   }

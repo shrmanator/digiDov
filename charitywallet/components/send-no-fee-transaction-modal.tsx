@@ -18,7 +18,7 @@ import {
   useActiveAccount,
   useSendTransaction,
 } from "thirdweb/react";
-import { sepolia } from "thirdweb/chains";
+import { polygon, sepolia } from "thirdweb/chains";
 import { prepareTransaction, toWei } from "thirdweb";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, AlertCircle, CheckCircle } from "lucide-react";
@@ -78,7 +78,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     const transaction = prepareTransaction({
       to: data.withdrawalAddress,
       value: toWei(data.amount), // converts ETH amount (as string) to Wei
-      chain: sepolia,
+      chain: polygon,
       client: thirdwebClient,
     });
 

@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 /**
  * Custom hook to fetch the historical price of a cryptocurrency.
  *
- * @param tokenId - The CoinGecko ID of the cryptocurrency (e.g., 'ethereum').
+ * @param chainId - The chain ID of the cryptocurrency (e.g., 1 for Ethereum).
  * @param timestamp - The timestamp of the transaction.
  * @param targetCurrency - The target fiat currency (e.g., 'usd'). Defaults to 'usd'.
  * @returns The historical price or null if not found.
  */
 export function useHistoricalPrice(
-  tokenId: string,
+  chainId: number,
   timestamp: string | number | Date,
   targetCurrency: string
 ): number | null {
@@ -18,7 +18,7 @@ export function useHistoricalPrice(
 
   useEffect(() => {
     async function getPrice() {
-      if (!tokenId || !timestamp) return;
+      if (!chainId || !timestamp) return;
 
       const date = new Date(timestamp);
       const formattedDate = `${String(date.getUTCDate()).padStart(
@@ -30,7 +30,7 @@ export function useHistoricalPrice(
       )}-${date.getUTCFullYear()}`;
 
       const historicalPrice = await getHistoricalCryptoToFiatPrice(
-        tokenId,
+        chainId,
         formattedDate,
         targetCurrency
       );
@@ -39,7 +39,7 @@ export function useHistoricalPrice(
     }
 
     getPrice();
-  }, [tokenId, timestamp, targetCurrency]);
+  }, [chainId, timestamp, targetCurrency]);
 
   return price;
 }
