@@ -22,7 +22,7 @@ interface CombinedWalletBalanceProps {
   initialPriceData: PriceData;
   chains?: SupportedChain[];
   address: string;
-  client: ThirdwebClient; // Replace with proper type from thirdweb when possible
+  client: ThirdwebClient;
   currency?: string;
 }
 
@@ -51,21 +51,17 @@ export default function CombinedWalletBalance({
     client,
   });
 
-  // Map chain names to their respective balance data
-  const balanceMap = {
-    ethereum: ethBalance,
-    polygon: polygonBalance,
-  };
-
   // Create an array of requested balances
-  const requestedBalances = useMemo(
-    () =>
-      chains.map((chain) => ({
-        chain,
-        balanceData: balanceMap[chain],
-      })),
-    [chains, ethBalance, polygonBalance]
-  );
+  const requestedBalances = useMemo(() => {
+    const balanceMap = {
+      ethereum: ethBalance,
+      polygon: polygonBalance,
+    };
+    return chains.map((chain) => ({
+      chain,
+      balanceData: balanceMap[chain],
+    }));
+  }, [chains, ethBalance, polygonBalance]);
 
   // Check loading and error states
   const isLoading = requestedBalances.some(
