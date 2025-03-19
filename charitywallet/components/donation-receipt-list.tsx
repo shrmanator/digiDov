@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DonationReceipt } from "@/app/types/receipt";
 import {
   getDonationReceiptPdf,
-  getDonationReceipts,
+  getDonationReceiptsForCharity,
 } from "@/app/actions/receipts";
 
 interface DonationReceiptsListProps {
@@ -28,7 +28,7 @@ export default function DonationReceiptsList({
   const fetchReceipts = useCallback(async () => {
     setLoading(true);
     // Use the passed walletAddress to fetch the donation receipts
-    const fetchedReceipts = await getDonationReceipts(walletAddress);
+    const fetchedReceipts = await getDonationReceiptsForCharity(walletAddress);
     setReceipts(fetchedReceipts);
 
     // Initialize all dates as expanded

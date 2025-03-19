@@ -26,7 +26,7 @@ import {
 } from "@/utils/fetch-contract-transactions";
 import { polygon, ethereum } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
-import { getDonationReceipts } from "@/app/actions/receipts";
+import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
@@ -94,7 +94,7 @@ export default async function Dashboard() {
   // 4) Fetch donation receipts from the database
   let receipts: DonationReceipt[] = [];
   try {
-    receipts = await getDonationReceipts(user.walletAddress);
+    receipts = await getDonationReceiptsForCharity(user.walletAddress);
   } catch (error) {
     console.error("Error fetching donation receipts:", error);
   }

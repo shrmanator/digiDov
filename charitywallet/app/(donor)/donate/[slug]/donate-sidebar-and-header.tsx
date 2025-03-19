@@ -43,7 +43,6 @@ export default function SideBarAndHeader({ children }: SideBarAndHeaderProps) {
 
   const currentIcon = activeChain === polygon ? maticIcon : ethIcon;
   const currentLabel = activeChain === polygon ? "POL" : "ETH";
-
   return (
     <SidebarProvider>
       <SidebarInset className="min-h-screen flex flex-col">

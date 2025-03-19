@@ -8,13 +8,60 @@ import { DonationReceipt } from "../types/receipt";
 /**
  * Retrieves all donation receipts, including related charity and donor details.
  */
-export async function getDonationReceipts(
+export async function getDonationReceiptsForCharity(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
   const receipts = await prisma.donation_receipt.findMany({
     where: {
       charity: {
         wallet_address: walletAddress, // Filter by wallet address
+      },
+    },
+    orderBy: { donation_date: "desc" },
+    include: {
+      charity: {
+        select: {
+          charity_name: true,
+          registration_number: true,
+        },
+      },
+      donor: {
+        select: {
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return receipts.map((receipt) => ({
+    ...receipt,
+    donation_date: receipt.donation_date.toISOString(),
+    charity: receipt.charity ?? null,
+    donor: receipt.donor ?? null,
+  }));
+}
+
+/**
+ * Retrieves all donation receipts for a donor, including related charity and donor details.
+ *
+ * @param walletAddress - The unique wallet address of the donor.
+ * @returns A promise that resolves to an array of DonationReceipt objects.
+ */
+export async function getDonationReceiptsForDonor(
+  walletAddress: string
+): Promise<DonationReceipt[]> {
+  // Normalize the input wallet address to lowercase for consistent comparison.
+  const normalizedWalletAddress = walletAddress.toLowerCase();
+
+  const receipts = await prisma.donation_receipt.findMany({
+    where: {
+      donor: {
+        wallet_address: {
+          equals: normalizedWalletAddress,
+          mode: "insensitive", // Case-insensitive comparison
+        },
       },
     },
     orderBy: { donation_date: "desc" },

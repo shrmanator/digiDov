@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  getDonationReceipts,
+  getDonationReceiptsForDonor,
   getDonationReceiptPdf,
 } from "@/app/actions/receipts";
 import { DonationReceipt } from "@/app/types/receipt";
@@ -74,7 +74,8 @@ export function TaxReceiptDrawer({
     setLoading(true);
     try {
       // Pass walletAddress to getDonationReceipts
-      const data = await getDonationReceipts(walletAddress);
+      const data = await getDonationReceiptsForDonor(walletAddress);
+      console.log("Fetched receipts:", data);
       // Sort receipts by donation_date descending (most recent first)
       const sortedReceipts = data.sort(
         (a, b) =>
