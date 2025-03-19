@@ -60,8 +60,17 @@ interface TaxReceiptDrawerProps {
   open: boolean;
   onClose: () => void;
 }
+interface TaxReceiptDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  walletAddress: string;
+}
 
-export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
+export function TaxReceiptDrawer({
+  open,
+  onClose,
+  walletAddress,
+}: TaxReceiptDrawerProps) {
   const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,7 +83,7 @@ export function TaxReceiptDrawer({ open, onClose }: TaxReceiptDrawerProps) {
   async function fetchReceipts() {
     setLoading(true);
     try {
-      const data = await getDonationReceipts();
+      const data = await getDonationReceipts(walletAddress);
       // Sort receipts by donation_date descending (most recent first)
       const sortedReceipts = data.sort(
         (a, b) =>

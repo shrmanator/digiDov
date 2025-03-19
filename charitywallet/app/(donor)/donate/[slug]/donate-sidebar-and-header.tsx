@@ -60,6 +60,7 @@ export default function SideBarAndHeader({ children }: SideBarAndHeaderProps) {
             <TaxReceiptDrawer
               open={isDrawerOpen}
               onClose={() => setIsDrawerOpen(false)}
+              walletAddress={account?.address ?? ""}
             />
           </div>
 
