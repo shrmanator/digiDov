@@ -2,19 +2,21 @@
 
 import prisma from "@/lib/prisma";
 import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
-import {
-  Prisma,
-  donation_receipt,
-  charity,
-  donor,
-} from "@prisma/client";
+import { Prisma, donation_receipt, charity, donor } from "@prisma/client";
 import { DonationReceipt } from "../types/receipt";
 
 /**
  * Retrieves all donation receipts, including related charity and donor details.
  */
-export async function getDonationReceipts(): Promise<DonationReceipt[]> {
+export async function getDonationReceipts(
+  walletAddress: string
+): Promise<DonationReceipt[]> {
   const receipts = await prisma.donation_receipt.findMany({
+    where: {
+      charity: {
+        wallet_address: walletAddress, // Filter by wallet address
+      },
+    },
     orderBy: { donation_date: "desc" },
     include: {
       charity: {
@@ -35,9 +37,9 @@ export async function getDonationReceipts(): Promise<DonationReceipt[]> {
 
   return receipts.map((receipt) => ({
     ...receipt,
-    donation_date: receipt.donation_date.toISOString(), // Convert Date -> String
-    charity: receipt.charity ?? null, // Ensure null instead of undefined
-    donor: receipt.donor ?? null, // Ensure null instead of undefined
+    donation_date: receipt.donation_date.toISOString(),
+    charity: receipt.charity ?? null,
+    donor: receipt.donor ?? null,
   }));
 }
 

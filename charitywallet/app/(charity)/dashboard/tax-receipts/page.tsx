@@ -89,7 +89,7 @@ export default async function Dashboard() {
           </header>
           <ScrollArea className="h-full mt-6">
             <h2 className="px-4 text-2xl font-bold mb-4">Tax Receipts</h2>
-            <DonationReceiptsList />
+            <DonationReceiptsList walletAddress={charity.wallet_address} />
           </ScrollArea>
         </div>
       </SidebarInset>

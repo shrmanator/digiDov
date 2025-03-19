@@ -9,7 +9,13 @@ import {
   getDonationReceipts,
 } from "@/app/actions/receipts";
 
-export default function DonationReceiptsList() {
+interface DonationReceiptsListProps {
+  walletAddress: string;
+}
+
+export default function DonationReceiptsList({
+  walletAddress,
+}: DonationReceiptsListProps) {
   const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
   const [groupedReceipts, setGroupedReceipts] = useState<
     Record<string, DonationReceipt[]>
@@ -25,7 +31,8 @@ export default function DonationReceiptsList() {
 
   async function fetchReceipts() {
     setLoading(true);
-    const fetchedReceipts = await getDonationReceipts();
+    // Use the passed walletAddress to fetch the donation receipts
+    const fetchedReceipts = await getDonationReceipts(walletAddress);
     setReceipts(fetchedReceipts);
 
     // Initialize all dates as expanded
@@ -72,7 +79,7 @@ export default function DonationReceiptsList() {
       .reduce((sum, receipt) => sum + receipt.fiat_amount, 0)
       .toFixed(2);
   };
-  
+
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center p-6 text-muted-foreground">
