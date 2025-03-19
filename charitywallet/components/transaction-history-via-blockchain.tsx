@@ -245,7 +245,7 @@ export default function DonationHistory({
       <CardHeader className="px-0 pt-0">
         <CardTitle>Donation History</CardTitle>
         <CardDescription>
-          You've received {donations.length} donation
+          You&apos;ve received {donations.length} donation
           {donations.length !== 1 ? "s" : ""}
         </CardDescription>
       </CardHeader>
