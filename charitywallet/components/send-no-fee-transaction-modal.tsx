@@ -142,7 +142,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
             Withdraw Funds
           </DialogTitle>
           <DialogDescription>
-            Send funds to your external wallet address.
+            Withdraw funds to another wallet address.
           </DialogDescription>
         </DialogHeader>
 

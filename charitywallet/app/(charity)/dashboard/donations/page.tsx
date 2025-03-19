@@ -144,8 +144,8 @@ export default async function Dashboard() {
           </header>
           <main className="flex flex-1 p-6">
             <div className="w-full mx-auto flex flex-col items-center">
-              <header className="mb-8 w-full">
-                <h1 className="text-3xl font-bold mb-2">Donations</h1>
+              <header className="mb-8 w-full flex justify-between items-center">
+                {/* Removed the "Donations" heading */}
                 <SendingFundsModal user={user} />
               </header>
               {isCharityComplete ? (
