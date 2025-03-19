@@ -8,6 +8,13 @@ import {
 
 const web3 = new Web3();
 
+// Helper function to handle BigInt serialization
+function safeJsonStringify(obj: any): string {
+  return JSON.stringify(obj, (_, value) =>
+    typeof value === "bigint" ? value.toString() : value
+  );
+}
+
 export async function POST(request: Request) {
   console.log(
     `[START] Charity Fund Transfer Webhook: POST, URL: ${request.url}`
@@ -28,7 +35,7 @@ export async function POST(request: Request) {
       throw new Error("Invalid Signature");
     }
 
-    console.log("Received webhook body:", JSON.stringify(body, null, 2));
+    console.log("Received webhook body:", safeJsonStringify(body));
 
     // Only process confirmed transactions.
     const { confirmed, block, chainId } = body;
@@ -56,7 +63,8 @@ export async function POST(request: Request) {
     const tx = body.txs[0];
     const charityWallet = tx.fromAddress.toLowerCase();
     const destinationWallet = tx.toAddress; // External recipient wallet.
-    const amountWei = tx.value; // Amount in wei.
+    const amountWei =
+      typeof tx.value === "bigint" ? tx.value.toString() : tx.value; // Handle BigInt
     const transactionHash = tx.hash;
 
     // Use the block's timestamp for historical price conversion.
@@ -84,12 +92,15 @@ export async function POST(request: Request) {
       historicalPrice: historicalFiatEquivalent,
       fiatCurrency: "cad",
     });
-    console.log("Log charity fund transfer response:", dbResponse);
+    console.log(
+      "Log charity fund transfer response:",
+      safeJsonStringify(dbResponse)
+    );
 
     return NextResponse.json(
       {
         message: "Charity fund transfer logged successfully",
-        log: dbResponse,
+        log: JSON.parse(safeJsonStringify(dbResponse)),
       },
       { status: 200 }
     );
