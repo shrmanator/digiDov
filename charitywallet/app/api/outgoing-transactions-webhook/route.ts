@@ -82,6 +82,7 @@ export async function POST(request: Request) {
       transactionHash,
       chainId,
       historicalPrice: historicalFiatEquivalent,
+      fiatCurrency: "cad",
     });
     console.log("Log charity fund transfer response:", dbResponse);
 

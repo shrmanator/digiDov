@@ -117,6 +117,7 @@ export async function addCharityFundTransferToDb({
   transactionHash,
   chainId,
   historicalPrice,
+  fiatCurrency = "cad",
 }: {
   charityId: string;
   amountWei: string;
@@ -124,6 +125,7 @@ export async function addCharityFundTransferToDb({
   transactionHash: string;
   chainId: string;
   historicalPrice: number | null;
+  fiatCurrency: string;
 }) {
   try {
     const newTransfer = await prisma.charity_fund_transfer.create({
@@ -131,10 +133,10 @@ export async function addCharityFundTransferToDb({
         charity_id: charityId,
         amount_wei: BigInt(amountWei),
         fiat_equivalent: historicalPrice,
+        fiat_currency: fiatCurrency,
         destination_wallet: destinationWallet,
         transaction_hash: transactionHash,
         chain_id: chainId,
-        transfer_reason: "fiat_equivalent is in cad",
       },
     });
     console.log("newTransfer", newTransfer);
