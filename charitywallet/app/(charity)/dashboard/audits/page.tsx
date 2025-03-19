@@ -69,7 +69,7 @@ export default async function Dashboard() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Tax Receipts</BreadcrumbPage>
+                    <BreadcrumbPage>Audits</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>

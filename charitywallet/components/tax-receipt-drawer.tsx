@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Download } from "lucide-react";
 import {
   Drawer,
@@ -59,10 +59,6 @@ function groupReceiptsByDate(receipts: DonationReceipt[]) {
 interface TaxReceiptDrawerProps {
   open: boolean;
   onClose: () => void;
-}
-interface TaxReceiptDrawerProps {
-  open: boolean;
-  onClose: () => void;
   walletAddress: string;
 }
 
@@ -74,15 +70,10 @@ export function TaxReceiptDrawer({
   const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (open) {
-      fetchReceipts();
-    }
-  }, [open]);
-
-  async function fetchReceipts() {
+  const fetchReceipts = useCallback(async () => {
     setLoading(true);
     try {
+      // Pass walletAddress to getDonationReceipts
       const data = await getDonationReceipts(walletAddress);
       // Sort receipts by donation_date descending (most recent first)
       const sortedReceipts = data.sort(
@@ -95,7 +86,13 @@ export function TaxReceiptDrawer({
       console.error("Error fetching donation receipts:", error);
     }
     setLoading(false);
-  }
+  }, [walletAddress]);
+
+  useEffect(() => {
+    if (open && walletAddress) {
+      fetchReceipts();
+    }
+  }, [open, walletAddress, fetchReceipts]);
 
   async function downloadReceipt(receiptId: string) {
     try {
@@ -109,7 +106,7 @@ export function TaxReceiptDrawer({
     }
   }
 
-  // Group receipts by date if not loading and if receipts exist
+  // Group receipts by date if not loading and receipts exist
   const groupedReceipts =
     !loading && receipts.length > 0 ? groupReceiptsByDate(receipts) : {};
 
@@ -127,7 +124,7 @@ export function TaxReceiptDrawer({
           <div className="p-4 pb-0 max-h-[300px] overflow-y-auto">
             {loading ? (
               <ul className="space-y-4">
-                {[...Array(receipts.length || 1)].map((_, index) => (
+                {[...Array(1)].map((_, index) => (
                   <li key={index} className="p-3 border rounded-lg">
                     <Skeleton className="h-4 w-3/4 mb-2" />
                     <Skeleton className="h-3 w-1/2 mb-2" />
@@ -154,15 +151,11 @@ export function TaxReceiptDrawer({
                           Receipt #{receipt.receipt_number} •{" "}
                           {new Date(receipt.donation_date).toLocaleDateString()}
                         </div>
-                        {/* <div className="text-xs">
-                          Donor: {receipt.donor?.first_name ?? "Anonymous"}{" "}
-                          {receipt.donor?.last_name ?? ""} (
-                          {receipt.donor?.email ?? "No email provided"})
-                        </div> */}
                         <div className="text-xs">
                           Amount: ${receipt.fiat_amount.toFixed(2)}
                         </div>
                         <button
+                          type="button"
                           className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
                           onClick={() => downloadReceipt(receipt.id)}
                         >
