@@ -56,10 +56,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // For charity fund transfers, we assume:
-    // - The charity's wallet (fromAddress) is sending funds.
-    // - The external destination wallet is given by toAddress.
-    // - The first transaction in the txs array is used for logging.
     const tx = body.txs[0];
     const charityWallet = tx.fromAddress.toLowerCase();
     const destinationWallet = tx.toAddress; // External recipient wallet.

@@ -92,7 +92,6 @@ function DonationCard({
 
   // Get historical price
   const chainHex = CHAIN_MAP[donation.chain as keyof typeof CHAIN_MAP]?.hex;
-  console.log("chainHex", chainHex);
   const historicalPrice = useHistoricalPrice(
     chainHex,
     new Date(donation.timestamp.raw).toISOString(),

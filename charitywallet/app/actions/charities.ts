@@ -141,9 +141,18 @@ export async function addCharityFundTransferToDb({
     });
     console.log("newTransfer", newTransfer);
     return { success: true, transfer: newTransfer };
-  } catch (error) {
+  } catch (error: any) {
+    // Prisma unique constraint violation error code
+    if (
+      error.code === "P2002" &&
+      error.meta?.target &&
+      error.meta.target.includes("transaction_hash")
+    ) {
+      console.log("Transaction hash already exists, skipping insertion.");
+      return { success: false, error: "Transaction already added to db" };
+    }
     console.error("Error logging transaction:", error);
-    return { success: false, error: "Failed to log transaction" };
+    return { success: false, error: "Failed to add transaction to db" };
   }
 }
 
