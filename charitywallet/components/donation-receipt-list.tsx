@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, Mail, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DonationReceipt } from "@/app/types/receipt";
@@ -25,11 +25,7 @@ export default function DonationReceiptsList({
     {}
   );
 
-  useEffect(() => {
-    fetchReceipts();
-  }, []);
-
-  async function fetchReceipts() {
+  const fetchReceipts = useCallback(async () => {
     setLoading(true);
     // Use the passed walletAddress to fetch the donation receipts
     const fetchedReceipts = await getDonationReceipts(walletAddress);
@@ -45,7 +41,11 @@ export default function DonationReceiptsList({
 
     groupByDay(fetchedReceipts);
     setLoading(false);
-  }
+  }, [walletAddress]);
+
+  useEffect(() => {
+    fetchReceipts();
+  }, [fetchReceipts]);
 
   function groupByDay(receipts: DonationReceipt[]) {
     const groups: Record<string, DonationReceipt[]> = {};

@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowDown, Copy, User, ExternalLink } from "lucide-react";
+import { ArrowDown, Copy, User } from "lucide-react";
 import { DonationEvent } from "@/utils/fetch-contract-transactions";
 import { DonationReceipt } from "@/app/types/receipt";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
