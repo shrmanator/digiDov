@@ -117,13 +117,13 @@ export async function addCharityFundTransferToDb({
   destinationWallet,
   transactionHash,
   chainId,
-  fiatCurrency = "usd", // Default to USD
+  fiatCurrency = "usd", // Default to USD, update as needed
 }: {
   charityId: string;
   amountWei: string;
   destinationWallet: string;
   transactionHash: string;
-  chainId: number;
+  chainId: string;
   fiatCurrency?: string;
 }) {
   try {
@@ -147,7 +147,7 @@ export async function addCharityFundTransferToDb({
         fiat_equivalent: fiatEquivalent,
         destination_wallet: destinationWallet,
         transaction_hash: transactionHash,
-        chain_id: chainId.toString(),
+        chain_id: chainId,
       },
     });
 

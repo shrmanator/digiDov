@@ -33,12 +33,9 @@ interface DonationHistoryProps {
 
 // Mapping for cryptocurrency symbols by chain ID
 const CHAIN_MAP = {
-  1: { symbol: "ETH", name: "Ethereum" },
-  137: { symbol: "MATIC", name: "Polygon" },
-  56: { symbol: "BNB", name: "BNB Chain" },
-  42161: { symbol: "ARB", name: "Arbitrum" },
-  10: { symbol: "OP", name: "Optimism" },
-  // Add more chains as needed
+  1: { hex: "0x1", symbol: "ETH", name: "Ethereum" },
+  137: { hex: "0x89", symbol: "MATIC", name: "Polygon" },
+  // other chains...
 };
 
 function CopyButton({ text }: { text: string }) {
@@ -94,12 +91,13 @@ function DonationCard({
   )}...${donation.donor.slice(-4)}`;
 
   // Get historical price
+  const chainHex = CHAIN_MAP[donation.chain as keyof typeof CHAIN_MAP]?.hex;
+  console.log("chainHex", chainHex);
   const historicalPrice = useHistoricalPrice(
-    donation.chain,
+    chainHex,
     new Date(donation.timestamp.raw).toISOString(),
     "usd"
   );
-
   // Calculate USD value
   const usdValue =
     historicalPrice && !isNaN(parseFloat(nativeValue))

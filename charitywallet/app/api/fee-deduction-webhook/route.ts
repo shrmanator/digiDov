@@ -10,8 +10,8 @@ import {
   enrichDonationEvent,
   extractDonationEventFromPayload,
 } from "@/utils/donation-event-helpers";
-import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 
 const web3 = new Web3();
 

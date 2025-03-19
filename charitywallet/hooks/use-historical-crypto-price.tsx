@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
  * @returns The historical price or null if not found.
  */
 export function useHistoricalPrice(
-  chainId: number,
+  chainId: string,
   timestamp: string | number | Date,
   targetCurrency: string
 ): number | null {

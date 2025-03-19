@@ -1,17 +1,17 @@
 /**
  * Maps blockchain network chain IDs to their corresponding CoinGecko token IDs.
  */
-export const chainIdToCoingeckoId: Record<number, string> = {
-  1: "ethereum", // Ethereum Mainnet
-  137: "polygon-ecosystem-token", // Polygon (formerly Matic)
+export const chainIdToCoingeckoId: Record<string, string> = {
+  "0x1": "ethereum", // Ethereum Mainnet
+  "0x89": "polygon-ecosystem-token", // Polygon (formerly Matic)
 };
 
 /**
  * Retrieves the CoinGecko ID for a given blockchain chain ID.
  *
- * @param chainId - The blockchain chain ID (e.g., 1 for Ethereum, 137 for Polygon).
+ * @param chainId - The blockchain chain ID in hexadecimal format (e.g., "0x1" for Ethereum, "0x89" for Polygon).
  * @returns The corresponding CoinGecko ID, or null if not found.
  */
-export function getCoingeckoIdFromChainId(chainId: number): string | null {
+export function getCoingeckoIdFromChainId(chainId: string): string | null {
   return chainIdToCoingeckoId[chainId] || null;
 }
