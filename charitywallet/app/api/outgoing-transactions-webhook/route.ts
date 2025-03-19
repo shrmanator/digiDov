@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
-import { addCharityFundTransferToDb } from "@/app/actions/charities";
+import {
+  addCharityFundTransferToDb,
+  getCharityByWalletAddress,
+} from "@/app/actions/charities";
 
 const web3 = new Web3();
 
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
     // Use the block's timestamp for historical price conversion.
     const transferTimestamp = parseInt(block.timestamp, 10);
 
-    // Optionally, get the fiat equivalent (e.g., in CAD).
+    // get the fiat equivalent (e.g., in CAD).
     const fiatEquivalent = await convertWeiToFiat(
       amountWei,
       transferTimestamp,
@@ -68,14 +71,18 @@ export async function POST(request: Request) {
     );
     console.log("Fiat Equivalent:", fiatEquivalent);
 
+    const charity = await getCharityByWalletAddress(charityWallet);
+    if (!charity) throw new Error("Charity not found for wallet address");
+    const charityId = charity.id;
+
     // Log the charity fund transfer via our server action.
     const logResponse = await addCharityFundTransferToDb({
-      charityId: charityWallet, // The charity sending funds.
+      charityId,
       amountWei,
       destinationWallet,
       transactionHash,
       chainId,
-      fiatCurrency: "cad",
+      transferTimestamp,
     });
     console.log("Log charity fund transfer response:", logResponse);
 

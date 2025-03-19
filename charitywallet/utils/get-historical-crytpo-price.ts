@@ -48,7 +48,6 @@ export async function getHistoricalCryptoToFiatPrice(
   }
 
   const url = `https://api.coingecko.com/api/v3/coins/${tokenId}/history?date=${date}`;
-  console.log("Fetching historical price from:", url);
 
   try {
     const response = await axios.get(url);
