@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { getHistoricalCryptoToFiatPrice } from "@/utils/get-historical-crytpo-price";
 import slugify from "slugify";
+import { addWalletAddressToMoralis } from "./moralis";
 
 export interface CharityInput {
   charity_name?: string | null;
@@ -30,15 +31,20 @@ async function generateUniqueSlug(charity_name: string): Promise<string> {
 }
 
 export async function upsertCharity(data: CharityInput) {
-  console.log("wallet_address", data.wallet_address);
   const walletAddress = data.wallet_address.toLowerCase();
+
+  const existingCharity = await prisma.charity.findUnique({
+    where: { wallet_address: walletAddress },
+    select: { wallet_address: true },
+  });
+  const isNewCharity = !existingCharity;
 
   let slug: string | undefined = undefined;
   if (data.charity_name) {
     slug = await generateUniqueSlug(data.charity_name);
   }
 
-  return prisma.charity.upsert({
+  const charity = await prisma.charity.upsert({
     where: { wallet_address: walletAddress },
     update: {
       charity_name: data.charity_name ?? undefined,
@@ -64,6 +70,17 @@ export async function upsertCharity(data: CharityInput) {
       slug: slug ?? null,
     },
   });
+
+  if (isNewCharity) {
+    try {
+      await addWalletAddressToMoralis(walletAddress);
+    } catch (error) {
+      console.error("Failed to add wallet address to Moralis:", error);
+      // Decide whether to propagate the error or just log it.
+    }
+  }
+
+  return charity;
 }
 
 export async function updateCharityEmail(params: {

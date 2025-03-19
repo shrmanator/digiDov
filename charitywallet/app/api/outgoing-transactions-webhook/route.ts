@@ -16,8 +16,8 @@ export async function POST(request: Request) {
 
     // Verify signature using the raw body text.
     console.log("Verifying signature...");
-    const secret = process.env.MORALIS_STREAM_SECRET_KEY_DOVINDUSTRIES;
-    if (!secret) throw new Error("Missing MORALIS_STREAM_SECRET_KEY_DOVINDUSTRIES");
+    const secret = process.env.MORALIS_STREAM_SECRET_KEY_7810049;
+    if (!secret) throw new Error("Missing MORALIS_STREAM_SECRET_KEY_7810049");
     const providedSignature = request.headers.get("x-signature");
     if (!providedSignature) throw new Error("Signature not provided");
     const generatedSignature = web3.utils.sha3(bodyText + secret);

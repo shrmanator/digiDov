@@ -2,7 +2,7 @@ import Moralis from "moralis";
 
 export const addWalletAddressToMoralis = async (walletAddress: string) => {
   try {
-    const streamId = process.env.MORALIS_STREAM_ID;
+    const streamId = process.env.MORALIS_STREAM_ID_OUTGOING_TRANSACTIONS_WEBHOOK;
     if (!streamId) {
       throw new Error("Stream ID is not configured in environment variables.");
     }
@@ -21,7 +21,7 @@ export const addWalletAddressToMoralis = async (walletAddress: string) => {
 
 export const removeWalletAddressFromMoralis = async (walletAddress: string) => {
   try {
-    const streamId = process.env.MORALIS_STREAM_ID;
+    const streamId = process.env.MORALIS_STREAM_ID_OUTGOING_TRANSACTIONS_WEBHOOK;
     if (!streamId) {
       throw new Error("Stream ID is not configured in environment variables.");
     }

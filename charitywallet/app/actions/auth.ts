@@ -25,18 +25,6 @@ export async function charityLogin(payload: VerifyLoginPayloadParams) {
     await upsertCharity({
       wallet_address: walletAddress,
     });
-
-    try {
-      // await addWalletAddressToMoralis(walletAddress);
-      console.log(
-        `Wallet address ${walletAddress} added to Moralis successfully.`
-      );
-    } catch (error) {
-      console.error(
-        `Failed to add wallet address ${walletAddress} to Moralis:`,
-        error
-      );
-    }
   }
 }
 
