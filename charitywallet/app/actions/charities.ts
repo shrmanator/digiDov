@@ -141,12 +141,12 @@ export async function addCharityFundTransferToDb({
     });
     console.log("newTransfer", newTransfer);
     return { success: true, transfer: newTransfer };
-  } catch (error: any) {
-    // Prisma unique constraint violation error code
+  } catch (error: unknown) {
+    const prismaError = error as { code?: string; meta?: { target?: string[] } };
     if (
-      error.code === "P2002" &&
-      error.meta?.target &&
-      error.meta.target.includes("transaction_hash")
+      prismaError.code === "P2002" &&
+      prismaError.meta?.target &&
+      prismaError.meta.target.includes("transaction_hash")
     ) {
       console.log("Transaction hash already exists, skipping insertion.");
       return { success: false, error: "Transaction already added to db" };
@@ -154,6 +154,7 @@ export async function addCharityFundTransferToDb({
     console.error("Error logging transaction:", error);
     return { success: false, error: "Failed to add transaction to db" };
   }
+  
 }
 
 export async function getCharityByWalletAddress(wallet_address: string) {

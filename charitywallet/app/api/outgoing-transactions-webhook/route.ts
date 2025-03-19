@@ -9,7 +9,7 @@ import {
 const web3 = new Web3();
 
 // Helper function to handle BigInt serialization
-function safeJsonStringify(obj: undefined): string {
+function safeJsonStringify(obj: unknown): string {
   return JSON.stringify(obj, (_, value) =>
     typeof value === "bigint" ? value.toString() : value
   );
