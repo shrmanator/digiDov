@@ -63,13 +63,13 @@ export async function POST(request: Request) {
     const transferTimestamp = parseInt(block.timestamp, 10);
 
     // get the fiat equivalent (e.g., in CAD).
-    const fiatEquivalent = await convertWeiToFiat(
+    const historicalFiatEquivalent = await convertWeiToFiat(
       amountWei,
       transferTimestamp,
       "cad",
       chainId
     );
-    console.log("Fiat Equivalent:", fiatEquivalent);
+    console.log("Fiat Equivalent:", historicalFiatEquivalent);
 
     const charity = await getCharityByWalletAddress(charityWallet);
     if (!charity) throw new Error("Charity not found for wallet address");
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       destinationWallet,
       transactionHash,
       chainId,
-      transferTimestamp,
+      historicalPrice: historicalFiatEquivalent,
     });
     console.log("Log charity fund transfer response:", logResponse);
 

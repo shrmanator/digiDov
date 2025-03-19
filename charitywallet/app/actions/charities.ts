@@ -140,6 +140,7 @@ export async function addCharityFundTransferToDb({
         destination_wallet: destinationWallet,
         transaction_hash: transactionHash,
         chain_id: chainId,
+        transfer_reason: "fiat_equivalent is in usd",
       },
     });
 

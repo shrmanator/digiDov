@@ -1,13 +1,14 @@
+/**
+ * Multi-chain token to fiat currency converter utility for Next.js App Router
+ * Supports Ethereum, Polygon, and other EVM-compatible chains
+ */
 import Web3 from "web3";
 import { getCoingeckoIdFromChainId } from "./get-coingecko-id-from-chain-id";
 
 const web3 = new Web3();
 
 /**
- * Formats a Unix timestamp to the date format required by CoinGecko (dd-mm-yyyy).
- *
- * @param timestamp - Unix timestamp in seconds
- * @returns Formatted date string
+ * Formats Unix timestamp to CoinGecko's required date format (dd-mm-yyyy)
  */
 function formatDateForCoinGecko(timestamp: number): string {
   const date = new Date(timestamp * 1000);
@@ -18,54 +19,57 @@ function formatDateForCoinGecko(timestamp: number): string {
   return `${day}-${month}-${year}`;
 }
 
+/**
+ * Converts Wei amount to target fiat currency based on historical rate
+ */
 export async function convertWeiToFiat(
   weiAmount: string,
   timestamp: number,
   targetCurrency: string,
   chainId: string
 ): Promise<number> {
+  // Input validation
   if (!weiAmount) throw new Error("weiAmount must be provided");
   if (!timestamp) throw new Error("timestamp must be provided");
-  if (!chainId) throw new Error("chainId must be provided for conversion");
+  if (!chainId) throw new Error("chainId must be provided");
 
-  const normalizedCurrency = targetCurrency.toLowerCase();
-
-  // Use the utility function to get the CoinGecko ID
+  const currency = targetCurrency.toLowerCase();
   const tokenId = getCoingeckoIdFromChainId(chainId);
+
   if (!tokenId) {
     throw new Error(`Unsupported chainId: ${chainId}`);
   }
 
-  const etherAmount = parseFloat(web3.utils.fromWei(weiAmount, "ether"));
+  // Convert wei to ether/matic (both use same decimals)
+  const tokenAmount = parseFloat(web3.utils.fromWei(weiAmount, "ether"));
   const formattedDate = formatDateForCoinGecko(timestamp);
 
   try {
     const url = `https://api.coingecko.com/api/v3/coins/${tokenId}/history?date=${formattedDate}&localization=false`;
-    const response = await fetch(url);
 
+    const response = await fetch(url, { next: { revalidate: 3600 } });
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`CoinGecko API error (${response.status}): ${errorText}`);
+      throw new Error(`CoinGecko API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (!data?.market_data?.current_price?.[normalizedCurrency]) {
-      throw new Error(
-        `Historical price data not available for ${normalizedCurrency} on ${formattedDate}`
-      );
+    if (!data?.market_data?.current_price) {
+      throw new Error(`No price data for ${tokenId} on ${formattedDate}`);
     }
 
-    const price = data.market_data.current_price[normalizedCurrency];
-    console.log(`Historical price (${normalizedCurrency}):`, price);
+    if (!data.market_data.current_price[currency]) {
+      throw new Error(`Price not available in ${currency}`);
+    }
 
-    return etherAmount * price;
+    const price = data.market_data.current_price[currency];
+    return tokenAmount * price;
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(
-        `Failed to convert Wei to ${normalizedCurrency}: ${error.message}`
-      );
-    }
-    throw error;
+    console.error("Price conversion error:", error);
+    throw new Error(
+      `Failed to convert to ${currency}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }
