@@ -44,6 +44,7 @@ model charity_fund_transfer {
     charity            charity  @relation(fields: [charity_id], references: [id])
     amount_wei         BigInt // Amount in Wei
     fiat_equivalent    Float? // Optional: Fiat value at the time of transfer
+    fiat_currency      String? // Optional: Fiat currency code (e.g., USD, CAD)
     transaction_hash   String   @unique
     destination_wallet String
     chain_id           String?

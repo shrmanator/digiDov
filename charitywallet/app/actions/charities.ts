@@ -126,24 +126,18 @@ export async function addCharityFundTransferToDb({
   historicalPrice: number | null;
 }) {
   try {
-    // Convert the amount to ETH (assumes 18 decimals for ETH-based tokens)
-    const amountEth = Number(amountWei) / 1e18;
-
-    // Calculate fiat equivalent using the provided historical price
-    const fiatEquivalent = historicalPrice ? amountEth * historicalPrice : null;
-
     const newTransfer = await prisma.charity_fund_transfer.create({
       data: {
         charity_id: charityId,
         amount_wei: BigInt(amountWei),
-        fiat_equivalent: fiatEquivalent,
+        fiat_equivalent: historicalPrice,
         destination_wallet: destinationWallet,
         transaction_hash: transactionHash,
         chain_id: chainId,
-        transfer_reason: "fiat_equivalent is in usd",
+        transfer_reason: "fiat_equivalent is in cad",
       },
     });
-
+    console.log("newTransfer", newTransfer);
     return { success: true, transfer: newTransfer };
   } catch (error) {
     console.error("Error logging transaction:", error);

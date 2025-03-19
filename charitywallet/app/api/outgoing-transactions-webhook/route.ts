@@ -75,8 +75,7 @@ export async function POST(request: Request) {
     if (!charity) throw new Error("Charity not found for wallet address");
     const charityId = charity.id;
 
-    // Log the charity fund transfer via our server action.
-    const logResponse = await addCharityFundTransferToDb({
+    const dbResponse = await addCharityFundTransferToDb({
       charityId,
       amountWei,
       destinationWallet,
@@ -84,12 +83,12 @@ export async function POST(request: Request) {
       chainId,
       historicalPrice: historicalFiatEquivalent,
     });
-    console.log("Log charity fund transfer response:", logResponse);
+    console.log("Log charity fund transfer response:", dbResponse);
 
     return NextResponse.json(
       {
         message: "Charity fund transfer logged successfully",
-        log: logResponse,
+        log: dbResponse,
       },
       { status: 200 }
     );
