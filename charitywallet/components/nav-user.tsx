@@ -19,6 +19,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { logout } from "@/app/actions/auth";
+import { useActiveWallet, useDisconnect } from "thirdweb/react"; // Import the disconnect hook
 
 export function NavUser({
   user,
@@ -33,10 +34,16 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const { disconnect } = useDisconnect(); // Get the disconnect function
+  const wallet = useActiveWallet();
 
   const handleLogout = async () => {
+    // Disconnect the wallet first to prevent auto-login via thirdweb
+    if (wallet) {
+      disconnect(wallet);
+    }
     await logout();
-    router.push("/login");
+    router.refresh();
   };
 
   const handleCopy = async () => {
