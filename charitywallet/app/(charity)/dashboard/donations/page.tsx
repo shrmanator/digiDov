@@ -33,8 +33,9 @@ import CombinedWalletBalance, {
   PriceData,
   SupportedChain,
 } from "@/components/combine-wallet-balance";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnalyticsCharts from "@/components/analytics-chart";
 
-// Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
 
 const COIN_IDS: Record<SupportedChain, string> = {
@@ -47,9 +48,6 @@ const CONTRACT_ADDRESSES = {
   ethereum: "0x27fede2dc50c03ef8c90bf1aa9cf69a3d181c9df",
 };
 
-/**
- * Dashboard page component
- */
 export default async function Dashboard() {
   // 1) Check user authentication
   const user = await getAuthenticatedUser();
@@ -62,20 +60,33 @@ export default async function Dashboard() {
   if (!charity) {
     return <p>No charity found.</p>;
   }
-
   const isCharityComplete = charity.is_profile_complete ?? false;
 
   // 3) Fetch all necessary data
   const [donations, receipts, initialPriceData] = await Promise.all([
     fetchAllChainDonations(charity.wallet_address),
-    fetchDonationReceipts(user.walletAddress),
+    fetchDonationReceipts(charity.wallet_address),
     fetchCryptoPrices(),
   ]);
-
+  console.log("donations", donations);
   // 4) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
-  // 5) Render the dashboard
+  // 5) Aggregate donation receipts for the Analytics tab
+  const monthlyAggregation: { [month: string]: number } = {};
+  receipts.forEach((receipt) => {
+    // Group by "YYYY-MM" extracted from the donation_date ISO string
+    const month = receipt.donation_date.substring(0, 7);
+    monthlyAggregation[month] =
+      (monthlyAggregation[month] || 0) + receipt.fiat_amount;
+  });
+  const labels = Object.keys(monthlyAggregation).sort();
+  const chartData = labels.map((month) => ({
+    month,
+    donation: monthlyAggregation[month],
+  }));
+
+  // 6) Render the dashboard with a Tabs layout
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -91,19 +102,30 @@ export default async function Dashboard() {
               <header className="mb-8 w-full flex justify-between items-center">
                 <SendingFundsModal user={user} />
               </header>
-              {isCharityComplete ? (
-                <div className="w-full">
-                  <TransactionHistory
-                    donations={donations}
-                    receipts={receipts}
-                  />
-                </div>
-              ) : (
-                <>
-                  <p className="text-center">No donations found.</p>
-                  <CharitySetupModal walletAddress={user.walletAddress} />
-                </>
-              )}
+              <Tabs defaultValue="transactions" className="w-full">
+                <TabsList className="mb-4 w-full sm:w-auto">
+                  <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                </TabsList>
+                <TabsContent value="transactions">
+                  {isCharityComplete ? (
+                    <div className="w-full">
+                      <TransactionHistory
+                        donations={donations}
+                        receipts={receipts}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-center">No donations found.</p>
+                      <CharitySetupModal walletAddress={user.walletAddress} />
+                    </>
+                  )}
+                </TabsContent>
+                <TabsContent value="analytics">
+                  <AnalyticsCharts chartData={chartData} />
+                </TabsContent>
+              </Tabs>
             </div>
           </main>
         </div>
@@ -154,7 +176,7 @@ function DashboardHeader({
   );
 }
 
-// Data fetching utilities (now as private functions since they're only used in this file)
+// Data fetching utilities (private functions)
 async function fetchCharityData(walletAddress: string) {
   return await prisma.charity.findUnique({
     where: { wallet_address: walletAddress },
@@ -207,7 +229,6 @@ async function fetchAllChainDonations(
       walletAddress
     ),
   ]);
-
   return [...polygonDonations, ...ethereumDonations];
 }
 
