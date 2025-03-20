@@ -5,7 +5,6 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  DollarSign,
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
@@ -246,6 +245,7 @@ export default function ExternalWalletTransfersList({
                             {transfer.destination_wallet}
                           </span>
                           <button
+                            type="button"
                             className="text-primary hover:text-primary/80 transition-colors ml-2"
                             onClick={(e) => {
                               e.stopPropagation();
