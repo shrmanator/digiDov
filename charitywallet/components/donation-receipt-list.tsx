@@ -125,7 +125,7 @@ export default function DonationReceiptsList({
               Total Amount
             </h3>
             <p className="text-lg font-semibold text-right">
-              ${totalDonationsAmount.toFixed(2)}
+              ${totalDonationsAmount.toFixed(2)} CAD
             </p>
           </div>
         </div>

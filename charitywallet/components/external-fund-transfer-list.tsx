@@ -8,7 +8,6 @@ import {
   DollarSign,
   AlertCircle,
   ExternalLink,
-  Link,
 } from "lucide-react";
 import { getCharityFundTransfers } from "@/app/actions/charities";
 
@@ -94,14 +93,6 @@ export default function ExternalWalletTransfersList({
         initialExpanded[dateKey] = false;
       });
 
-      // Auto-expand the most recent date if there are any transfers
-      if (Object.keys(groups).length > 0) {
-        const mostRecentDate = Object.keys(groups).sort(
-          (a, b) => new Date(b).getTime() - new Date(a).getTime()
-        )[0];
-        initialExpanded[mostRecentDate] = true;
-      }
-
       setExpandedDates(initialExpanded);
     }
     setLoading(false);
@@ -121,35 +112,15 @@ export default function ExternalWalletTransfersList({
       .toFixed(2);
   };
 
-  // Helper to abbreviate long strings such as wallet addresses or transaction hashes.
-  const shortenString = (str: string, frontChars = 6, backChars = 4) => {
-    if (str.length <= frontChars + backChars) return str;
-    return `${str.slice(0, frontChars)}...${str.slice(-backChars)}`;
-  };
-
-  // Helper to get the explorer URL for a given chain and transaction hash
-  const getExplorerUrl = (chainId: string, txHash: string) => {
-    const explorers: Record<string, string> = {
-      "1": "https://etherscan.io/tx/",
-      "137": "https://polygonscan.com/tx/",
-      "56": "https://bscscan.com/tx/",
-      "42161": "https://arbiscan.io/tx/",
-      "10": "https://optimistic.etherscan.io/tx/",
-      // Add more chains as needed
-    };
-
-    return explorers[chainId] ? `${explorers[chainId]}${txHash}` : null;
-  };
-
-  // Helper to format chain name
+  // Helper to format chain name with special cases for "0x89" and "0x1"
   const getChainName = (chainId: string) => {
+    const normalizedChainId = chainId.toLowerCase();
+    if (normalizedChainId === "0x89") return "Polygon";
+    if (normalizedChainId === "0x1") return "Ethereum";
+
     const chainNames: Record<string, string> = {
       "1": "Ethereum",
       "137": "Polygon",
-      "56": "BSC",
-      "42161": "Arbitrum",
-      "10": "Optimism",
-      // Add more chains as needed
     };
 
     return chainNames[chainId] || chainId;
@@ -192,7 +163,7 @@ export default function ExternalWalletTransfersList({
           </div>
           <div>
             <h3 className="text-sm font-medium text-muted-foreground text-right">
-              Total Value
+              Total Amount
             </h3>
             <p className="text-lg font-semibold text-right">
               ${totalFiatAmount.toFixed(2)} {currency.toUpperCase()}
@@ -254,41 +225,90 @@ export default function ExternalWalletTransfersList({
                     hour: "2-digit",
                     minute: "2-digit",
                   });
-                  const explorerUrl = getExplorerUrl(
-                    transfer.chain_id,
-                    transfer.transaction_hash
-                  );
                   const chainName = getChainName(transfer.chain_id);
+                  const blockScanUrl = `https://blockscan.com/tx/${transfer.transaction_hash}`;
 
                   return (
                     <div
                       key={transfer.id}
-                      className={`px-4 py-3 flex items-center justify-between hover:bg-accent/5 transition-colors ${
+                      className={`px-4 py-3 hover:bg-accent/5 transition-colors ${
                         index !== transfersForDate.length - 1
                           ? "border-b border-border/50"
                           : ""
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-secondary/30 rounded-full flex items-center justify-center text-xs uppercase font-medium">
-                          <DollarSign className="h-4 w-4" />
-                        </div>
+                      <div className="grid grid-cols-1 gap-1 text-sm">
                         <div>
-                          <div className="font-medium flex items-center gap-1">
-                            {shortenString(transfer.destination_wallet)}
+                          <span className="font-medium">
+                            Destination Wallet:{" "}
+                          </span>
+                          <span className="font-mono">
+                            {transfer.destination_wallet}
+                          </span>
+                          <button
+                            className="text-primary hover:text-primary/80 transition-colors ml-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(
+                                transfer.destination_wallet
+                              );
+                            }}
+                            title="Copy wallet address"
+                          >
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <rect
+                                x="9"
+                                y="9"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                ry="2"
+                              ></rect>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div>
+                          <span className="font-medium">
+                            Transaction Hash:{" "}
+                          </span>
+                          <span className="font-mono">
+                            {transfer.transaction_hash}
+                          </span>
+                          <div className="inline-flex gap-2 ml-2">
                             <button
+                              type="button"
+                              className="text-primary hover:text-primary/80 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(blockScanUrl, "_blank");
+                              }}
+                              title="View on Blockscan"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
                               className="text-primary hover:text-primary/80 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigator.clipboard.writeText(
-                                  transfer.destination_wallet
+                                  transfer.transaction_hash
                                 );
                               }}
-                              title="Copy wallet address"
+                              title="Copy transaction hash"
                             >
                               <svg
-                                width="14"
-                                height="14"
+                                width="12"
+                                height="12"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -306,68 +326,21 @@ export default function ExternalWalletTransfersList({
                               </svg>
                             </button>
                           </div>
-                          <div className="text-xs flex items-center gap-2 mt-1">
-                            <div
-                              className="bg-accent/20 text-primary-foreground px-2 py-0.5 rounded-md flex items-center gap-1 hover:bg-accent/30 cursor-pointer transition-colors max-w-fit group"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (explorerUrl) {
-                                  window.open(explorerUrl, "_blank");
-                                } else {
-                                  navigator.clipboard.writeText(
-                                    transfer.transaction_hash
-                                  );
-                                }
-                              }}
-                              title={
-                                explorerUrl
-                                  ? "View on block explorer"
-                                  : "Copy transaction hash"
-                              }
-                            >
-                              <span className="font-mono font-medium">
-                                {shortenString(transfer.transaction_hash, 5, 4)}
-                              </span>
-                              {explorerUrl ? (
-                                <ExternalLink className="h-3 w-3 opacity-70 group-hover:opacity-100 transition-opacity" />
-                              ) : (
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  className="opacity-70 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <rect
-                                    x="9"
-                                    y="9"
-                                    width="13"
-                                    height="13"
-                                    rx="2"
-                                    ry="2"
-                                  ></rect>
-                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                              )}
-                            </div>
-                            <div className="bg-primary/10 text-xs px-2 py-0.5 rounded-md font-medium max-w-fit">
-                              {chainName}
-                            </div>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {timeString}
-                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-5">
-                        <div className="font-medium">
-                          $
+                        <div>
+                          <span className="font-medium">Chain: </span>
+                          {chainName}
+                        </div>
+                        <div>
+                          <span className="font-medium">Time: </span>
+                          {timeString}
+                        </div>
+                        <div>
+                          <span className="font-medium">Amount: </span>$
                           {transfer.fiat_equivalent !== null
                             ? transfer.fiat_equivalent.toFixed(2)
-                            : "N/A"}
+                            : "0.00"}
                         </div>
                       </div>
                     </div>

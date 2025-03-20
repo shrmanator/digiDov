@@ -27,7 +27,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     },
     teams: [
       {
-        name: "SuperMint",
+        name: "Digidov",
         logo: BookDashed,
         plan: "Enterprise",
       },

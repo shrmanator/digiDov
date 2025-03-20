@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SuperMint Wallet",
+  title: "Digidov Wallet",
   description: "The simplest way to manage crypto donations.",
 };
 
