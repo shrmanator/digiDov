@@ -16,7 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
@@ -25,6 +25,7 @@ import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
   SupportedChain,
 } from "@/components/combine-wallet-balance";
+import ExternalWalletTransfersList from "@/components/external-fund-transfer-list";
 
 export default async function Dashboard() {
   // 1) Check user
@@ -58,7 +59,7 @@ export default async function Dashboard() {
       <AppSidebar />
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
@@ -87,10 +88,41 @@ export default async function Dashboard() {
               />
             </div>
           </header>
-          <ScrollArea className="h-full mt-6">
-            <h2 className="px-4 text-2xl font-bold mb-4">Tax Receipts</h2>
-            <DonationReceiptsList walletAddress={charity.wallet_address} />
-          </ScrollArea>
+
+          <div className="px-4 py-6">
+            <h2 className="text-2xl font-bold mb-6">Audits</h2>
+
+            <Tabs defaultValue="taxReceipts" className="w-full">
+              <TabsList className="mb-4 w-full sm:w-auto">
+                <TabsTrigger
+                  value="taxReceipts"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Tax Receipts
+                </TabsTrigger>
+                <TabsTrigger
+                  value="externalWalletTransfers"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Wallet Withdraws
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="taxReceipts">
+                <ScrollArea className="h-[calc(98vh-250px)]">
+                  <DonationReceiptsList
+                    walletAddress={charity.wallet_address}
+                  />
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="externalWalletTransfers">
+                <ScrollArea className="h-[calc(98vh-250px)]">
+                  <ExternalWalletTransfersList charityId={charity.id} />
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

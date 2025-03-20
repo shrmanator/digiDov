@@ -142,7 +142,10 @@ export async function addCharityFundTransferToDb({
     console.log("newTransfer", newTransfer);
     return { success: true, transfer: newTransfer };
   } catch (error: unknown) {
-    const prismaError = error as { code?: string; meta?: { target?: string[] } };
+    const prismaError = error as {
+      code?: string;
+      meta?: { target?: string[] };
+    };
     if (
       prismaError.code === "P2002" &&
       prismaError.meta?.target &&
@@ -154,7 +157,22 @@ export async function addCharityFundTransferToDb({
     console.error("Error logging transaction:", error);
     return { success: false, error: "Failed to add transaction to db" };
   }
-  
+}
+
+export async function getCharityFundTransfers(charityId: string) {
+  try {
+    const transfers = await prisma.charity_fund_transfer.findMany({
+      where: { charity_id: charityId },
+      orderBy: { created_at: "desc" },
+    });
+    return { success: true, transfers };
+  } catch (error) {
+    console.error("Error retrieving charity fund transfers:", error);
+    return {
+      success: false,
+      error: "Failed to retrieve charity fund transfers",
+    };
+  }
 }
 
 export async function getCharityByWalletAddress(wallet_address: string) {
