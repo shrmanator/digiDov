@@ -31,6 +31,7 @@ import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
+  PriceData,
   SupportedChain,
 } from "@/components/combine-wallet-balance";
 
@@ -121,7 +122,7 @@ function DashboardHeader({
 }: {
   donationLink: string;
   walletAddress: string;
-  initialPriceData: any;
+  initialPriceData: PriceData;
 }) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">

@@ -12,7 +12,7 @@ const COIN_IDS: Record<SupportedChain, string> = {
   polygon: "matic-network",
 };
 
-interface PriceData {
+export interface PriceData {
   [coinId: string]: {
     [currency: string]: number;
   };
