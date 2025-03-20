@@ -242,12 +242,14 @@ export async function generateDonationReceiptPDF(
 
   // Adjust certification text size if space is tight
   const certTextSize = remainingSpace < neededSpaceForRest ? 9 : 10;
-  y = drawText(
-    "I certify that this donation qualifies as a gift in accordance with the requirements of the Income Tax Act (Canada).",
-    margin,
-    y,
-    { size: certTextSize }
-  );
+  const certText = [
+    "This receipt is issued under the Income Tax Act (Canada) and is valid for income tax purposes.",
+    "The registered charity did not provide any goods or services, in exchange for this donation.",
+  ];
+
+  certText.forEach((line) => {
+    y = drawText(line, margin, y, { size: certTextSize });
+  });
 
   // Skip space for signature - adjust based on remaining space
   const signatureSpace = remainingSpace < neededSpaceForRest ? 25 : 40;
