@@ -3,13 +3,7 @@ import { donation_receipt, charity, donor } from "@prisma/client";
 import { weiToEvm } from "../convert-wei-to-evm";
 
 interface ReceiptData extends donation_receipt {
-  charity?:
-    | (charity & {
-        ein?: string;
-        contact_mobile_phone?: string;
-        contact_email?: string;
-      })
-    | null;
+  charity?: (charity & { ein?: string }) | null;
   donor?: donor | null;
   wallet_address?: string;
   issued_by?: string;
@@ -218,7 +212,10 @@ export async function generateDonationReceiptPDF(
   });
 
   drawField("Cryptocurrency Donated", blockchainInfo.symbol);
-  drawField("Amount Donated", `${cryptoAmount} ${blockchainInfo.symbol}`);
+  drawField(
+    "Amount Donated for Tax Purposes",
+    `${cryptoAmount} ${blockchainInfo.symbol}`
+  );
   drawField("Fair Market Value", `$${fiatAmount.toFixed(2)} CAD`);
   drawField(
     "Exchange Rate Used",
