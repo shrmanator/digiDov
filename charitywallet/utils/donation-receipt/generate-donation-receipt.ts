@@ -202,17 +202,17 @@ export async function generateDonationReceiptPDF(
   drawField("Amount Donated", `${cryptoAmount} ${blockchainInfo.symbol}`);
   drawField("Fair Market Value", `$${fiatAmount.toFixed(2)} CAD`);
   drawField(
-    "Exchange Rate",
+    "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD`
   );
   drawField("Transaction Hash", txHash);
-  drawField("Wallet Address", walletAddress);
+  drawField("Wallet Address Used", walletAddress);
 
   y -= lineHeight.normal;
   drawLine();
 
   // Compliance section
-  drawText("Receipt Compliance", {
+  drawText("CRA Compliance", {
     font: fontBold,
     size: 11,
     color: colors.accent,
