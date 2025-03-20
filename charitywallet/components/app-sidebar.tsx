@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BarChart, BookDashed, Coins, FileText, User } from "lucide-react";
+import { BookDashed, FileText, LayoutDashboard, User } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -34,15 +34,15 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     ],
     navMain: [
       {
-        title: "Donations",
-        url: "/dashboard/donations",
-        icon: Coins,
+        title: "Overview",
+        url: "/dashboard/overview",
+        icon: LayoutDashboard,
       },
-      {
-        title: "Analytics",
-        url: "/dashboard/analytics",
-        icon: BarChart,
-      },
+      // {
+      //   title: "Analytics",
+      //   url: "/dashboard/analytics",
+      //   icon: BarChart,
+      // },
       {
         title: "Audits",
         url: "/dashboard/audits",

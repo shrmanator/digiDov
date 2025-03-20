@@ -73,18 +73,37 @@ export default async function Dashboard() {
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
   // 5) Aggregate donation receipts for the Analytics tab
-  const monthlyAggregation: { [month: string]: number } = {};
+  // Aggregate donation receipts for the Analytics tab with additional metrics
+  const monthlyAggregation: {
+    [month: string]: { total: number; count: number; avg: number };
+  } = {};
+
   receipts.forEach((receipt) => {
+    console.log("receipt", receipt);
     // Group by "YYYY-MM" extracted from the donation_date ISO string
     const month = receipt.donation_date.substring(0, 7);
-    monthlyAggregation[month] =
-      (monthlyAggregation[month] || 0) + receipt.fiat_amount;
+    if (!monthlyAggregation[month]) {
+      monthlyAggregation[month] = { total: 0, count: 0, avg: 0 };
+    }
+    monthlyAggregation[month].total += receipt.fiat_amount;
+    monthlyAggregation[month].count += 1;
   });
+
+  // Calculate average donation value for each month
+  Object.keys(monthlyAggregation).forEach((month) => {
+    const { total, count } = monthlyAggregation[month];
+    monthlyAggregation[month].avg = count > 0 ? total / count : 0;
+  });
+
   const labels = Object.keys(monthlyAggregation).sort();
   const chartData = labels.map((month) => ({
     month,
-    donation: monthlyAggregation[month],
+    totalDonationAmount: monthlyAggregation[month].total,
+    averageDonationAmount: monthlyAggregation[month].avg,
+    donationCount: monthlyAggregation[month].count,
   }));
+
+  console.log("chartData with additional metrics", chartData);
 
   // 6) Render the dashboard with a Tabs layout
   return (
@@ -100,6 +119,8 @@ export default async function Dashboard() {
           <main className="flex flex-1 p-6">
             <div className="w-full mx-auto flex flex-col items-center">
               <header className="mb-8 w-full flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Overview</h2>
+
                 <SendingFundsModal user={user} />
               </header>
               <Tabs defaultValue="transactions" className="w-full">
@@ -155,7 +176,7 @@ function DashboardHeader({
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Donations</BreadcrumbPage>
+              <BreadcrumbPage>Overview</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

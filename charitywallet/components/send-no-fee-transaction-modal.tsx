@@ -133,7 +133,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <ArrowUpRight size={16} />
-          <span>Withdraw</span>
+          <span>Withdraw Funds</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
