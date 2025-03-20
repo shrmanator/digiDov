@@ -97,7 +97,6 @@ export async function generateDonationReceiptPDF(
 
   // Header - CRA Required
   y = drawTitle("OFFICIAL DONATION RECEIPT", margin, y, { size: 16 });
-  y = drawText("For Income Tax Purposes (Canada Revenue Agency)", margin, y);
   y = drawLine(y - 10);
 
   // Receipt Info - CRA Required
