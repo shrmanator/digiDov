@@ -158,7 +158,7 @@ export default function ExternalWalletTransfersList({
               Total Transfers
             </h3>
             <p className="text-lg font-semibold">
-              {transfers.length} transactions
+              {transfers.length} transfers
             </p>
           </div>
           <div>
