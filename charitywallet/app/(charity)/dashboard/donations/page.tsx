@@ -1,4 +1,3 @@
-// File: app/dashboard/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -38,7 +37,6 @@ import CombinedWalletBalance, {
 // Control how often Next.js re-fetches data (in seconds)
 export const revalidate = 60;
 
-// Constants (moved to the top for better readability)
 const COIN_IDS: Record<SupportedChain, string> = {
   ethereum: "ethereum",
   polygon: "matic-network",
@@ -114,7 +112,6 @@ export default async function Dashboard() {
   );
 }
 
-// Extracted UI component for better organization
 function DashboardHeader({
   donationLink,
   walletAddress,

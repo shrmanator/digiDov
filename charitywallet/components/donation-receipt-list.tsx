@@ -31,11 +31,11 @@ export default function DonationReceiptsList({
     const fetchedReceipts = await getDonationReceiptsForCharity(walletAddress);
     setReceipts(fetchedReceipts);
 
-    // Initialize all dates as expanded
+    // Initialize all dates as collapsed (closed)
     const initialExpandState: Record<string, boolean> = {};
     fetchedReceipts.forEach((receipt) => {
       const dateKey = new Date(receipt.donation_date).toLocaleDateString();
-      initialExpandState[dateKey] = true;
+      initialExpandState[dateKey] = false;
     });
     setExpandedDates(initialExpandState);
 
@@ -189,12 +189,12 @@ export default function DonationReceiptsList({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-5">
                         <div className="font-medium">
                           $ {receipt.fiat_amount.toFixed(2)}
                         </div>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           className="h-8 px-2"
                           onClick={(e) => {
@@ -203,7 +203,7 @@ export default function DonationReceiptsList({
                           }}
                         >
                           <Download className="h-4 w-4" />
-                          <span className="ml-1 text-xs">Receipt</span>
+                          <span className="ml-1 text-xs">Download</span>
                         </Button>
                       </div>
                     </div>
