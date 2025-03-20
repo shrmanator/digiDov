@@ -21,7 +21,7 @@ export async function generateDonationReceiptPDF(
   // Extract and prepare data with fallbacks
   const charityName = receipt.charity?.charity_name || "N/A";
   const registrationNumber = receipt.charity?.registration_number || "N/A";
-  const ein = receipt.charity?.ein || "N/A";
+  // const ein = receipt.charity?.ein || "N/A";
   const charityAddress = receipt.charity?.registered_office_address || "N/A";
   const donationDate = receipt.donation_date
     ? new Date(receipt.donation_date)
@@ -44,6 +44,7 @@ export async function generateDonationReceiptPDF(
   const issueDate = receipt.created_at
     ? new Date(receipt.created_at)
     : new Date();
+  const receiptNumber = receipt.receipt_number || "N/A";
 
   // Date formatting helper
   const formatDate = (date: Date) =>
@@ -160,6 +161,14 @@ export async function generateDonationReceiptPDF(
     size: 16,
     color: colors.accent,
     lineSpacing: lineHeight.large,
+  });
+
+  // Add receipt number prominently near the top
+  drawCenteredText(`Receipt #: ${receiptNumber}`, {
+    font: fontBold,
+    size: 12,
+    color: colors.accent,
+    lineSpacing: lineHeight.normal,
   });
 
   drawLine(y + lineHeight.small);
