@@ -96,6 +96,12 @@ export default function DonationReceiptsList({
     );
   }
 
+  // Calculate overall total donations amount
+  const totalDonationsAmount = receipts.reduce(
+    (sum, receipt) => sum + receipt.fiat_amount,
+    0
+  );
+
   // Sort dates so that the most recent date appears first
   const sortedDates = Object.keys(groupedReceipts).sort((a, b) => {
     const dateA = new Date(a);
@@ -105,6 +111,26 @@ export default function DonationReceiptsList({
 
   return (
     <div className="w-full">
+      {/* Summary header */}
+      <div className="mb-4 p-4 bg-primary/5 rounded-lg">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Total Donations
+            </h3>
+            <p className="text-lg font-semibold">{receipts.length} donations</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground text-right">
+              Total Amount
+            </h3>
+            <p className="text-lg font-semibold text-right">
+              ${totalDonationsAmount.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {sortedDates.map((dateKey) => {
         const receiptsForDate = groupedReceipts[dateKey];
         const totalAmount = getTotalForDate(receiptsForDate);
