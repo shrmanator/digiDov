@@ -34,7 +34,7 @@ interface DonationHistoryProps {
 // Mapping for cryptocurrency symbols by chain ID
 const CHAIN_MAP = {
   1: { hex: "0x1", symbol: "ETH", name: "Ethereum" },
-  137: { hex: "0x89", symbol: "MATIC", name: "Polygon" },
+  137: { hex: "0x89", symbol: "POL", name: "Polygon" },
   // other chains...
 };
 
