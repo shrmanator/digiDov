@@ -10,47 +10,15 @@ interface ReceiptData extends donation_receipt {
 }
 
 /**
- * Generates a CRA-compliant PDF donation receipt for cryptocurrency donations.
- * The PDF includes exactly the following fields:
- *
- * ====================================================
- *                 OFFICIAL DONATION RECEIPT
- * ====================================================
- *
- * **Charity Name:** [charity.charity_name]
- * **Registration Number:** [charity.registration_number]
- * **EIN:** [charity.ein]
- * **Address:** [charity.registered_office_address]
- * **Date of Donation:** [formatted donation_date]
- * **Donor Name:** [donor first_name + last_name]
- * **Donor Address:** [donor.address]
- * **Cryptocurrency Donated:** [blockchain symbol]
- * **Amount Donated:** [crypto amount] [blockchain symbol]
- * **Fair Market Value (Fiat Equivalent):** [fiat_amount formatted as USD]
- * **Exchange Rate Used:** 1 [blockchain symbol] = [calculated exchange rate] USD
- * **Transaction Hash:** [receipt.transaction_hash]
- * **Wallet Address Used:** [receipt.wallet_address]
- *
- * ---------------------------------------------------
- * ❖ **For U.S. Donors (IRS Compliance)**:
- * No goods or services were provided in exchange for this donation, other than intangible religious benefits (if applicable). This contribution is tax-deductible to the extent allowed by law. Please consult your tax advisor for details.
- *
- * ---------------------------------------------------
- * ❖ **For Canadian Donors (CRA Compliance)**:
- * This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes. No advantage was received in exchange for this donation.
- * For verification, visit the CRA website: www.canada.ca/charities-giving
- *
- * ---------------------------------------------------
- * **Issued By:** [issued_by]
- * **Date of Issue:** [formatted created_at]
- * ====================================================
+ * Generates a clean, professional PDF donation receipt for cryptocurrency donations
+ * that meets compliance requirements while maintaining readability.
  */
 export async function generateDonationReceiptPDF(
   receipt: ReceiptData
 ): Promise<Uint8Array> {
   if (!receipt) throw new Error("Invalid donation receipt data");
 
-  // Fallbacks for missing fields
+  // Extract and prepare data with fallbacks
   const charityName = receipt.charity?.charity_name || "N/A";
   const registrationNumber = receipt.charity?.registration_number || "N/A";
   const ein = receipt.charity?.ein || "N/A";
@@ -72,7 +40,7 @@ export async function generateDonationReceiptPDF(
     cryptoAmount > 0 ? (fiatAmount / cryptoAmount).toFixed(2) : "N/A";
   const txHash = receipt.transaction_hash || "N/A";
   const walletAddress = receipt.donor?.wallet_address || "N/A";
-  const issuedBy = "Digidov";
+  const issuedBy = receipt.issued_by || "Digidov";
   const issueDate = receipt.created_at
     ? new Date(receipt.created_at)
     : new Date();
@@ -85,7 +53,7 @@ export async function generateDonationReceiptPDF(
       day: "numeric",
     });
 
-  // Create PDF document and page
+  // Create PDF document
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]); // Letter size
   const { width, height } = page.getSize();
@@ -93,94 +61,201 @@ export async function generateDonationReceiptPDF(
   // Load fonts
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+
+  // Color palette
+  const colors = {
+    primary: rgb(0, 0, 0), // Black for main text
+    secondary: rgb(0.4, 0.4, 0.4), // Dark gray for secondary text
+    accent: rgb(0.1, 0.3, 0.6), // Navy blue for headings
+    divider: rgb(0.7, 0.7, 0.7), // Light gray for dividers
+  };
 
   // Layout settings
-  const margin = 50;
+  const margin = 60;
   let y = height - margin;
-  const lineSpacing = 16;
+  const lineHeight = {
+    normal: 16,
+    large: 24,
+    small: 12,
+  };
 
-  // Helper function: draw text left-aligned
+  // Drawing helpers
   const drawText = (
     text: string,
-    font = fontRegular,
-    size: number = 10,
-    offset = 0
+    {
+      font = fontRegular,
+      size = 10,
+      offset = 0,
+      color = colors.primary,
+      lineSpacing = lineHeight.normal,
+    } = {}
   ) => {
     page.drawText(text, {
       x: margin + offset,
       y,
       font,
       size,
-      color: rgb(0, 0, 0),
+      color,
     });
     y -= lineSpacing;
   };
 
-  // Helper function: draw centered text
   const drawCenteredText = (
     text: string,
-    font = fontRegular,
-    size: number = 10
+    {
+      font = fontRegular,
+      size = 10,
+      color = colors.primary,
+      lineSpacing = lineHeight.normal,
+    } = {}
   ) => {
     const textWidth = font.widthOfTextAtSize(text, size);
     const x = (width - textWidth) / 2;
-    page.drawText(text, { x, y, font, size, color: rgb(0, 0, 0) });
+    page.drawText(text, {
+      x,
+      y,
+      font,
+      size,
+      color,
+    });
     y -= lineSpacing;
   };
 
+  const drawLine = (yPosition = y, thickness = 1) => {
+    page.drawLine({
+      start: { x: margin, y: yPosition },
+      end: { x: width - margin, y: yPosition },
+      thickness,
+      color: colors.divider,
+    });
+    y -= lineHeight.normal;
+  };
+
+  const drawField = (label: string, value: string) => {
+    const labelText = `${label}: `;
+    page.drawText(labelText, {
+      x: margin,
+      y,
+      font: fontBold,
+      size: 10,
+      color: colors.primary,
+    });
+
+    const labelWidth = fontBold.widthOfTextAtSize(labelText, 10);
+    page.drawText(value, {
+      x: margin + labelWidth,
+      y,
+      font: fontRegular,
+      size: 10,
+      color: colors.primary,
+    });
+
+    y -= lineHeight.normal;
+  };
+
   // Draw header
-  drawText("====================================================");
-  drawCenteredText("OFFICIAL DONATION RECEIPT", fontBold, 14);
-  drawText("====================================================");
-  y -= lineSpacing / 2;
+  drawCenteredText("OFFICIAL DONATION RECEIPT", {
+    font: fontBold,
+    size: 16,
+    color: colors.accent,
+    lineSpacing: lineHeight.large,
+  });
 
-  // Receipt fields (using markdown-style formatting as provided)
-  drawText(`**Charity Name:** ${charityName}`);
-  drawText(`**Registration Number:** ${registrationNumber}`);
-  // drawText(`**EIN:** ${ein}`);
-  drawText(`**Address:** ${charityAddress}`);
-  drawText(`**Date of Donation:** ${formatDate(donationDate)}`);
-  drawText(`**Donor Name:** ${donorName}`);
-  drawText(`**Donor Address:** ${donorAddress}`);
-  drawText(`**Cryptocurrency Donated:** ${blockchainInfo.symbol}`);
-  drawText(`**Amount Donated:** ${cryptoAmount} ${blockchainInfo.symbol}`);
-  drawText(
-    `**Fair Market Value (Fiat Equivalent):** $${fiatAmount.toFixed(2)} CAD`
+  drawLine(y + lineHeight.small);
+  y -= lineHeight.small;
+
+  // Organization section
+  drawText("Charitable Organization", {
+    font: fontBold,
+    size: 12,
+    color: colors.accent,
+  });
+
+  drawField("Charity Name", charityName);
+  drawField("Registration Number", registrationNumber);
+  drawField("Address", charityAddress);
+
+  y -= lineHeight.small;
+
+  // Donor section
+  drawText("Donor Information", {
+    font: fontBold,
+    size: 12,
+    color: colors.accent,
+  });
+
+  drawField("Name", donorName);
+  drawField("Address", donorAddress);
+  drawField("Date of Donation", formatDate(donationDate));
+
+  y -= lineHeight.small;
+
+  // Donation details section
+  drawText("Donation Details", {
+    font: fontBold,
+    size: 12,
+    color: colors.accent,
+  });
+
+  drawField("Cryptocurrency Donated", blockchainInfo.symbol);
+  drawField("Amount Donated", `${cryptoAmount} ${blockchainInfo.symbol}`);
+  drawField("Fair Market Value", `$${fiatAmount.toFixed(2)} CAD`);
+  drawField(
+    "Exchange Rate",
+    `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD`
   );
-  drawText(
-    `**Exchange Rate Used:** 1 ${blockchainInfo.symbol} = ${exchangeRate} CAD`
-  );
-  drawText(`**Transaction Hash:** ${txHash}`);
-  drawText(`**Wallet Address Used:** ${walletAddress}`);
-  y -= lineSpacing / 2;
-  drawText("---------------------------------------------------");
+  drawField("Transaction Hash", txHash);
+  drawField("Wallet Address", walletAddress);
 
-  // // U.S. Compliance
-  // drawText("**For U.S. Donors (IRS Compliance):**", fontBold);
-  // drawText(
-  //   "No goods or services were provided in exchange for this donation, other than intangible religious benefits (if applicable). This contribution is tax-deductible to the extent allowed by law. Please consult your tax advisor for details."
-  // );
-  // y -= lineSpacing / 2;
-  // drawText("---------------------------------------------------");
+  y -= lineHeight.normal;
+  drawLine();
 
-  // Canadian Compliance
-  // drawText("**For Canadian Donors (CRA Compliance):**", fontBold);
-  drawText(
-    "This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes. "
-  );
-  drawText("No advantage was received in exchange for this donation.");
+  // Compliance section
+  drawText("Receipt Compliance", {
+    font: fontBold,
+    size: 11,
+    color: colors.accent,
+  });
 
   drawText(
-    "For verification, visit the CRA website: www.canada.ca/charities-giving (https://www.canada.ca/en/revenue-agency/services/charities-giving.html)"
+    "This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes.",
+    {
+      size: 9,
+      lineSpacing: lineHeight.small,
+    }
   );
 
-  y -= lineSpacing / 2;
-  drawText("---------------------------------------------------");
+  drawText("No advantage was received in exchange for this donation.", {
+    size: 9,
+    lineSpacing: lineHeight.small,
+  });
 
-  // Footer
-  drawText(`**Issued By:** ${issuedBy}`);
-  drawText(`**Date of Issue:** ${formatDate(issueDate)}`);
-  drawText("====================================================");
+  drawText(
+    "For verification, visit the CRA website: www.canada.ca/charities-giving",
+    {
+      size: 9,
+      lineSpacing: lineHeight.normal,
+    }
+  );
+
+  // Receipt authentication section
+  y -= lineHeight.small;
+  drawLine();
+
+  drawField("Issued By", issuedBy);
+  drawField("Date of Issue", formatDate(issueDate));
+
+  // Add subtle footer
+  const footerText = "Thank you for your generous donation";
+  const footerTextWidth = fontItalic.widthOfTextAtSize(footerText, 9);
+  page.drawText(footerText, {
+    x: (width - footerTextWidth) / 2,
+    y: margin / 2,
+    font: fontItalic,
+    size: 9,
+    color: colors.secondary,
+  });
 
   return await pdfDoc.save();
 }
