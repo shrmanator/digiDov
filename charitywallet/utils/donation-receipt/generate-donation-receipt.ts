@@ -7,6 +7,7 @@ interface ReceiptData extends donation_receipt {
   donor?: donor | null;
   wallet_address?: string;
   issued_by?: string;
+  contact_first_name?: string; // Added for digital signature
 }
 
 /**
@@ -42,11 +43,12 @@ export async function generateDonationReceiptPDF(
     cryptoAmount > 0 ? (fiatAmount / cryptoAmount).toFixed(2) : "N/A";
   const txHash = receipt.transaction_hash || "N/A";
   const walletAddress = receipt.donor?.wallet_address || "N/A";
-  const issuedBy = "Digidov";
+  const issuedBy = "Digidov Toronto, Ontario, Canada";
   const issueDate = receipt.created_at
     ? new Date(receipt.created_at)
     : new Date();
   const receiptNumber = receipt.receipt_number || "N/A";
+  const signerName = receipt.charity?.contact_first_name;
 
   // Date formatting helper
   const formatDate = (date: Date) =>
@@ -65,6 +67,7 @@ export async function generateDonationReceiptPDF(
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  const fontSignature = await pdfDoc.embedFont(StandardFonts.CourierBold); // Font for signature
 
   // Color palette
   const colors = {
@@ -72,6 +75,7 @@ export async function generateDonationReceiptPDF(
     secondary: rgb(0.4, 0.4, 0.4), // Dark gray for secondary text
     accent: rgb(0.1, 0.3, 0.6), // Navy blue for headings
     divider: rgb(0.7, 0.7, 0.7), // Light gray for dividers
+    signature: rgb(0.1, 0.2, 0.5), // Dark blue for signature
   };
 
   // Layout settings
@@ -200,7 +204,8 @@ export async function generateDonationReceiptPDF(
 
   drawField("Name", donorName);
   drawField("Address", donorAddress);
-  drawField("Date of Donation", formatDate(donationDate));
+  drawField("Donation Received", formatDate(donationDate));
+  drawField("Issued on", formatDate(issueDate));
 
   y -= lineHeight.small;
 
@@ -210,7 +215,6 @@ export async function generateDonationReceiptPDF(
     size: 12,
     color: colors.accent,
   });
-
   drawField("Cryptocurrency Donated", blockchainInfo.symbol);
   drawField(
     "Amount Donated for Tax Purposes",
@@ -260,7 +264,59 @@ export async function generateDonationReceiptPDF(
   drawLine();
 
   drawField("Issued By", issuedBy);
-  drawField("Date of Issue", formatDate(issueDate));
+
+  // Add digital signature
+  y -= lineHeight.normal;
+
+  // Add digital signature text
+  if (signerName) {
+    const signatureText = `Digitally signed by: ${signerName}`;
+    const dateText = `Date: ${donationDate}`;
+
+    y -= 5; // Small space below the line
+
+    // Draw signature
+    page.drawText(signatureText, {
+      x: margin,
+      y,
+      font: fontSignature,
+      size: 10,
+      color: colors.signature,
+    });
+
+    y -= lineHeight.small;
+
+    // Draw verification date
+    page.drawText(dateText, {
+      x: margin,
+      y,
+      font: fontRegular,
+      size: 8,
+      color: colors.secondary,
+    });
+
+    // Add authenticity notice
+    y -= lineHeight.normal;
+    page.drawText(
+      "This document has been electronically signed and is legally binding.",
+      {
+        x: margin,
+        y,
+        font: fontItalic,
+        size: 8,
+        color: colors.secondary,
+      }
+    );
+  } else {
+    y -= lineHeight.small;
+    page.drawText("Signature", {
+      x: margin,
+      y,
+      font: fontItalic,
+      size: 8,
+      color: colors.secondary,
+    });
+  }
 
   // Add subtle footer
   const footerText = "Thank you for your generous donation";
