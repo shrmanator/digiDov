@@ -3,7 +3,13 @@ import { donation_receipt, charity, donor } from "@prisma/client";
 import { weiToEvm } from "../convert-wei-to-evm";
 
 interface ReceiptData extends donation_receipt {
-  charity?: (charity & { ein?: string }) | null;
+  charity?:
+    | (charity & {
+        ein?: string;
+        contact_mobile_phone?: string;
+        contact_email?: string;
+      })
+    | null;
   donor?: donor | null;
   wallet_address?: string;
   issued_by?: string;
@@ -23,6 +29,8 @@ export async function generateDonationReceiptPDF(
   const registrationNumber = receipt.charity?.registration_number || "N/A";
   // const ein = receipt.charity?.ein || "N/A";
   const charityAddress = receipt.charity?.registered_office_address || "N/A";
+  const charityEmail = receipt.charity?.contact_email || "N/A";
+  const charityPhone = receipt.charity?.contact_mobile_phone || "N/A";
   const donationDate = receipt.donation_date
     ? new Date(receipt.donation_date)
     : new Date();
@@ -184,6 +192,8 @@ export async function generateDonationReceiptPDF(
   drawField("Charity Name", charityName);
   drawField("Registration Number", registrationNumber);
   drawField("Address", charityAddress);
+  drawField("Email", charityEmail);
+  drawField("Phone", charityPhone);
 
   y -= lineHeight.small;
 
