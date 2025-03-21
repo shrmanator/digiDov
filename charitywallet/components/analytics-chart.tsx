@@ -19,6 +19,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Payload } from "recharts/types/component/DefaultTooltipContent";
 
 // Updated interface with new key names
 interface ChartDataItem {
@@ -31,9 +32,6 @@ interface ChartDataItem {
 interface AnalyticsChartsProps {
   chartData: ChartDataItem[];
 }
-
-// Using Recharts' built-in types for tooltips
-import { Payload } from "recharts/types/component/DefaultTooltipContent";
 
 export default function AnalyticsCharts({ chartData }: AnalyticsChartsProps) {
   console.log("Fiat donations by month with additional metrics:", chartData);
