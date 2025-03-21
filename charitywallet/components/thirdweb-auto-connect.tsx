@@ -7,8 +7,8 @@ const wallets = [inAppWallet()];
 
 const appMetadata = {
   name: "Digidov Wallet",
-  iconURL: "https://myapp.com/icon.png",
-  logoURL: "https://myapp.com/logo.png",
+  iconURL: "/favicon.png",
+  logoURL: "/favicon.png",
 };
 
 export default function ThirdwebAutoConnect() {

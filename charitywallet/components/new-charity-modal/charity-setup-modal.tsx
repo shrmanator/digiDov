@@ -2,18 +2,18 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { upsertCharity } from "@/app/actions/charities"; // Server Action.
+import { upsertCharity } from "@/app/actions/charities";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
-import { CharityInfoStep } from "./charity-info-step";
 import { DonationUrlStep } from "./donation-url-step";
 import { DelegationAgreementStep } from "./delegation-agreement-step";
+import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
+import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
 }
 
-// Helper function format phone numbers as (123) 456-7890
 function formatPhoneNumber(value: string) {
   const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;
@@ -29,9 +29,7 @@ export default function CharitySetupModal({
   walletAddress,
 }: CharitySetupModalProps) {
   const { data: profiles } = useProfiles({ client });
-  const [charitySlug, setCharitySlug] = useState<string>("");
 
-  // Get default email from profiles
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
@@ -39,17 +37,22 @@ export default function CharitySetupModal({
 
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<
-    "charityInfoStep" | "delegationAgreementStep" | "donationUrlStep"
-  >("charityInfoStep");
+    | "charityOrganizationInfoStep"
+    | "authorizedContactInfoStep"
+    | "delegationAgreementStep"
+    | "donationUrlStep"
+  >("charityOrganizationInfoStep");
 
   const [formData, setFormData] = useState({
     charity_name: "",
     registered_address: "",
     registration_number: "",
-    contact_name: "",
+    contact_first_name: "",
+    contact_last_name: "",
     contact_phone: "",
   });
 
+  const [charitySlug, setCharitySlug] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -71,17 +74,22 @@ export default function CharitySetupModal({
     setFormData((prev) => ({ ...prev, registered_address: address }));
   };
 
-  // After Charity Info is completed, save and then move to the delegation step.
-  const handleNext = async (e: FormEvent<HTMLFormElement>) => {
+  const handleNextCharityInfo = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoadingForm(true);
     setErrorMessage(null);
 
     if (formData.registration_number.length < 9) {
-      setErrorMessage("Ensure valid registration number.");
-      setIsLoadingForm(false);
+      setErrorMessage("Ensure a valid registration number.");
       return;
     }
+
+    setStep("authorizedContactInfoStep");
+  };
+
+  const handleNextAuthorizedContact = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoadingForm(true);
+    setErrorMessage(null);
 
     try {
       const updatedCharity = await upsertCharity({
@@ -89,35 +97,31 @@ export default function CharitySetupModal({
         charity_name: formData.charity_name,
         registered_address: formData.registered_address,
         registration_number: formData.registration_number,
-        contact_name: formData.contact_name,
+        contact_first_name: formData.contact_first_name,
+        contact_last_name: formData.contact_last_name,
         contact_email: defaultEmail,
         contact_phone: formData.contact_phone,
         is_profile_complete: true,
       });
+
       setCharitySlug(updatedCharity.slug || "");
-      // Move to the Delegation Agreement step.
       setStep("delegationAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
-      setErrorMessage(
-        "There was an error saving your profile. Please try again."
-      );
+      setErrorMessage("Error saving profile. Please try again.");
     } finally {
       setIsLoadingForm(false);
     }
   };
 
-  // Once the delegation agreement is accepted, move to the donation URL step
-  const handleDelegationAgree = () => {
-    setStep("donationUrlStep");
-  };
-
+  const handleDelegationAgree = () => setStep("donationUrlStep");
   const handleFinish = () => setOpen(false);
 
-  // Handle back button navigation
   const handleBack = () => {
-    if (step === "delegationAgreementStep") {
-      setStep("charityInfoStep");
+    if (step === "authorizedContactInfoStep") {
+      setStep("charityOrganizationInfoStep");
+    } else if (step === "delegationAgreementStep") {
+      setStep("authorizedContactInfoStep");
     } else if (step === "donationUrlStep") {
       setStep("delegationAgreementStep");
     }
@@ -125,15 +129,34 @@ export default function CharitySetupModal({
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="[&>button]:hidden">
-        {step === "charityInfoStep" && (
-          <CharityInfoStep
-            formData={formData}
+      <DialogContent className="[&>button]:hidden sm:max-w-xl">
+        {step === "charityOrganizationInfoStep" && (
+          <CharityOrganizationInfoStep
+            formData={{
+              charity_name: formData.charity_name,
+              registered_address: formData.registered_address,
+              registration_number: formData.registration_number,
+            }}
             isLoading={isLoadingForm}
             errorMessage={errorMessage}
             onChange={handleChange}
             onAddressChange={handleAddressChange}
-            onNext={handleNext}
+            onNext={handleNextCharityInfo}
+          />
+        )}
+
+        {step === "authorizedContactInfoStep" && (
+          <AuthorizedContactInfoStep
+            formData={{
+              contact_first_name: formData.contact_first_name,
+              contact_last_name: formData.contact_last_name,
+              contact_phone: formData.contact_phone,
+            }}
+            isLoading={isLoadingForm}
+            errorMessage={errorMessage}
+            onChange={handleChange}
+            onSubmit={handleNextAuthorizedContact}
+            onPrevious={handleBack}
           />
         )}
 

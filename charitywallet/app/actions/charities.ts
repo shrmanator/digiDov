@@ -8,7 +8,8 @@ export interface CharityInput {
   charity_name?: string | null;
   registered_address?: string | null;
   registration_number?: string | null;
-  contact_name?: string | null;
+  contact_first_name?: string | null;
+  contact_last_name?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
   wallet_address: string;
@@ -49,7 +50,8 @@ export async function upsertCharity(data: CharityInput) {
       charity_name: data.charity_name ?? undefined,
       registered_office_address: data.registered_address ?? undefined,
       registration_number: data.registration_number ?? undefined,
-      contact_first_name: data.contact_name ?? undefined,
+      contact_first_name: data.contact_first_name ?? undefined,
+      contact_last_name: data.contact_last_name ?? undefined,
       contact_email: data.contact_email ?? undefined,
       contact_mobile_phone: data.contact_phone ?? undefined,
       ...(typeof data.is_profile_complete !== "undefined"
@@ -61,7 +63,8 @@ export async function upsertCharity(data: CharityInput) {
       charity_name: data.charity_name ?? null,
       registered_office_address: data.registered_address ?? null,
       registration_number: data.registration_number ?? null,
-      contact_first_name: data.contact_name ?? null,
+      contact_first_name: data.contact_first_name ?? null,
+      contact_last_name: data.contact_last_name ?? null,
       contact_email: data.contact_email ?? null,
       contact_mobile_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,

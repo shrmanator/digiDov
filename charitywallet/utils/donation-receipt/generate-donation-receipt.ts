@@ -8,6 +8,7 @@ interface ReceiptData extends donation_receipt {
   wallet_address?: string;
   issued_by?: string;
   contact_first_name?: string; // Added for digital signature
+  contact_last_name?: string; // Added for digital signature
 }
 
 /**
@@ -48,7 +49,8 @@ export async function generateDonationReceiptPDF(
     ? new Date(receipt.created_at)
     : new Date();
   const receiptNumber = receipt.receipt_number || "N/A";
-  const signerName = receipt.charity?.contact_first_name;
+  const signerFirstName = receipt.charity?.contact_first_name;
+  const signerLastName = receipt.charity?.contact_last_name;
 
   // Date formatting helper
   const formatDate = (date: Date) =>
@@ -269,8 +271,8 @@ export async function generateDonationReceiptPDF(
   y -= lineHeight.normal;
 
   // Add digital signature text
-  if (signerName) {
-    const signatureText = `Digitally signed by: ${signerName}`;
+  if (signerFirstName && signerLastName) {
+    const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}`;
     const dateText = `Date: ${donationDate}`;
 
     y -= 5; // Small space below the line
