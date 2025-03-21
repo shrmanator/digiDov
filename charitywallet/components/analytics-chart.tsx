@@ -32,6 +32,9 @@ interface AnalyticsChartsProps {
   chartData: ChartDataItem[];
 }
 
+// Using Recharts' built-in types for tooltips
+import { Payload } from "recharts/types/component/DefaultTooltipContent";
+
 export default function AnalyticsCharts({ chartData }: AnalyticsChartsProps) {
   console.log("Fiat donations by month with additional metrics:", chartData);
 
@@ -125,18 +128,22 @@ export default function AnalyticsCharts({ chartData }: AnalyticsChartsProps) {
                     boxShadow: "var(--shadow)",
                   }}
                   labelStyle={{ color: "hsl(var(--foreground))" }}
-                  formatter={(value: number, name: string, props: any) => {
-                    if (props.payload) {
-                      const { donationCount, averageDonationAmount } =
-                        props.payload;
+                  formatter={(
+                    value: number,
+                    name: string,
+                    props: Payload<number, string>
+                  ) => {
+                    if (props && props.payload) {
+                      const payload = props.payload as unknown as ChartDataItem;
+                      const { donationCount, averageDonationAmount } = payload;
                       return [
-                        `Total: $${value.toLocaleString()} | Count: ${donationCount} | Avg: $${averageDonationAmount.toFixed(
+                        `Total: ${value.toLocaleString()} | Count: ${donationCount} | Avg: ${averageDonationAmount.toFixed(
                           2
                         )}`,
-                        "Fiat Donations",
+                        name,
                       ];
                     }
-                    return [`$${value.toLocaleString()}`, "Fiat Donations"];
+                    return [`${value.toLocaleString()}`, name];
                   }}
                   labelFormatter={(label: string) => {
                     try {
