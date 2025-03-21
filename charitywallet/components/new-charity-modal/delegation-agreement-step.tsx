@@ -55,9 +55,7 @@ export function DelegationAgreementStep({
                     {charityName || "Charity Name"}
                   </span>{" "}
                   (&ldquo;the Charity&rdquo;) and{" "}
-                  <span className="bg-primary/10 px-1 rounded">
-                    Delegate Name
-                  </span>{" "}
+                  <span className="bg-primary/10 px-1 rounded">Digidov</span>{" "}
                   (&ldquo;the Delegate&rdquo;). The Charity hereby delegates
                   authority to the Delegate to issue official donation receipts
                   on its behalf.
