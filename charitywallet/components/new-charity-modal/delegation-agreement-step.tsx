@@ -52,7 +52,7 @@ export function DelegationAgreementStep({
                   This Delegation Agreement (&ldquo;Agreement&rdquo;) is made
                   between{" "}
                   <span className="bg-primary/10 px-1 rounded">
-                    {charityName || "Charity Name"}
+                    {charityName}
                   </span>{" "}
                   (&ldquo;the Charity&rdquo;) and{" "}
                   <span className="bg-primary/10 px-1 rounded">Digidov</span>{" "}
@@ -76,6 +76,11 @@ export function DelegationAgreementStep({
                 </li>
                 <li>Safeguarding the Charity&apos;s registration number</li>
               </ul>
+
+              <p className="mt-4">
+                Additionally, the Delegate acknowledges that Digidov will retain
+                a fee of 3% from each donation processed under this Agreement.
+              </p>
 
               <p className="mt-4">
                 The Delegate acknowledges that the Charity retains ultimate
