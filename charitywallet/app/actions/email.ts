@@ -72,7 +72,11 @@ export async function sendDonationReceiptAction(
          <p>Digidov</p>`
       )
       .setAttachments([
-        new Attachment(base64PDF, `receipt-${receiptNumber}.pdf`, "attachment"),
+        new Attachment(
+          base64PDF,
+          `digidov-receipt-${receiptNumber}.pdf`,
+          "attachment"
+        ),
       ]);
 
     await mailerSend.email.send(emailParams);
