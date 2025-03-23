@@ -235,23 +235,24 @@ async function fetchDonationsFromChain(
   }
 }
 
-async function fetchAllChainDonations(
+export const fetchAllChainDonations = async (
   walletAddress: string
-): Promise<DonationEvent[]> {
-  const [polygonDonations, ethereumDonations] = await Promise.all([
-    fetchDonationsFromChain(
-      polygon.id,
-      CONTRACT_ADDRESSES.polygon,
-      walletAddress
-    ),
-    fetchDonationsFromChain(
-      ethereum.id,
-      CONTRACT_ADDRESSES.ethereum,
-      walletAddress
-    ),
-  ]);
+): Promise<DonationEvent[]> => {
+  const polygonDonations = await fetchDonationsFromChain(
+    polygon.id,
+    CONTRACT_ADDRESSES.polygon,
+    walletAddress
+  );
+  // add a small delay here
+  await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+  const ethereumDonations = await fetchDonationsFromChain(
+    ethereum.id,
+    CONTRACT_ADDRESSES.ethereum,
+    walletAddress
+  );
+
   return [...polygonDonations, ...ethereumDonations];
-}
+};
 
 async function fetchCryptoPrices() {
   const chains: SupportedChain[] = ["ethereum", "polygon"];

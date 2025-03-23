@@ -1,3 +1,4 @@
+// lib/email/sendDonationReceipt.ts
 import {
   MailerSend,
   EmailParams,
@@ -5,32 +6,29 @@ import {
   Recipient,
   Attachment,
 } from "mailersend";
-import fs from "fs";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
 });
 
 /**
- * Sends a donation receipt email to the donor.
- * @param donorEmail - The email address of the donor.
- * @param donorName - The name of the donor.
- * @param receiptPath - The file path of the receipt PDF.
- * @param receiptNumber - The receipt number.
+ * Sends a donation receipt email with a dynamically generated PDF attachment.
  */
-export async function sendDonationReceipt(
+export async function sendDonationReceiptFromBuffer(
   donorEmail: string,
   donorName: string,
-  receiptPath: string,
+  pdfBuffer: Uint8Array,
   receiptNumber: string
 ) {
   const sentFrom = new Sender("your@email.com", "Your Charity Name");
   const recipients = [new Recipient(donorEmail, donorName)];
 
-  // Read and encode the PDF file
-  const pdfContent = fs.readFileSync(receiptPath, { encoding: "base64" });
   const attachments = [
-    new Attachment(pdfContent, `receipt-${receiptNumber}.pdf`, "attachment"),
+    new Attachment(
+      Buffer.from(pdfBuffer).toString("base64"),
+      `receipt-${receiptNumber}.pdf`,
+      "attachment"
+    ),
   ];
 
   const emailParams = new EmailParams()
@@ -46,10 +44,5 @@ export async function sendDonationReceipt(
     )
     .setAttachments(attachments);
 
-  try {
-    await mailerSend.email.send(emailParams);
-    console.log(`Receipt sent successfully to ${donorEmail}`);
-  } catch (error) {
-    console.error("Error sending email:", error);
-  }
+  await mailerSend.email.send(emailParams);
 }

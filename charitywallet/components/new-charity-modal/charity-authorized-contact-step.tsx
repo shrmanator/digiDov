@@ -109,7 +109,7 @@ export function AuthorizedContactInfoStep({
 
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onPrevious}>
-            Previous
+            Back
           </Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Saving..." : "Next"}

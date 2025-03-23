@@ -10,17 +10,17 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollText } from "lucide-react";
 
-interface DelegationAgreementStepProps {
+interface ReceiptingAgreementStepProps {
   onAgree: () => void;
   charityName: string;
   onBack: () => void;
 }
 
-export function DelegationAgreementStep({
+export function ReceiptingAgreementStep({
   onAgree,
   charityName,
   onBack,
-}: DelegationAgreementStepProps) {
+}: ReceiptingAgreementStepProps) {
   const [isChecked, setIsChecked] = useState(false);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -34,10 +34,10 @@ export function DelegationAgreementStep({
     <>
       <DialogHeader>
         <div className="flex items-center">
-          <DialogTitle>Delegation Agreement</DialogTitle>
+          <DialogTitle>Third-Party Receipting Agreement</DialogTitle>
         </div>
         <DialogDescription>
-          Please review the agreement carefully before proceeding.
+          Please review the following terms.
         </DialogDescription>
       </DialogHeader>
 
@@ -47,49 +47,44 @@ export function DelegationAgreementStep({
             <div className="flex items-start">
               <ScrollText className="h-5 w-5 text-primary mr-2" />
               <div>
-                <p className="font-medium">Agreement Terms</p>
                 <p>
-                  This Delegation Agreement (&ldquo;Agreement&rdquo;) is made
-                  between{" "}
+                  This Agreement (&ldquo;Agreement&rdquo;) is made between{" "}
                   <span className="bg-primary/10 px-1 rounded">
                     {charityName}
                   </span>{" "}
                   (&ldquo;the Charity&rdquo;) and{" "}
                   <span className="bg-primary/10 px-1 rounded">Digidov</span>{" "}
-                  (&ldquo;the Delegate&rdquo;). The Charity hereby delegates
-                  authority to the Delegate to issue official donation receipts
-                  on its behalf.
+                  (&ldquo;the Platform Provider&rdquo;). The Charity agrees to
+                  use the Platform Provider’s services to facilitate the secure
+                  issuance and management of donation receipts.
                 </p>
               </div>
             </div>
 
             <div className="mt-4">
               <p>
-                The Delegate agrees to comply with all Canada Revenue Agency
-                guidelines, including:
+                The Charity retains full legal responsibility for compliance
+                with Canada Revenue Agency (CRA) guidelines and agrees to:
               </p>
               <ul className="list-disc list-inside mt-2">
-                <li>Maintaining full and accurate records</li>
+                <li>Maintain full and accurate records of all donations</li>
                 <li>
-                  Ensuring that each donation qualifies as a gift under the
-                  Income Tax Act
+                  Ensure that each donation qualifies as a gift under the Income
+                  Tax Act
                 </li>
-                <li>Safeguarding the Charity&apos;s registration number</li>
+                <li>Safeguard its CRA registration number</li>
               </ul>
 
               <p className="mt-4">
-                Additionally, the Delegate acknowledges that Digidov will retain
-                a fee of 3% from each donation processed under this Agreement.
-              </p>
-
-              <p className="mt-4">
-                The Delegate acknowledges that the Charity retains ultimate
-                responsibility for all receipts issued, and that any breach of
-                this Agreement may result in legal or financial consequences.
+                The Platform Provider offers technical infrastructure to assist
+                in donation receipting but does not assume liability for
+                compliance. The Charity acknowledges that it remains the sole
+                issuer of donation receipts and is responsible for ensuring
+                their validity.
               </p>
 
               <p className="mt-2">
-                The terms of this Agreement include strict adherence to the CRA
+                The terms of this Agreement include strict adherence to CRA
                 receipting requirements, maintaining secure records, and
                 providing a verifiable audit trail.
               </p>
@@ -112,7 +107,8 @@ export function DelegationAgreementStep({
             htmlFor="agreeCheckbox"
             className="flex items-center ml-2 cursor-pointer text-sm"
           >
-            I have read and agree to the terms of this Delegation Agreement.
+            I have read and agree to the terms of this Third-Party Receipting
+            Agreement.
           </label>
         </div>
 
@@ -121,7 +117,7 @@ export function DelegationAgreementStep({
             Back
           </Button>
           <Button type="submit" disabled={!isChecked}>
-            Continue
+            Next
           </Button>
         </div>
       </form>

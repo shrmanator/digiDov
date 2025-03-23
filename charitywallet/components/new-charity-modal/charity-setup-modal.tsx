@@ -6,9 +6,10 @@ import { upsertCharity } from "@/app/actions/charities";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { DonationUrlStep } from "./donation-url-step";
-import { DelegationAgreementStep } from "./delegation-agreement-step";
+import { FeeAgreementStep } from "./fee-agreement-step";
 import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { ReceiptingAgreementStep } from "./receipting-agreement-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -40,6 +41,7 @@ export default function CharitySetupModal({
     | "charityOrganizationInfoStep"
     | "authorizedContactInfoStep"
     | "delegationAgreementStep"
+    | "feeAgreementStep"
     | "donationUrlStep"
   >("charityOrganizationInfoStep");
 
@@ -58,7 +60,6 @@ export default function CharitySetupModal({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     if (name === "contact_phone") {
       setFormData({ ...formData, [name]: formatPhoneNumber(value) });
     } else if (name === "registration_number") {
@@ -77,12 +78,10 @@ export default function CharitySetupModal({
   const handleNextCharityInfo = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
-
     if (formData.registration_number.length < 9) {
       setErrorMessage("Ensure a valid registration number.");
       return;
     }
-
     setStep("authorizedContactInfoStep");
   };
 
@@ -90,7 +89,6 @@ export default function CharitySetupModal({
     e.preventDefault();
     setIsLoadingForm(true);
     setErrorMessage(null);
-
     try {
       const updatedCharity = await upsertCharity({
         wallet_address: walletAddress,
@@ -103,7 +101,6 @@ export default function CharitySetupModal({
         contact_phone: formData.contact_phone,
         is_profile_complete: true,
       });
-
       setCharitySlug(updatedCharity.slug || "");
       setStep("delegationAgreementStep");
     } catch (err) {
@@ -114,7 +111,10 @@ export default function CharitySetupModal({
     }
   };
 
-  const handleDelegationAgree = () => setStep("donationUrlStep");
+  // After agreeing to the delegation terms, move to fee agreement
+  const handleDelegationAgree = () => setStep("feeAgreementStep");
+  // After fee agreement, proceed to donation URL step
+  const handleFeeAgree = () => setStep("donationUrlStep");
   const handleFinish = () => setOpen(false);
 
   const handleBack = () => {
@@ -122,8 +122,10 @@ export default function CharitySetupModal({
       setStep("charityOrganizationInfoStep");
     } else if (step === "delegationAgreementStep") {
       setStep("authorizedContactInfoStep");
-    } else if (step === "donationUrlStep") {
+    } else if (step === "feeAgreementStep") {
       setStep("delegationAgreementStep");
+    } else if (step === "donationUrlStep") {
+      setStep("feeAgreementStep");
     }
   };
 
@@ -161,11 +163,15 @@ export default function CharitySetupModal({
         )}
 
         {step === "delegationAgreementStep" && (
-          <DelegationAgreementStep
+          <ReceiptingAgreementStep
             onAgree={handleDelegationAgree}
             charityName={formData.charity_name}
             onBack={handleBack}
           />
+        )}
+
+        {step === "feeAgreementStep" && (
+          <FeeAgreementStep onAgree={handleFeeAgree} onBack={handleBack} />
         )}
 
         {step === "donationUrlStep" && (

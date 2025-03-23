@@ -12,6 +12,7 @@ import {
 } from "@/utils/donation-event-helpers";
 import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
+import { sendDonationReceiptAction } from "@/app/actions/email";
 
 const web3 = new Web3();
 
@@ -135,6 +136,16 @@ export async function POST(request: Request) {
         typeof value === "bigint" ? value.toString() : value
       )
     );
+
+    const emailResult = await sendDonationReceiptAction({
+      ...receipt,
+      charity: charityRecord,
+      donor: donorRecord,
+    });
+    if (!emailResult.success) {
+      console.warn("Receipt created but email failed:", emailResult.error);
+    }
+    console.log("Sent donation receipt email!");
 
     // Generate the receipt PDF
     const receiptPath = await generateDonationReceiptPDF(receipt);
