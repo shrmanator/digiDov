@@ -145,7 +145,6 @@ export async function POST(request: Request) {
     if (!emailResult.success) {
       console.warn("Receipt created but email failed:", emailResult.error);
     }
-    console.log("Sent donation receipt email!");
 
     // Generate the receipt PDF
     const receiptPath = await generateDonationReceiptPDF(receipt);
