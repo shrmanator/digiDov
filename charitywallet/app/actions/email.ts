@@ -1,12 +1,20 @@
 "use server";
 
-import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
-import { donation_receipt, donor, charity } from "@prisma/client";
+import {
+  MailerSend,
+  EmailParams,
+  Sender,
+  Recipient,
+  Attachment,
+} from "mailersend";
+import { charity, donation_receipt, donor } from "@prisma/client";
+import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
 });
 
+// ✅ Contact email action
 export async function sendContactEmailAction(formData: FormData) {
   const to = formData.get("to") as string;
   const subject = formData.get("subject") as string;
@@ -29,26 +37,25 @@ export async function sendContactEmailAction(formData: FormData) {
 
 export async function sendDonationReceiptAction(
   receipt: donation_receipt & {
-    donor: donor;
-    charity: charity;
+    donor?: donor;
+    charity?: charity;
   }
 ) {
   try {
-    const donorEmail = receipt.donor?.email;
-    if (!donorEmail) {
-      throw new Error("Donor email is required");
-    }
+    const pdfBytes = await generateDonationReceiptPDF(receipt);
+    const base64PDF = Buffer.from(pdfBytes).toString("base64");
+
+    const donorEmail = receipt.donor?.email || "";
     const donorName =
       `${receipt.donor?.first_name || ""} ${
         receipt.donor?.last_name || ""
       }`.trim() || "Donor";
-    const receiptNumber = receipt.receipt_number || "unknown";
-
     const charityName =
       receipt.charity?.charity_name || "your supported charity";
+    const receiptNumber = receipt.receipt_number || "unknown";
 
     const emailParams = new EmailParams()
-      .setFrom(new Sender("contact@digidov.com", "Digidov"))
+      .setFrom(new Sender("receipts@digidov.com", "Dovid from Digidov"))
       .setTo([new Recipient(donorEmail, donorName)])
       .setSubject("Your Donation Receipt")
       .setHtml(
@@ -57,7 +64,10 @@ export async function sendDonationReceiptAction(
          <p>Receipt Number: <strong>${receiptNumber}</strong></p>
          <p>Warm regards,</p>
          <p>Digidov</p>`
-      );
+      )
+      .setAttachments([
+        new Attachment(base64PDF, `receipt-${receiptNumber}.pdf`, "attachment"),
+      ]);
 
     await mailerSend.email.send(emailParams);
     console.log(`✅ Receipt email sent to ${donorEmail}`);
