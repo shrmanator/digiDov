@@ -1,26 +1,39 @@
-"use client";
-
+import { Mail, Link } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
-import { Mail } from "lucide-react";
+import { getCharityByWalletAddress } from "@/app/actions/charities";
+import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
 
-export default function DashboardFooter() {
+export default async function DashboardFooter() {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return <p>No user found.</p>;
+  }
+
+  const charity = await getCharityByWalletAddress(user.walletAddress);
+
+  if (!charity) {
+    return <p>No charity found.</p>;
+  }
+
+  const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
   const email = "contact@digidov.com";
-  const donorLink = "https://yourdonationpage.com/donate";
 
   return (
-    <div className="fixed bottom-0 right-0 m-4 flex gap-2">
+    <div className="fixed bottom-0 left-0 right-0 m-4 flex gap-2 justify-center items-center">
+      {/* Donor Link Copy Button */}
+      <CopyButton
+        text={donationLink}
+        label="Copy Donation Link"
+        leftIcon={<Link className="h-4 w-4" />}
+        tooltip="Click to copy donation link"
+      />
       {/* Email Copy Button */}
       <CopyButton
         text={email}
         label={email}
-        leftIcon={<Mail className="mr-2 h-4 w-4" />}
+        leftIcon={<Mail className="h-4 w-4" />}
         tooltip="Click to copy email"
-      />
-      {/* Donor Link Copy Button */}
-      <CopyButton
-        text={donorLink}
-        label="Copy Donation Link"
-        tooltip="Click to copy donation link"
       />
     </div>
   );

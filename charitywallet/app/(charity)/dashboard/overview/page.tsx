@@ -34,6 +34,7 @@ import CombinedWalletBalance, {
 } from "@/components/combine-wallet-balance";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
+import { getCharityByWalletAddress } from "@/app/actions/charities";
 
 export const revalidate = 60;
 
@@ -55,7 +56,7 @@ export default async function Dashboard() {
   }
 
   // 2) Fetch charity data using the user's wallet address
-  const charity = await fetchCharityData(user.walletAddress);
+  const charity = await getCharityByWalletAddress(user.walletAddress);
   if (!charity) {
     return <p>No charity found.</p>;
   }
@@ -106,7 +107,6 @@ export default async function Dashboard() {
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
           <DashboardHeader
-            donationLink={donationLink}
             walletAddress={charity.wallet_address}
             initialPriceData={initialPriceData}
             user={user}
@@ -149,12 +149,10 @@ export default async function Dashboard() {
 }
 
 function DashboardHeader({
-  donationLink,
   walletAddress,
   initialPriceData,
   user,
 }: {
-  donationLink: string;
   walletAddress: string;
   initialPriceData: PriceData;
   user: { walletAddress: string };
@@ -194,12 +192,6 @@ function DashboardHeader({
 }
 
 // Data fetching utilities
-async function fetchCharityData(walletAddress: string) {
-  return await prisma.charity.findUnique({
-    where: { wallet_address: walletAddress },
-  });
-}
-
 async function fetchDonationReceipts(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
