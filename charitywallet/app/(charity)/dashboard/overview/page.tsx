@@ -235,7 +235,7 @@ async function fetchDonationsFromChain(
   }
 }
 
-export const fetchAllChainDonations = async (
+const fetchAllChainDonations = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
   const polygonDonations = await fetchDonationsFromChain(
