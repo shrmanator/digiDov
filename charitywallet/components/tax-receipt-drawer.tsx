@@ -18,6 +18,7 @@ import {
   getDonationReceiptPdf,
 } from "@/app/actions/receipts";
 import { DonationReceipt } from "@/app/types/receipt";
+import { useLogin } from "@/hooks/use-thidweb-headless-login";
 
 // Helper functions to compare dates
 function isSameDay(d1: Date, d2: Date) {
@@ -67,6 +68,7 @@ export function TaxReceiptDrawer({
   onClose,
   walletAddress,
 }: TaxReceiptDrawerProps) {
+  const { login } = useLogin();
   const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -105,6 +107,26 @@ export function TaxReceiptDrawer({
     } catch (error) {
       console.error("Error downloading receipt PDF:", error);
     }
+  }
+
+  // If the user is not connected, show a sign in button
+  if (!walletAddress) {
+    return (
+      <Drawer open={open} onOpenChange={onClose}>
+        <DrawerContent>
+          <div className="mx-auto w-full max-w-sm text-center p-4">
+            <p>Please sign in to view your donation receipts.</p>
+            <button
+              type="button"
+              className="border px-4 py-2 rounded mt-4"
+              onClick={login}
+            >
+              Sign In
+            </button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   // Group receipts by date if not loading and receipts exist
