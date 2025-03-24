@@ -72,7 +72,6 @@ export default async function Dashboard() {
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
   // 5) Aggregate donation receipts for the Analytics tab
-  // Aggregate donation receipts for the Analytics tab with additional metrics
   const monthlyAggregation: {
     [month: string]: { total: number; count: number; avg: number };
   } = {};
@@ -111,13 +110,12 @@ export default async function Dashboard() {
             donationLink={donationLink}
             walletAddress={charity.wallet_address}
             initialPriceData={initialPriceData}
+            user={user}
           />
           <main className="flex flex-1 p-6">
             <div className="w-full mx-auto flex flex-col items-center">
               <header className="mb-8 w-full flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Overview</h2>
-
-                <SendingFundsModal user={user} />
               </header>
               <Tabs defaultValue="transactions" className="w-full">
                 <TabsList className="mb-4 w-full sm:w-auto">
@@ -155,10 +153,12 @@ function DashboardHeader({
   donationLink,
   walletAddress,
   initialPriceData,
+  user,
 }: {
   donationLink: string;
   walletAddress: string;
   initialPriceData: PriceData;
+  user: { walletAddress: string };
 }) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
@@ -177,23 +177,28 @@ function DashboardHeader({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="flex flex-col items-end gap-1 mt-5">
+      <div className="flex flex-col items-end gap-1 mt-20">
         <DonorLinkCopyButton
           donorLink={donationLink}
           label="Click to copy donation page link"
         />
-        <CombinedWalletBalance
-          initialPriceData={initialPriceData}
-          address={walletAddress}
-          client={client}
-          currency="usd"
-        />
+        <div className="mt-1">
+          <CombinedWalletBalance
+            initialPriceData={initialPriceData}
+            address={walletAddress}
+            client={client}
+            currency="usd"
+          />
+        </div>
+        <div className="mt-1">
+          <SendingFundsModal user={user} />
+        </div>
       </div>
     </header>
   );
 }
 
-// Data fetching utilities (private functions)
+// Data fetching utilities
 async function fetchCharityData(walletAddress: string) {
   return await prisma.charity.findUnique({
     where: { wallet_address: walletAddress },
@@ -240,6 +245,7 @@ const fetchAllChainDonations = async (
       CONTRACT_ADDRESSES.ethereum,
       walletAddress
     ),
+    // Uncomment below to include Polygon donations:
     // fetchDonationsFromChain(
     //   polygon.id,
     //   CONTRACT_ADDRESSES.polygon,

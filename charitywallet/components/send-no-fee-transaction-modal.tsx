@@ -23,7 +23,7 @@ import { prepareTransaction, toWei } from "thirdweb";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, AlertCircle, CheckCircle } from "lucide-react";
 
-interface SendingFundsModalProps {
+export interface SendingFundsModalProps {
   user: { walletAddress: string };
 }
 
