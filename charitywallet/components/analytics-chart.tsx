@@ -62,10 +62,10 @@ export default function AnalyticsCharts({ chartData }: AnalyticsChartsProps) {
       {/* Area Chart */}
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle>Monthly Fiat Donations</CardTitle>
+          <CardTitle>Monthly Donations</CardTitle>
           <CardDescription>
-            Total fiat donations aggregated by month along with donation count
-            and average donation
+            Total donations aggregated by month along with donation count and
+            average donation
           </CardDescription>
         </CardHeader>
         <CardContent>
