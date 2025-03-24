@@ -29,9 +29,9 @@ export default function Footer() {
     <footer className="border-t py-2">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between sm:justify-end">
-          {/* <div className="order-2 sm:order-1 relative left-[-8px]">
+          <div className="order-2 sm:order-1 relative left-[-8px]">
             <ModeToggle />
-          </div> */}
+          </div>
           {/* Email copy button */}
           <div className="order-1 sm:order-2 text-xs">
             <TooltipProvider>

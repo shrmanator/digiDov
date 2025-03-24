@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
-import Footer from "./footer";
+// import Footer from "./footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,7 +53,7 @@ export default function RootLayout({
               </div>
               <Toaster />
             </AuthProvider>
-            <Footer />
+            {/* <Footer /> */}
           </ThemeProvider>
         </ThirdwebProvider>
         <Analytics />
