@@ -42,10 +42,7 @@ export default async function Dashboard() {
     return <p>No charity found.</p>;
   }
 
-  // 3) Construct the donation link for sharing
-  const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
-
-  // 4) Fetch price data on the server using the new system
+  // 3) Fetch price data on the server using the new system
   const chains: SupportedChain[] = ["ethereum", "polygon"];
   const COIN_IDS: Record<SupportedChain, string> = {
     ethereum: "ethereum",
