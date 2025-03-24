@@ -1,4 +1,3 @@
-// First, let's update the imports to include some animation utilities
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -23,6 +22,7 @@ import { AmountSelector } from "./amount-selector";
 import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
 import { CheckCircle, Loader2 } from "lucide-react"; // Added CheckCircle icon
+import { useLogin } from "@/hooks/use-thidweb-headless-login";
 
 // Types
 interface DonationFormProps {
@@ -49,6 +49,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const walletAddress = activeAccount?.address;
   const activeChain = useActiveWalletChain();
   const web3 = useMemo(() => new Web3(), []);
+  const { login, account } = useLogin();
 
   // Chain data
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
@@ -128,8 +129,17 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setSelectedUSD(null);
   };
 
-  const handleDonationClick = () => {
+  const handleDonationClick = async () => {
+    // If the user is not connected, trigger the login (which opens the wallet modal)
+    if (!account) {
+      await login();
+      return;
+    }
+
+    // Ensure the chain conversion is up-to-date before sending donation
     if (calculatedChainId !== activeChain?.id) return;
+
+    // Proceed with sending the donation
     onClick();
   };
 
