@@ -68,10 +68,8 @@ export default async function Dashboard() {
     fetchDonationReceipts(charity.wallet_address),
     fetchCryptoPrices(),
   ]);
-  // 4) Construct the donation link for sharing
-  const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
-  // 5) Aggregate donation receipts for the Analytics tab
+  // 4) Aggregate donation receipts for the Analytics tab
   const monthlyAggregation: {
     [month: string]: { total: number; count: number; avg: number };
   } = {};
@@ -100,7 +98,7 @@ export default async function Dashboard() {
     donationCount: monthlyAggregation[month].count,
   }));
 
-  // 6) Render the dashboard with a Tabs layout
+  // 5) Render the dashboard with a Tabs layout
   return (
     <SidebarProvider>
       <AppSidebar />
