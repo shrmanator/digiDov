@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default function Footer() {
+export default function DashboardFooter() {
   const [isCopied, setIsCopied] = useState(false);
   const email = "contact@digidov.com";
 

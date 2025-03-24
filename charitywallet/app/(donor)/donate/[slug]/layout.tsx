@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import "@/lib/moralis"; // This is just here so Moralis is initialized
-import DashboardFooter from "./footer";
+import DonateFooter from "./footer";
 
-export default async function DashboardLayout({
+export default async function DonateLayout({
   children,
 }: {
   children: ReactNode;
@@ -10,7 +10,7 @@ export default async function DashboardLayout({
   return (
     <div className="w-full">
       <main className="w-full flex-1">{children}</main>
-      <DashboardFooter />
+      <DonateFooter />
     </div>
   );
 }
