@@ -148,6 +148,7 @@ export async function POST(request: Request) {
     if (!donorEmailResult.success) {
       console.warn("Receipt created but email failed:", donorEmailResult.error);
     }
+    console.log(`Donor email sent successfully to ${donorRecord.email}`);
 
     const charityEmailResult = await notifyCharityOfDonation({
       ...receipt,
@@ -157,6 +158,9 @@ export async function POST(request: Request) {
     if (!charityEmailResult.success) {
       console.warn("Charity email failed:", donorEmailResult.error);
     }
+    console.log(
+      `Charity email sent successfully to ${charityRecord.contact_email}`
+    );
 
     // Generate the receipt PDF
     const receiptPath = await generateDonationReceiptPDF(receipt);
