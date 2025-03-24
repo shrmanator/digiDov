@@ -92,13 +92,16 @@ export default function DonorProfileModal({
     <Dialog
       open={open}
       onOpenChange={() => {
-        // Disable external closing. The modal will remain open until onClose is called explicitly.
+        // Keep modal open until explicitly closed
       }}
       modal={true}
     >
       <DialogContent className="[&>button]:hidden">
         <DialogHeader>
-          <DialogTitle>Tax Receipt Info</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">
+            Welcome to DigiDov
+          </DialogTitle>
+          <p className="text-muted-foreground text-sm">Tax Receipt Info</p>
           <DialogDescription>
             Provide your details for tax receipts on all future donations.
           </DialogDescription>
@@ -139,7 +142,7 @@ export default function DonorProfileModal({
                 ? { label: formData.address, value: formData.address }
                 : null,
               onChange: handleAddressChange,
-              placeholder: "Enter Postal Address",
+              placeholder: "Address",
               styles: googlePlacesStyles,
             }}
             autocompletionRequest={{
