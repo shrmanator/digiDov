@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import {
   DonationEvent,
@@ -177,11 +176,7 @@ function DashboardHeader({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="flex flex-col items-end gap-1 mt-20">
-        <DonorLinkCopyButton
-          donorLink={donationLink}
-          label="Click to copy donation page link"
-        />
+      <div className="flex flex-col items-end gap-1 mt-10">
         <div className="mt-1">
           <CombinedWalletBalance
             initialPriceData={initialPriceData}

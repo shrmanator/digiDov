@@ -19,7 +19,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DonorLinkCopyButton } from "@/components/donor-link-copy-button";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
@@ -76,11 +75,7 @@ export default async function Dashboard() {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            <div className="flex flex-col items-end gap-1 mt-20">
-              <DonorLinkCopyButton
-                donorLink={donationLink}
-                label="Click to copy donation page link"
-              />
+            <div className="flex flex-col items-end gap-1 mt-10">
               <div className="mt-1">
                 <CombinedWalletBalance
                   initialPriceData={initialPriceData}

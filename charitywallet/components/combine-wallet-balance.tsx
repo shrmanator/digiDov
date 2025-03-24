@@ -88,7 +88,7 @@ export default function CombinedWalletBalance({
   }, [chains, requestedBalances, isLoading, isError, currency, priceData]);
 
   return (
-    <div className="text-sm font-mono mr-2.5">
+    <div className="text-sm mr-2.5">
       Total donations: ~
       {calculatedNetWorth !== null ? calculatedNetWorth.toFixed(3) : "N/A"}{" "}
       {currency.toUpperCase()}
