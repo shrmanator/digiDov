@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import SideBarAndHeader from "./donate-sidebar-and-header";
 import DonationForm from "@/components/donation-form/donation-form";
 import { getCharityBySlug } from "@/app/actions/charities";
-import LoginButton from "@/components/thirdweb-login-button";
 
 export default async function DonatePage({
   params,
