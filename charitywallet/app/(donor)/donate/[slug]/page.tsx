@@ -18,7 +18,6 @@ export default async function DonatePage({
 
   return (
     <SideBarAndHeader charity={charity}>
-      <LoginButton />
       <DonationForm charity={charity} />
     </SideBarAndHeader>
   );
