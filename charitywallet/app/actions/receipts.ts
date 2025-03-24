@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { Prisma, donation_receipt, charity, donor } from "@prisma/client";
 import { DonationReceipt } from "../types/receipt";
 

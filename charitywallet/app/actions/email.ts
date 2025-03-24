@@ -8,7 +8,7 @@ import {
   Attachment,
 } from "mailersend";
 import { charity, donation_receipt, donor } from "@prisma/client";
-import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,

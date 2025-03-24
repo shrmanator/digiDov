@@ -10,7 +10,7 @@ import {
   enrichDonationEvent,
   extractDonationEventFromPayload,
 } from "@/utils/donation-event-helpers";
-import { generateDonationReceiptPDF } from "@/utils/donation-receipt/generate-donation-receipt";
+import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 import {
   notifyCharityOfDonation,

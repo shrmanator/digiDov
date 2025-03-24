@@ -24,7 +24,7 @@ import {
   DonationEvent,
   fetchDonationsToWallet,
 } from "@/utils/fetch-contract-transactions";
-import { ethereum } from "thirdweb/chains";
+import { ethereum, polygon } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
@@ -68,7 +68,6 @@ export default async function Dashboard() {
     fetchDonationReceipts(charity.wallet_address),
     fetchCryptoPrices(),
   ]);
-  console.log("donations", donations);
   // 4) Construct the donation link for sharing
   const donationLink = `${process.env.NEXT_PUBLIC_DONATION_PAGE_ADDRESS}/${charity.slug}`;
 
@@ -79,7 +78,6 @@ export default async function Dashboard() {
   } = {};
 
   receipts.forEach((receipt) => {
-    console.log("receipt", receipt);
     // Group by "YYYY-MM" extracted from the donation_date ISO string
     const month = receipt.donation_date.substring(0, 7);
     if (!monthlyAggregation[month]) {
@@ -102,8 +100,6 @@ export default async function Dashboard() {
     averageDonationAmount: monthlyAggregation[month].avg,
     donationCount: monthlyAggregation[month].count,
   }));
-
-  console.log("chartData with additional metrics", chartData);
 
   // 6) Render the dashboard with a Tabs layout
   return (
@@ -238,16 +234,18 @@ async function fetchDonationsFromChain(
 const fetchAllChainDonations = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
-  // const polygonDonations = await fetchDonationsFromChain(
-  //   polygon.id,
-  //   CONTRACT_ADDRESSES.polygon,
-  //   walletAddress
-  // );
-  const ethereumDonations = await fetchDonationsFromChain(
-    ethereum.id,
-    CONTRACT_ADDRESSES.ethereum,
-    walletAddress
-  );
+  const [ethereumDonations] = await Promise.all([
+    fetchDonationsFromChain(
+      ethereum.id,
+      CONTRACT_ADDRESSES.ethereum,
+      walletAddress
+    ),
+    // fetchDonationsFromChain(
+    //   polygon.id,
+    //   CONTRACT_ADDRESSES.polygon,
+    //   walletAddress
+    // ),
+  ]);
 
   return [...ethereumDonations];
 };

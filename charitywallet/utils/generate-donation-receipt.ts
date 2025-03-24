@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { donation_receipt, charity, donor } from "@prisma/client";
-import { weiToEvm } from "../convert-wei-to-evm";
+import { weiToEvm } from "./convert-wei-to-evm";
 
 interface ReceiptData extends donation_receipt {
   charity?: (charity & { ein?: string }) | null;
