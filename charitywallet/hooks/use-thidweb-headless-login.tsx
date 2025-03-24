@@ -6,6 +6,15 @@ import { generatePayload, verifyPayload } from "@/app/actions/auth";
 import { useConnectModal } from "thirdweb/react"; // Import Thirdweb's connect modal
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
+import { createWallet } from "thirdweb/wallets";
+
+const wallets = [
+  createWallet("io.metamask"),
+  createWallet("app.phantom"),
+  createWallet("com.zengo"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("com.ledger"),
+];
 
 export function useLogin() {
   const account = useActiveAccount();
@@ -13,7 +22,12 @@ export function useLogin() {
 
   const login = async () => {
     if (!account) {
-      connect({ client }); // Open the wallet connection modal
+      connect({
+        client,
+        wallets,
+        showThirdwebBranding: false,
+        size: "compact",
+      }); // Open the wallet connection modal
       return;
     }
 
