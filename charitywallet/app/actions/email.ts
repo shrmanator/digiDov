@@ -36,15 +36,24 @@ export async function sendContactEmailAction(formData: FormData) {
 }
 
 // ✅ Donor receipt email with attachment
-export async function sendDonationReceiptAction(
+export async function notifyDonorOfDonation(
   receipt: donation_receipt & {
     donor?: donor;
     charity?: charity;
-  }
+  },
+  includeAttachment: boolean = true
 ) {
   try {
-    const pdfBytes = await generateDonationReceiptPDF(receipt);
-    const base64PDF = Buffer.from(pdfBytes).toString("base64");
+    let attachment;
+    if (includeAttachment) {
+      const pdfBytes = await generateDonationReceiptPDF(receipt);
+      const base64PDF = Buffer.from(pdfBytes).toString("base64");
+      attachment = new Attachment(
+        base64PDF,
+        `digidov-receipt-${receipt.receipt_number || "unknown"}.pdf`,
+        "attachment"
+      );
+    }
 
     const donorEmail = receipt.donor?.email || "";
     const donorName =
@@ -65,19 +74,20 @@ export async function sendDonationReceiptAction(
       .setSubject("Your Donation Receipt")
       .setHtml(
         `<p>Dear ${donorName},</p>
-         <p>Thank you for your donation to <strong>${charityName}</strong>. Your receipt is attached below.</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>. ${
+          includeAttachment
+            ? "Your receipt is attached below."
+            : "Please find your donation details below."
+        }</p>
          <p><strong>Receipt Number:</strong> ${receiptNumber}</p>
          <p><strong>Transaction hash:</strong> ${txLink}</p>
          <p>Warm regards,</p>
          <p>Digidov</p>`
-      )
-      .setAttachments([
-        new Attachment(
-          base64PDF,
-          `digidov-receipt-${receiptNumber}.pdf`,
-          "attachment"
-        ),
-      ]);
+      );
+
+    if (includeAttachment && attachment) {
+      emailParams.setAttachments([attachment]);
+    }
 
     await mailerSend.email.send(emailParams);
     console.log(`✅ Receipt email sent to ${donorEmail}`);

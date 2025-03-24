@@ -14,7 +14,7 @@ import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 import {
   notifyCharityOfDonation,
-  sendDonationReceiptAction,
+  notifyDonorOfDonation,
 } from "@/app/actions/email";
 
 const web3 = new Web3();
@@ -140,11 +140,15 @@ export async function POST(request: Request) {
       )
     );
 
-    const donorEmailResult = await sendDonationReceiptAction({
-      ...receipt,
-      charity: charityRecord,
-      donor: donorRecord,
-    });
+    const donorEmailResult = await notifyDonorOfDonation(
+      {
+        ...receipt,
+        charity: charityRecord,
+        donor: donorRecord,
+      },
+      false
+    );
+
     if (!donorEmailResult.success) {
       console.warn("Receipt created but email failed:", donorEmailResult.error);
     }

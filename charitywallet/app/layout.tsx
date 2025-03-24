@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
+import Footer from "./footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +25,8 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico", // Default favicon
     // Optionally add more variants:
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -52,6 +53,7 @@ export default function RootLayout({
               </div>
               <Toaster />
             </AuthProvider>
+            <Footer />
           </ThemeProvider>
         </ThirdwebProvider>
         <Analytics />

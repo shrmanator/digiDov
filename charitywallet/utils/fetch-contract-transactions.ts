@@ -22,22 +22,13 @@ export const fetchChainTransactions = async (
   chain: number,
   contractAddress: string
 ): Promise<any[]> => {
-  console.log(
-    "Fetching transactions for chain:",
-    chain,
-    "and contract:",
-    contractAddress
-  );
   const url = `https://insight.thirdweb.com/v1/events/${contractAddress}?chain=${chain}&limit=50`;
-  console.log("Fetching transactions from URL:", url);
 
-  console.time(`fetchChainTransactions-chain-${chain}`);
   const response = await fetch(url, {
     headers: {
       "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
     },
   });
-  console.timeEnd(`fetchChainTransactions-chain-${chain}`);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -56,11 +47,8 @@ export const fetchDonationsToWallet = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
   try {
-    console.time(`fetchDonationsToWallet-chain-${chain}`);
     const events = await fetchChainTransactions(chain, contractAddress);
-    console.timeEnd(`fetchDonationsToWallet-chain-${chain}`);
 
-    console.time(`filterMapping-chain-${chain}`);
     const donations: DonationEvent[] = events
       .filter(
         (log: any) =>
@@ -72,11 +60,8 @@ export const fetchDonationsToWallet = async (
         const donation = decodeDonationLog(log);
         return { ...donation, chain }; // attach the chain info
       });
-    console.timeEnd(`filterMapping-chain-${chain}`);
 
-    console.time(`sorting-chain-${chain}`);
     donations.sort((a, b) => a.timestamp.raw - b.timestamp.raw);
-    console.timeEnd(`sorting-chain-${chain}`);
 
     return donations;
   } catch (error) {
