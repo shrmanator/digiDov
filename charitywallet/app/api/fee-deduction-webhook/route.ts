@@ -140,14 +140,11 @@ export async function POST(request: Request) {
       )
     );
 
-    const donorEmailResult = await notifyDonorOfDonation(
-      {
-        ...receipt,
-        charity: charityRecord,
-        donor: donorRecord,
-      },
-      false
-    );
+    const donorEmailResult = await notifyDonorOfDonation({
+      ...receipt,
+      charity: charityRecord,
+      donor: donorRecord,
+    });
 
     if (!donorEmailResult.success) {
       console.warn("Receipt created but email failed:", donorEmailResult.error);
