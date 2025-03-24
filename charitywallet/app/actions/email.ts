@@ -40,21 +40,9 @@ export async function notifyDonorOfDonation(
   receipt: donation_receipt & {
     donor?: donor;
     charity?: charity;
-  },
-  includeAttachment: boolean = true
+  }
 ) {
   try {
-    let attachment;
-    if (includeAttachment) {
-      const pdfBytes = await generateDonationReceiptPDF(receipt);
-      const base64PDF = Buffer.from(pdfBytes).toString("base64");
-      attachment = new Attachment(
-        base64PDF,
-        `digidov-receipt-${receipt.receipt_number || "unknown"}.pdf`,
-        "attachment"
-      );
-    }
-
     const donorEmail = receipt.donor?.email || "";
     const donorName =
       `${receipt.donor?.first_name || ""} ${
@@ -62,11 +50,13 @@ export async function notifyDonorOfDonation(
       }`.trim() || "Donor";
     const charityName =
       receipt.charity?.charity_name || "your supported charity";
+    const charitySlug = receipt.charity?.slug || "your-charity";
     const receiptNumber = receipt.receipt_number || "unknown";
     const transactionHash = receipt.transaction_hash || "";
     const txLink = transactionHash
       ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
+    const receiptLink = `https://digidov.com/donate/${charitySlug}`;
 
     const emailParams = new EmailParams()
       .setFrom(new Sender("receipts@digidov.com", "Digidov Alerts"))
@@ -74,20 +64,14 @@ export async function notifyDonorOfDonation(
       .setSubject("Your Donation Receipt")
       .setHtml(
         `<p>Dear ${donorName},</p>
-         <p>Thank you for your donation to <strong>${charityName}</strong>. ${
-          includeAttachment
-            ? "Your receipt is attached below."
-            : "Please find your donation details below."
-        }</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>.</p>
+         <p>You can download your official donation receipt at any time from: 
+         <a href="${receiptLink}" target="_blank" rel="noopener noreferrer">${receiptLink}</a></p>
          <p><strong>Receipt Number:</strong> ${receiptNumber}</p>
          <p><strong>Transaction hash:</strong> ${txLink}</p>
          <p>Warm regards,</p>
          <p>Digidov</p>`
       );
-
-    if (includeAttachment && attachment) {
-      emailParams.setAttachments([attachment]);
-    }
 
     await mailerSend.email.send(emailParams);
     console.log(`✅ Receipt email sent to ${donorEmail}`);
