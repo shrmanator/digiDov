@@ -22,7 +22,7 @@ import {
   DonationEvent,
   fetchDonationsToWallet,
 } from "@/utils/fetch-contract-transactions";
-import { ethereum } from "thirdweb/chains";
+import { ethereum, polygon } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const revalidate = 60;
 
@@ -151,21 +152,26 @@ export default async function Overview() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="transactions">
-                <ScrollArea className="h-[calc(98vh-250px)]">
-                  {isCharityComplete ? (
-                    <div className="w-full">
-                      <TransactionHistory
-                        donations={donations}
-                        receipts={receipts}
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <p>No donations found.</p>
-                      <CharitySetupModal walletAddress={user.walletAddress} />
-                    </div>
-                  )}
-                </ScrollArea>
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Donation History</CardTitle>
+                  <CardDescription>
+                    You&apos;ve received {donations.length} donation
+                    {donations.length !== 1 ? "s" : ""}
+                  </CardDescription>
+                </CardHeader>
+                {isCharityComplete ? (
+                  <div className="w-full">
+                    <TransactionHistory
+                      donations={donations}
+                      receipts={receipts}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p>No donations found.</p>
+                    <CharitySetupModal walletAddress={user.walletAddress} />
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="analytics">
                 <ScrollArea className="h-[calc(98vh-250px)]">
@@ -215,20 +221,20 @@ async function fetchDonationsFromChain(
 const fetchAllChainDonations = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
-  const [ethereumDonations] = await Promise.all([
+  const [ethereumDonations, polygonDonations] = await Promise.all([
     fetchDonationsFromChain(
       ethereum.id,
       CONTRACT_ADDRESSES.ethereum,
       walletAddress
     ),
     // Uncomment below to include Polygon donations:
-    // fetchDonationsFromChain(
-    //   polygon.id,
-    //   CONTRACT_ADDRESSES.polygon,
-    //   walletAddress
-    // ),
+    fetchDonationsFromChain(
+      polygon.id,
+      CONTRACT_ADDRESSES.polygon,
+      walletAddress
+    ),
   ]);
-  return [...ethereumDonations];
+  return [...polygonDonations, ...ethereumDonations];
 };
 
 async function fetchCryptoPrices() {

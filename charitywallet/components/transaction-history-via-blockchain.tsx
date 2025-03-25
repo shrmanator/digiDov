@@ -243,25 +243,19 @@ export default function DonationHistory({
 
   return (
     <Card className="border-0 shadow-none bg-transparent">
-      <CardHeader className="px-0 pt-0">
-        <CardTitle>Donation History</CardTitle>
-        <CardDescription>
-          You&apos;ve received {donations.length} donation
-          {donations.length !== 1 ? "s" : ""}
-        </CardDescription>
-      </CardHeader>
-
-      <ScrollArea className="h-[70vh]">
-        <div className="space-y-4 pr-4">
-          {sortedDonations.map((donation) => (
-            <DonationCard
-              key={donation.transactionHash}
-              donation={donation}
-              receipt={receiptMap.get(donation.transactionHash)}
-            />
-          ))}
-        </div>
-      </ScrollArea>
+      <div className="h-[60vh] overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 pr-4">
+            {sortedDonations.map((donation) => (
+              <DonationCard
+                key={donation.transactionHash}
+                donation={donation}
+                receipt={receiptMap.get(donation.transactionHash)}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
     </Card>
   );
 }
