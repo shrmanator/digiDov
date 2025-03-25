@@ -58,7 +58,8 @@ export async function notifyDonorOfDonation(
       ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
     const charitySlug = receipt.charity?.slug || "your-charity";
-    const receiptLink = `https://digidov.com/donate/${charitySlug}`;
+    // Shortened link for viewing all receipts
+    const shortReceiptLink = `https://digidov.com/r/${charitySlug}`;
 
     const emailParams = new EmailParams()
       .setFrom(new Sender("receipts@digidov.com", "Digidov Alerts"))
@@ -66,13 +67,12 @@ export async function notifyDonorOfDonation(
       .setSubject("Your Donation Receipt")
       .setHtml(
         `<p>Dear ${donorName},</p>
-         <p>Thank you for your donation to <strong>${charityName}</strong>. Your receipt is attached below.</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>.</p>
+         <p>Your receipt is attached below. Alternatively, you can view all your receipts at: 
+           <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a>
+         </p>
          <p><strong>Receipt Number:</strong> ${receiptNumber}</p>
          <p><strong>Transaction hash:</strong> ${txLink}</p>
-         <p>
-           You can also download your official donation receipt at any time from: 
-           <a href="${receiptLink}" target="_blank" rel="noopener noreferrer">${receiptLink}</a>
-         </p>
          <p>Warm regards,</p>
          <p>Digidov</p>`
       )
