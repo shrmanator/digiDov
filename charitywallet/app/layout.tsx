@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Digidov Wallet",
-  description: "The simplest way to manage crypto donations.",
+  description: "The simplest and best way to accept crypto donations.",
   icons: {
     icon: "/favicon.ico", // Default favicon
     // Optionally add more variants:
