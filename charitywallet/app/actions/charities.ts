@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma";
 import slugify from "slugify";
 import { addWalletAddressToMoralis } from "./moralis";
-import { redirect } from "next/navigation";
 
 export interface CharityInput {
   charity_name?: string | null;

@@ -74,7 +74,7 @@ export default function ProfileForm({ charity }: ProfileFormProps) {
           description: "Profile updated successfully.",
           variant: "default",
         });
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to update profile.",
