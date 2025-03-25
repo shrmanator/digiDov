@@ -120,7 +120,7 @@ export async function notifyCharityOfDonation(
     }
 
     const emailParams = new EmailParams()
-      .setFrom(new Sender("alerts@digidov.com", "Digidov Alerts"))
+      .setFrom(new Sender("contact@digidov.com", "Digidov Alerts"))
       .setTo([new Recipient(charityEmail, charityName)])
       .setSubject("New Donation Received")
       .setHtml(
