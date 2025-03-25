@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "Digidov Wallet",
   description: "The simplest and best way to accept crypto donations.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon-32x32.png",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
