@@ -26,10 +26,11 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-md flex flex-col items-center">
+        <h1 className="text-4xl font-bold mb-4">Digidov</h1>
         <ConnectEmbed
           client={client}
           wallets={wallets}
-          header={{ title: "Choose a login method" }}
+          header={{ title: "" }}
           showThirdwebBranding={false}
           chain={polygon}
           auth={{
