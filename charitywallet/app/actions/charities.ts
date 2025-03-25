@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import slugify from "slugify";
 import { addWalletAddressToMoralis } from "./moralis";
+import { redirect } from "next/navigation";
 
 export interface CharityInput {
   charity_name?: string | null;
@@ -184,4 +185,22 @@ export async function getCharityByWalletAddress(wallet_address: string) {
   return prisma.charity.findUnique({
     where: { wallet_address: walletAddress },
   });
+}
+
+export async function updateCharityProfile(formData: FormData): Promise<void> {
+  const charityInput: CharityInput = {
+    charity_name: formData.get("charity_name")?.toString() || null,
+    registered_address: formData.get("registered_address")?.toString() || null,
+    registration_number:
+      formData.get("registration_number")?.toString() || null,
+    contact_first_name: formData.get("contact_first_name")?.toString() || null,
+    contact_last_name: formData.get("contact_last_name")?.toString() || null,
+    contact_email: formData.get("contact_email")?.toString() || null,
+    contact_phone: formData.get("contact_phone")?.toString() || null,
+    wallet_address: formData.get("wallet_address")!.toString(),
+    is_profile_complete: true,
+  };
+
+  await upsertCharity(charityInput);
+  redirect("/dashboard/profile");
 }

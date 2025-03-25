@@ -50,7 +50,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Charity Profile",
-        url: "/dashboard/your-info",
+        url: "/dashboard/profile",
         icon: User,
       },
     ],
