@@ -23,11 +23,11 @@ export const metadata: Metadata = {
   title: "Digidov Wallet",
   description: "The simplest and best way to accept crypto donations.",
   icons: {
-    icon: "/favicon.ico", // Default favicon
-    // Optionally add more variants:
+    icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.web.manifest",
 };
 
 export default function RootLayout({
