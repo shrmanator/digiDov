@@ -49,7 +49,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         icon: FileText,
       },
       {
-        title: "Charity Profile",
+        title: "Profile",
         url: "/dashboard/profile",
         icon: User,
       },
