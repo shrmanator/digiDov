@@ -62,7 +62,7 @@ export async function notifyDonorOfDonation(
     const shortReceiptLink = `https://digidov.com/r/${charitySlug}`;
 
     const emailParams = new EmailParams()
-      .setFrom(new Sender("receipts@digidov.com", "Digidov Alerts"))
+      .setFrom(new Sender("contact@digidov.com", "Digidov Alerts"))
       .setTo([new Recipient(donorEmail, donorName)])
       .setSubject("Your Donation Receipt")
       .setHtml(
