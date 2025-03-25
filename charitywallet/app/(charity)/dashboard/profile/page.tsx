@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import ProfileForm from "@/components/profile-form";
+import CombinedWalletBalance, {
+  SupportedChain,
+} from "@/components/combine-wallet-balance";
+import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
+import { client } from "@/lib/thirdwebClient";
+import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 
 export default async function Profile() {
   const user = await getAuthenticatedUser();
@@ -30,6 +36,14 @@ export default async function Profile() {
   if (!charity) {
     return <p>No charity found.</p>;
   }
+
+  const chains: SupportedChain[] = ["ethereum", "polygon"];
+  const COIN_IDS: Record<SupportedChain, string> = {
+    ethereum: "ethereum",
+    polygon: "matic-network",
+  };
+  const coinIds = chains.map((chain) => COIN_IDS[chain]).join(",");
+  const initialPriceData = await fetchPrices(coinIds, "usd");
 
   return (
     <SidebarProvider>
@@ -51,6 +65,19 @@ export default async function Profile() {
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
+            </div>
+            <div className="flex flex-col items-end gap-1 mt-10">
+              <div className="mt-1">
+                <CombinedWalletBalance
+                  initialPriceData={initialPriceData}
+                  address={charity.wallet_address}
+                  client={client}
+                  currency="usd"
+                />
+              </div>
+              <div className="mt-1">
+                <SendingFundsModal user={user} />
+              </div>
             </div>
           </header>
           <div className="px-4 py-6 flex-1 overflow-auto">
