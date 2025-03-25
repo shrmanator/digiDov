@@ -86,7 +86,9 @@ export function CharityOrganizationInfoStep({
           />
         </div>
         <div>
-          <Label htmlFor="registration_number">CRA Registration Number</Label>
+          <Label htmlFor="registration_number">
+            CRA Registration Number (can be changed later)
+          </Label>
           <Input
             id="registration_number"
             name="registration_number"
