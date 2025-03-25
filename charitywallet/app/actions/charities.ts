@@ -202,5 +202,4 @@ export async function updateCharityProfile(formData: FormData): Promise<void> {
   };
 
   await upsertCharity(charityInput);
-  redirect("/dashboard/profile");
 }
