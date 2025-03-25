@@ -52,6 +52,7 @@ function CopyButton({ text }: { text: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
+            type="button"
             onClick={handleCopy}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >

@@ -28,12 +28,12 @@ import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import CombinedWalletBalance, {
-  PriceData,
   SupportedChain,
 } from "@/components/combine-wallet-balance";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const revalidate = 60;
 
@@ -47,7 +47,7 @@ const CONTRACT_ADDRESSES = {
   ethereum: "0x27fede2dc50c03ef8c90bf1aa9cf69a3d181c9df",
 };
 
-export default async function Dashboard() {
+export default async function Overview() {
   // 1) Check user authentication
   const user = await getAuthenticatedUser();
   if (!user) {
@@ -74,7 +74,6 @@ export default async function Dashboard() {
   } = {};
 
   receipts.forEach((receipt) => {
-    // Group by "YYYY-MM" extracted from the donation_date ISO string
     const month = receipt.donation_date.substring(0, 7);
     if (!monthlyAggregation[month]) {
       monthlyAggregation[month] = { total: 0, count: 0, avg: 0 };
@@ -83,7 +82,6 @@ export default async function Dashboard() {
     monthlyAggregation[month].count += 1;
   });
 
-  // Calculate average donation value for each month
   Object.keys(monthlyAggregation).forEach((month) => {
     const { total, count } = monthlyAggregation[month];
     monthlyAggregation[month].avg = count > 0 ? total / count : 0;
@@ -97,28 +95,63 @@ export default async function Dashboard() {
     donationCount: monthlyAggregation[month].count,
   }));
 
-  // 5) Render the dashboard with a Tabs layout
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          <DashboardHeader
-            walletAddress={charity.wallet_address}
-            initialPriceData={initialPriceData}
-            user={user}
-          />
-          <main className="flex flex-1 p-6">
-            <div className="w-full mx-auto flex flex-col items-center">
-              <header className="mb-8 w-full flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Overview</h2>
-              </header>
-              <Tabs defaultValue="transactions" className="w-full">
-                <TabsList className="mb-4 w-full sm:w-auto">
-                  <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                </TabsList>
-                <TabsContent value="transactions">
+          {/* Header with same style as the Audit tab */}
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Overview</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className="flex flex-col items-end gap-1 mt-10">
+              <div className="mt-1">
+                <CombinedWalletBalance
+                  initialPriceData={initialPriceData}
+                  address={charity.wallet_address}
+                  client={client}
+                  currency="usd"
+                />
+              </div>
+              <div className="mt-1">
+                <SendingFundsModal user={user} />
+              </div>
+            </div>
+          </header>
+
+          {/* Main content area */}
+          <div className="px-4 py-6 flex-1">
+            <h2 className="text-2xl font-bold mb-6">Overview</h2>
+            <Tabs defaultValue="transactions" className="w-full">
+              <TabsList className="mb-4 w-full sm:w-auto">
+                <TabsTrigger
+                  value="transactions"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Transactions
+                </TabsTrigger>
+                <TabsTrigger
+                  value="analytics"
+                  className="flex-1 sm:flex-initial"
+                >
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="transactions">
+                <ScrollArea className="h-[calc(98vh-250px)]">
                   {isCharityComplete ? (
                     <div className="w-full">
                       <TransactionHistory
@@ -127,68 +160,27 @@ export default async function Dashboard() {
                       />
                     </div>
                   ) : (
-                    <>
-                      <p className="text-center">No donations found.</p>
+                    <div className="text-center">
+                      <p>No donations found.</p>
                       <CharitySetupModal walletAddress={user.walletAddress} />
-                    </>
+                    </div>
                   )}
-                </TabsContent>
-                <TabsContent value="analytics">
+                </ScrollArea>
+              </TabsContent>
+              <TabsContent value="analytics">
+                <ScrollArea className="h-[calc(98vh-250px)]">
                   <AnalyticsCharts chartData={chartData} />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </main>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
 
-function DashboardHeader({
-  walletAddress,
-  initialPriceData,
-  user,
-}: {
-  walletAddress: string;
-  initialPriceData: PriceData;
-  user: { walletAddress: string };
-}) {
-  return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Overview</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="flex flex-col items-end gap-1 mt-10">
-        <div className="mt-1">
-          <CombinedWalletBalance
-            initialPriceData={initialPriceData}
-            address={walletAddress}
-            client={client}
-            currency="usd"
-          />
-        </div>
-        <div className="mt-1">
-          <SendingFundsModal user={user} />
-        </div>
-      </div>
-    </header>
-  );
-}
-
-// Data fetching utilities
+// Data fetching utilities remain unchanged
 async function fetchDonationReceipts(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
@@ -236,7 +228,6 @@ const fetchAllChainDonations = async (
     //   walletAddress
     // ),
   ]);
-
   return [...ethereumDonations];
 };
 
