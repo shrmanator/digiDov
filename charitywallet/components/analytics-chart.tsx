@@ -34,8 +34,6 @@ interface AnalyticsChartsProps {
 }
 
 export default function AnalyticsCharts({ chartData }: AnalyticsChartsProps) {
-  console.log("Fiat donations by month with additional metrics:", chartData);
-
   if (!chartData || chartData.length === 0) {
     return (
       <div className="text-center p-10">
