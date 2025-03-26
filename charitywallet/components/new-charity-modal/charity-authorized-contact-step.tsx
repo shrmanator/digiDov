@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserCheckIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import TermsAndServicesModal from "./terms-and-service-modal";
 
 interface AuthorizedContactInfoStepProps {
   formData: {
@@ -44,10 +46,18 @@ export function AuthorizedContactInfoStep({
   onSubmit,
 }: AuthorizedContactInfoStepProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      onChange(e);
+      const syntheticEvent = {
+        target: {
+          name,
+          value: checked ? "true" : "",
+          type: "checkbox",
+        },
+      } as unknown as ChangeEvent<HTMLInputElement>;
+
+      onChange(syntheticEvent);
       return;
     }
 
@@ -109,20 +119,27 @@ export function AuthorizedContactInfoStep({
           />
         </div>
 
-        <div className="flex items-center">
-          <input
-            type="checkbox"
+        <div className="flex items-start space-x-2">
+          <Checkbox
             id="shaduicn"
             name="shaduicn"
             checked={formData.shaduicn}
-            onChange={handleChange}
-            title="I confirm that this name will be used as my digital signature on tax receipts"
+            onCheckedChange={(checked) =>
+              handleChange({
+                target: {
+                  name: "shaduicn",
+                  value: checked ? "true" : "",
+                  type: "checkbox",
+                  checked,
+                },
+              } as unknown as ChangeEvent<HTMLInputElement>)
+            }
             required
           />
-          <Label htmlFor="shaduicn" className="ml-2">
+          <label htmlFor="shaduicn" className="text-sm leading-relaxed">
             I confirm that this name will be used as my digital signature on tax
-            receipts
-          </Label>
+            receipts and that I agree to the <TermsAndServicesModal />.
+          </label>
         </div>
 
         {errorMessage && (

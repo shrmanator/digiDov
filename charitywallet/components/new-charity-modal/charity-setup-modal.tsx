@@ -52,6 +52,7 @@ export default function CharitySetupModal({
     contact_first_name: "",
     contact_last_name: "",
     contact_phone: "",
+    shaduicn: false, // <-- 🔥 Add this
   });
 
   const [charitySlug, setCharitySlug] = useState("");
@@ -153,6 +154,7 @@ export default function CharitySetupModal({
               contact_first_name: formData.contact_first_name,
               contact_last_name: formData.contact_last_name,
               contact_phone: formData.contact_phone,
+              shaduicn: formData.shaduicn,
             }}
             isLoading={isLoadingForm}
             errorMessage={errorMessage}
