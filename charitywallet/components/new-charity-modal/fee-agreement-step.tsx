@@ -40,7 +40,7 @@ export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
             <div>
               <p className="font-medium">Fee Details</p>
               <p className="mt-2">
-                Digidov will retain a fee of 3% from each donation processed.
+                Digidov will receive a fee of 3% from each donation processed.
                 This fee covers operational costs and ensures the quality of our
                 services.
               </p>
