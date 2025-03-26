@@ -37,7 +37,7 @@ export default function Home() {
             quality={100}
           />
 
-          <h1 className="text-4xl text-orange-700 font-offside">digiDov</h1>
+          <h1 className="text-4xl text-orange-600 font-tsukimi">digiDov</h1>
         </div>
         <ConnectEmbed
           client={client}

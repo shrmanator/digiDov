@@ -68,7 +68,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        offside: ["var(--font-offside)", ...fontFamily.sans],
+        tsukimi: ["var(--font-tsukimi-rounded)", ...fontFamily.sans],
       },
     },
   },

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Offside } from "next/font/google";
+import { Geist, Geist_Mono, Offside, Tsukimi_Rounded } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThirdwebProvider } from "thirdweb/react";
@@ -24,6 +24,12 @@ const offside = Offside({
   weight: "400",
 });
 
+const tsukimiRounded = Tsukimi_Rounded({
+  subsets: ["latin"], // add 'japanese' if needed, based on your usage
+  weight: "400", // Tsukimi Rounded comes in one weight
+  variable: "--font-tsukimi-rounded",
+});
+
 export const metadata: Metadata = {
   title: "Digidov Wallet",
   description: "The simplest and best way to accept crypto donations.",
@@ -42,7 +48,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${offside.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${tsukimiRounded.variable} antialiased`}
       >
         <ThirdwebProvider>
           <ThirdwebAutoConnect />
