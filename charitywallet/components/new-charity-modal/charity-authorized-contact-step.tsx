@@ -88,14 +88,13 @@ export function AuthorizedContactInfoStep({
       </p>
 
       <div className="space-y-4">
-        {/* First/Last Name Fields */}
+        {/* First/Last Name Fields without redundant placeholders */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="contact_first_name">First Name</Label>
             <Input
               id="contact_first_name"
               name="contact_first_name"
-              placeholder="First Name"
               value={formData.contact_first_name}
               onChange={handleChange}
               required
@@ -106,7 +105,6 @@ export function AuthorizedContactInfoStep({
             <Input
               id="contact_last_name"
               name="contact_last_name"
-              placeholder="Last Name"
               value={formData.contact_last_name}
               onChange={handleChange}
               required
@@ -114,7 +112,7 @@ export function AuthorizedContactInfoStep({
           </div>
         </div>
 
-        {/* Phone Number Field */}
+        {/* Phone Number Field with format placeholder */}
         <div>
           <Label htmlFor="contact_phone">Phone Number</Label>
           <Input
