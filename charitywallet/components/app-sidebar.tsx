@@ -16,7 +16,6 @@ import { TeamSwitcher } from "./team-switcher";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { charity } = useCharity();
-  console.log("charity", charity);
 
   const navData = {
     user: {
