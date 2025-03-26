@@ -54,16 +54,19 @@ export function AuthorizedContactInfoStep({
           name,
           value: checked ? "true" : "",
           type: "checkbox",
+          checked,
         },
       } as unknown as ChangeEvent<HTMLInputElement>;
-
       onChange(syntheticEvent);
       return;
     }
 
+    // Capitalize first/last name
     if (name === "contact_first_name" || name === "contact_last_name") {
       e.target.value = capitalizeFirstLetter(value);
-    } else if (name === "contact_phone") {
+    }
+    // Format phone number
+    else if (name === "contact_phone") {
       e.target.value = formatPhoneNumber(value);
     }
 
@@ -72,16 +75,20 @@ export function AuthorizedContactInfoStep({
 
   return (
     <form onSubmit={onSubmit} className="max-w-2xl mx-auto space-y-6">
+      {/* Heading */}
       <div className="flex items-center gap-2">
         <UserCheckIcon className="text-green-500" />
         <h2 className="text-xl font-semibold">Authorized Contact</h2>
       </div>
+
+      {/* Subtitle */}
       <p className="text-muted-foreground">
         This name will be used as the digital signature on official tax
         receipts.
       </p>
 
       <div className="space-y-4">
+        {/* First/Last Name Fields */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="contact_first_name">First Name</Label>
@@ -107,6 +114,7 @@ export function AuthorizedContactInfoStep({
           </div>
         </div>
 
+        {/* Phone Number Field */}
         <div>
           <Label htmlFor="contact_phone">Phone Number</Label>
           <Input
@@ -119,7 +127,8 @@ export function AuthorizedContactInfoStep({
           />
         </div>
 
-        <div className="flex items-start space-x-2">
+        {/* Checkbox + Terms */}
+        <div className="flex items-start gap-2">
           <Checkbox
             id="shaduicn"
             name="shaduicn"
@@ -136,16 +145,21 @@ export function AuthorizedContactInfoStep({
             }
             required
           />
-          <label htmlFor="shaduicn" className="text-sm leading-relaxed">
+          <label
+            htmlFor="shaduicn"
+            className="text-sm leading-normal mt-[-3px]"
+          >
             I confirm that this name will be used as my digital signature on tax
             receipts and that I agree to the <TermsAndServicesModal />.
           </label>
         </div>
 
+        {/* Error Message */}
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
         )}
 
+        {/* Nav Buttons */}
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onPrevious}>
             Back
