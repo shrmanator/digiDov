@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Offside, Tsukimi_Rounded } from "next/font/google";
+import { Geist, Geist_Mono, Tsukimi_Rounded } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThirdwebProvider } from "thirdweb/react";
@@ -16,12 +16,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const offside = Offside({
-  variable: "--font-offside",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 const tsukimiRounded = Tsukimi_Rounded({
