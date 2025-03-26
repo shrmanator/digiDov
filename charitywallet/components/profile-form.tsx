@@ -92,7 +92,7 @@ export default function ProfileForm({ charity }: ProfileFormProps) {
         value={formData.wallet_address}
       />
 
-      <div>
+      {/* <div>
         <Label
           htmlFor="charity_name"
           className="block text-sm font-medium text-foreground"
@@ -107,7 +107,7 @@ export default function ProfileForm({ charity }: ProfileFormProps) {
           onChange={handleChange}
           className="mt-1 w-full rounded-md border border-border bg-input p-2 text-foreground"
         />
-      </div>
+      </div> */}
 
       <div>
         <Label
