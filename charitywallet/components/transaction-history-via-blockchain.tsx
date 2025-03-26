@@ -230,7 +230,7 @@ export default function DonationHistory({
           {donationLink && (
             <>
               <p className="text-center mt-4 text-sm">
-                Paste this link anywhere you want to accept donations.
+                Paste this link where you want to accept donations.
               </p>
               <div className="mt-2">
                 <CopyButton text={donationLink} label={donationLink} />
