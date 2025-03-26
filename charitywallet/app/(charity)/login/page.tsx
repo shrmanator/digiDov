@@ -31,10 +31,12 @@ export default function Home() {
           <Image
             src="/images/dovcoin-logo.png"
             alt="Dovcoin Logo"
-            width={50}
-            height={50}
+            width={80}
+            height={80}
             className="mr-4"
+            quality={100}
           />
+
           <h1 className="text-4xl text-orange-700 font-offside">digiDov</h1>
         </div>
         <ConnectEmbed
