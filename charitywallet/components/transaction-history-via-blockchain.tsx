@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-// Removed date-fns dependency
-import Web3 from "web3";
 import {
   Card,
   CardContent,
@@ -23,12 +21,15 @@ import { ArrowDown, Copy, User } from "lucide-react";
 import { DonationEvent } from "@/utils/fetch-contract-transactions";
 import { DonationReceipt } from "@/app/types/receipt";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
+import Web3 from "web3";
+import { CopyButton } from "./copy-button";
 
 const web3 = new Web3();
 
 interface DonationHistoryProps {
   donations: DonationEvent[];
   receipts?: DonationReceipt[];
+  donationLink?: string; // new prop for the donation link
 }
 
 // Mapping for cryptocurrency symbols by chain ID
@@ -38,7 +39,7 @@ const CHAIN_MAP = {
   // other chains...
 };
 
-function CopyButton({ text }: { text: string }) {
+function CopyButtonInner({ text }: { text: string }) {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = () => {
@@ -207,7 +208,7 @@ function DonationCard({
 
           <div className="flex items-center gap-1.5">
             <span>{formattedAddress}</span>
-            <CopyButton text={donation.donor} />
+            <CopyButtonInner text={donation.donor} />
           </div>
         </div>
       </CardContent>
@@ -218,6 +219,7 @@ function DonationCard({
 export default function DonationHistory({
   donations,
   receipts = [],
+  donationLink,
 }: DonationHistoryProps) {
   if (!donations.length) {
     return (
@@ -225,6 +227,16 @@ export default function DonationHistory({
         <CardContent className="flex flex-col items-center justify-center p-12">
           <div className="text-4xl opacity-20 mb-4">💸</div>
           <p className="text-center text-muted-foreground">No donations yet</p>
+          {donationLink && (
+            <>
+              <p className="text-center mt-4 text-sm">
+                Paste this link anywhere you want to accept donations.
+              </p>
+              <div className="mt-2">
+                <CopyButton text={donationLink} label={donationLink} />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     );

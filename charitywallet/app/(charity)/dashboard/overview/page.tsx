@@ -35,6 +35,7 @@ import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getDonationLink } from "@/utils/get-donation-link";
 
 export const revalidate = 60;
 
@@ -95,6 +96,8 @@ export default async function Overview() {
     averageDonationAmount: monthlyAggregation[month].avg,
     donationCount: monthlyAggregation[month].count,
   }));
+
+  const donationLink = charity.slug ? getDonationLink(charity.slug) : "";
 
   return (
     <SidebarProvider>
@@ -164,6 +167,7 @@ export default async function Overview() {
                     <TransactionHistory
                       donations={donations}
                       receipts={receipts}
+                      donationLink={donationLink}
                     />
                   </div>
                 ) : (
