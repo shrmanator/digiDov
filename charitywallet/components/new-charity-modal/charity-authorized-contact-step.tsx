@@ -11,6 +11,7 @@ interface AuthorizedContactInfoStepProps {
     contact_first_name: string;
     contact_last_name: string;
     contact_phone: string;
+    shaduicn: boolean;
   };
   isLoading: boolean;
   errorMessage: string | null;
@@ -43,7 +44,12 @@ export function AuthorizedContactInfoStep({
   onSubmit,
 }: AuthorizedContactInfoStepProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
+    if (type === "checkbox") {
+      onChange(e);
+      return;
+    }
 
     if (name === "contact_first_name" || name === "contact_last_name") {
       e.target.value = capitalizeFirstLetter(value);
@@ -101,6 +107,22 @@ export function AuthorizedContactInfoStep({
             onChange={handleChange}
             required
           />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="shaduicn"
+            name="shaduicn"
+            checked={formData.shaduicn}
+            onChange={handleChange}
+            title="I confirm that this name will be used as my digital signature on tax receipts"
+            required
+          />
+          <Label htmlFor="shaduicn" className="ml-2">
+            I confirm that this name will be used as my digital signature on tax
+            receipts
+          </Label>
         </div>
 
         {errorMessage && (
