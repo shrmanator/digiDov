@@ -22,7 +22,7 @@ import { AmountSelector } from "./amount-selector";
 import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
 import { CheckCircle, Loader2 } from "lucide-react"; // Added CheckCircle icon
-import { useLogin } from "@/hooks/use-thidweb-headless-login";
+import { useLogin } from "@/hooks/use-thirdweb-headless-login";
 
 // Types
 interface DonationFormProps {

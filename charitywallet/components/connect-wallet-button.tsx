@@ -11,11 +11,10 @@ import { generatePayload } from "@/app/actions/auth";
 
 const wallets = [
   createWallet("io.metamask"),
+  createWallet("app.phantom"),
+  createWallet("com.zengo"),
   createWallet("com.coinbase.wallet"),
-  createWallet("com.trustwallet.app"),
   createWallet("com.ledger"),
-  createWallet("com.mewwallet"),
-  createWallet("com.binance"),
 ];
 
 interface ConnectWalletButtonProps {

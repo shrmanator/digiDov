@@ -13,7 +13,8 @@
         "transak",
         "trustwallet",
         "tsukimi",
-        "upserting"
+        "upserting",
+        "zengo"
     ],
     "postman.settings.dotenv-detection-notification-visibility": false
 }

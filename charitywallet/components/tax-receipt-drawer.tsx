@@ -18,7 +18,7 @@ import {
   getDonationReceiptPdf,
 } from "@/app/actions/receipts";
 import { DonationReceipt } from "@/app/types/receipt";
-import { useLogin } from "@/hooks/use-thidweb-headless-login";
+import { useLogin } from "@/hooks/use-thirdweb-headless-login";
 
 // Helper functions to compare dates
 function isSameDay(d1: Date, d2: Date) {
