@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 const tsukimiRounded = Tsukimi_Rounded({
-  subsets: ["latin"], // add 'japanese' if needed, based on your usage
-  weight: "400", // Tsukimi Rounded comes in one weight
+  subsets: ["latin"],
+  weight: "400",
   variable: "--font-tsukimi-rounded",
 });
 

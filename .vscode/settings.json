@@ -12,6 +12,7 @@
         "thirdweb",
         "transak",
         "trustwallet",
+        "tsukimi",
         "upserting"
     ],
     "postman.settings.dotenv-detection-notification-visibility": false
