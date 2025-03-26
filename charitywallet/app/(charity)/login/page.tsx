@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
@@ -26,7 +27,16 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-md flex flex-col items-center">
-        <h1 className="text-4xl font-bold mb-4">Digidov</h1>
+        <div className="flex items-center mb-4">
+          <Image
+            src="/images/dovcoin-logo.png"
+            alt="Dovcoin Logo"
+            width={50}
+            height={50}
+            className="mr-4"
+          />
+          <h1 className="text-4xl text-orange-700 font-offside">digiDov</h1>
+        </div>
         <ConnectEmbed
           client={client}
           wallets={wallets}

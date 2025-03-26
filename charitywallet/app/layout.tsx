@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Offside } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThirdwebProvider } from "thirdweb/react";
@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
-// import Footer from "./footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +16,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const offside = Offside({
+  variable: "--font-offside",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -37,7 +42,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${offside.variable} antialiased`}
       >
         <ThirdwebProvider>
           <ThirdwebAutoConnect />
