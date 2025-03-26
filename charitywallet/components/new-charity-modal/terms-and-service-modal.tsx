@@ -42,11 +42,11 @@ export default function TermsAndServicesModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-end mt-4">
-          <DialogClose asChild>
-            <Button variant="outline">Close</Button>
-          </DialogClose>
-        </div>
+        <DialogClose asChild>
+          <Button variant="outline" className="w-full mt-6">
+            Close
+          </Button>
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );
