@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { UserCheckIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import TermsAndServicesModal from "./terms-and-service-modal";
 
 interface AuthorizedContactInfoStepProps {
   formData: {
@@ -61,12 +60,9 @@ export function AuthorizedContactInfoStep({
       return;
     }
 
-    // Capitalize first/last name
     if (name === "contact_first_name" || name === "contact_last_name") {
       e.target.value = capitalizeFirstLetter(value);
-    }
-    // Format phone number
-    else if (name === "contact_phone") {
+    } else if (name === "contact_phone") {
       e.target.value = formatPhoneNumber(value);
     }
 
@@ -74,98 +70,92 @@ export function AuthorizedContactInfoStep({
   };
 
   return (
-    <form onSubmit={onSubmit} className="max-w-2xl mx-auto space-y-6">
-      {/* Heading */}
-      <div className="flex items-center gap-2">
-        <UserCheckIcon className="text-green-500" />
-        <h2 className="text-xl font-semibold">Authorized Contact</h2>
+    <form onSubmit={onSubmit} className="space-y-6">
+      {/* Heading and Description */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <UserCheckIcon className="text-green-500" />
+          <h2 className="text-xl font-semibold">
+            Authorization To Sign Donation Receipts
+          </h2>
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Allow us to automatically sign your donation receipts on your behalf.
+        </p>
       </div>
 
-      {/* Subtitle */}
-      <p className="text-muted-foreground">
-        This name will be used as the digital signature on official tax
-        receipts.
-      </p>
-
-      <div className="space-y-4">
-        {/* First/Last Name Fields without redundant placeholders */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="contact_first_name">First Name</Label>
-            <Input
-              id="contact_first_name"
-              name="contact_first_name"
-              value={formData.contact_first_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="contact_last_name">Last Name</Label>
-            <Input
-              id="contact_last_name"
-              name="contact_last_name"
-              value={formData.contact_last_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-
-        {/* Phone Number Field with format placeholder */}
+      {/* Contact Info */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="contact_phone">Phone Number</Label>
+          <Label htmlFor="contact_first_name">First Name</Label>
           <Input
-            id="contact_phone"
-            name="contact_phone"
-            placeholder="(123) 456-7890"
-            value={formData.contact_phone}
+            id="contact_first_name"
+            name="contact_first_name"
+            value={formData.contact_first_name}
             onChange={handleChange}
             required
           />
         </div>
-
-        {/* Checkbox + Terms */}
-        <div className="flex items-start gap-2">
-          <Checkbox
-            id="shaduicn"
-            name="shaduicn"
-            checked={formData.shaduicn}
-            onCheckedChange={(checked) =>
-              handleChange({
-                target: {
-                  name: "shaduicn",
-                  value: checked ? "true" : "",
-                  type: "checkbox",
-                  checked,
-                },
-              } as unknown as ChangeEvent<HTMLInputElement>)
-            }
+        <div>
+          <Label htmlFor="contact_last_name">Last Name</Label>
+          <Input
+            id="contact_last_name"
+            name="contact_last_name"
+            value={formData.contact_last_name}
+            onChange={handleChange}
             required
           />
-          <label
-            htmlFor="shaduicn"
-            className="text-sm leading-normal mt-[-3px]"
-          >
-            I confirm that this name will be used as my digital signature on tax
-            receipts and that I agree to the <TermsAndServicesModal />.
-          </label>
         </div>
+      </div>
 
-        {/* Error Message */}
-        {errorMessage && (
-          <p className="text-sm text-red-500 text-center">{errorMessage}</p>
-        )}
+      <div>
+        <Label htmlFor="contact_phone">Phone Number</Label>
+        <Input
+          id="contact_phone"
+          name="contact_phone"
+          placeholder="(123) 456-7890"
+          value={formData.contact_phone}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-        {/* Nav Buttons */}
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onPrevious}>
-            Back
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Next"}
-          </Button>
-        </div>
+      {/* Checkbox */}
+      <div className="flex items-start gap-2">
+        <Checkbox
+          id="shaduicn"
+          name="shaduicn"
+          checked={formData.shaduicn}
+          onCheckedChange={(checked) =>
+            handleChange({
+              target: {
+                name: "shaduicn",
+                value: checked ? "true" : "",
+                type: "checkbox",
+                checked,
+              },
+            } as unknown as ChangeEvent<HTMLInputElement>)
+          }
+          required
+        />
+        <label htmlFor="shaduicn" className="text-sm leading-normal mt-[-3px]">
+          I authorize digiDov to use my full name as a digital signature on
+          automated donation receipts.
+        </label>
+      </div>
+
+      {errorMessage && (
+        <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+      )}
+
+      {/* Buttons */}
+      <div className="flex justify-between">
+        <Button type="button" variant="outline" onClick={onPrevious}>
+          Back
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Next"}
+        </Button>
       </div>
     </form>
   );
