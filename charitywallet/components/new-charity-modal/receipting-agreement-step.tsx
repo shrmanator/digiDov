@@ -259,12 +259,11 @@ export function ReceiptingAgreementStep({
                 must be in writing and signed by authorized representatives of
                 both Parties.
               </p>
-              {/* NEW ASSIGNMENT CLAUSE */}
               <p>
                 <strong>Assignment:</strong> Neither Party may assign or
                 transfer this Agreement, in whole or in part, without the prior
-                written consent of the other Party; however, DigiDov may assign
-                or transfer this Agreement in the event of a merger,
+                written consent of the other Party; except, that DigiDov may
+                assign or transfer this Agreement in the event of a merger,
                 acquisition, corporate reorganization, or sale of all or
                 substantially all of its assets. In such an event, the assigning
                 party shall provide written notice to the other party. This
