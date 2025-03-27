@@ -108,7 +108,6 @@ export function ReceiptingAgreementStep({
                   reporting.
                 </li>
               </ul>
-
               <p className="mt-2">
                 DigiDov is not responsible for the custody, management,
                 conversion, or protection of any funds.
@@ -266,9 +265,156 @@ export function ReceiptingAgreementStep({
                 assign or transfer this Agreement in the event of a merger,
                 acquisition, corporate reorganization, or sale of all or
                 substantially all of its assets. In such an event, the assigning
-                party shall provide written notice to the other party. This
+                Party shall provide written notice to the other Party. This
                 Agreement shall be binding on and inure to the benefit of the
                 Parties and their respective successors and permitted assigns.
+              </p>
+            </div>
+
+            {/* 10. INTELLECTUAL PROPERTY OWNERSHIP */}
+            <div>
+              <h2 className="font-semibold">
+                10. INTELLECTUAL PROPERTY OWNERSHIP
+              </h2>
+              <p className="mt-2">
+                <strong>DigiDov’s IP:</strong> All right, title, and interest in
+                and to the DigiDov platform, software, trademarks, trade names,
+                and any related or underlying technology (including any
+                modifications or derivatives), are and shall remain the
+                exclusive property of DigiDov.
+              </p>
+              <p>
+                <strong>Charity’s IP:</strong> The Charity retains all right,
+                title, and interest in and to its own trademarks, logos,
+                proprietary content, and other intellectual property. No rights
+                or licenses are granted to DigiDov under this Agreement except
+                as needed to perform the services described herein.
+              </p>
+            </div>
+
+            {/* 11. WARRANTY DISCLAIMER */}
+            <div>
+              <h2 className="font-semibold">11. WARRANTY DISCLAIMER</h2>
+              <p className="mt-2">
+                EXCEPT AS EXPRESSLY PROVIDED HEREIN, DIGIDOV PROVIDES ITS
+                PLATFORM AND SERVICES ON AN “AS IS” AND “AS AVAILABLE” BASIS,
+                AND HEREBY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS
+                OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+                WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+                AND NON-INFRINGEMENT. DIGIDOV DOES NOT WARRANT THAT THE SERVICES
+                WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE, OR THAT
+                DEFECTS WILL BE CORRECTED.
+              </p>
+            </div>
+
+            {/* 12. FORCE MAJEURE */}
+            <div>
+              <h2 className="font-semibold">12. FORCE MAJEURE</h2>
+              <p className="mt-2">
+                Neither Party shall be liable for any failure or delay in the
+                performance of its obligations under this Agreement if such
+                failure or delay is caused by events beyond the Party’s
+                reasonable control, including but not limited to acts of God,
+                war, terrorism, riots, embargoes, acts of civil or military
+                authorities, fires, floods, accidents, strikes, or shortages of
+                transportation facilities, fuel, energy, labor, or materials.
+                The affected Party shall promptly notify the other Party of the
+                occurrence of a force majeure event and shall use commercially
+                reasonable efforts to mitigate its effects and resume
+                performance as soon as practicable.
+              </p>
+            </div>
+
+            {/* 13. PUBLICITY / MARKETING */}
+            <div>
+              <h2 className="font-semibold">13. PUBLICITY / MARKETING</h2>
+              <p className="mt-2">
+                Neither Party shall publicly reference or use the other Party’s
+                name, trademarks, or logos in any marketing, press releases,
+                promotional materials, or public announcements without the prior
+                written consent of the other Party, which may be withheld at the
+                Party’s sole discretion. However, DigiDov may include the
+                Charity’s name and/or logo in a general list of customers for
+                promotional purposes, provided that DigiDov does not expressly
+                or implicitly endorse the Charity or misrepresent the nature of
+                the relationship.
+              </p>
+            </div>
+
+            {/* 14. NO JOINT VENTURE / PARTNERSHIP */}
+            <div>
+              <h2 className="font-semibold">
+                14. NO JOINT VENTURE / PARTNERSHIP
+              </h2>
+              <p className="mt-2">
+                Nothing in this Agreement shall be construed to create a joint
+                venture, partnership, agency, or fiduciary relationship between
+                the Parties. Both Parties are independent contractors, and
+                neither Party has the authority to bind the other to any
+                obligations.
+              </p>
+            </div>
+
+            {/* 15. NO THIRD-PARTY BENEFICIARIES */}
+            <div>
+              <h2 className="font-semibold">
+                15. NO THIRD-PARTY BENEFICIARIES
+              </h2>
+              <p className="mt-2">
+                This Agreement is entered into solely for the benefit of the
+                Parties hereto and their respective successors and permitted
+                assigns. No provision of this Agreement is intended to confer
+                any rights, benefits, remedies, or claims upon any person or
+                entity not a Party to this Agreement.
+              </p>
+            </div>
+
+            {/* 16. NOTICES */}
+            <div>
+              <h2 className="font-semibold">16. NOTICES</h2>
+              <p className="mt-2">
+                Any notice or other communication required or permitted to be
+                given under this Agreement shall be in writing and delivered by
+                email to the addresses designated by each Party. Notices shall
+                be deemed effective upon the sending Party’s receipt of a
+                confirmation (via read receipt or a written acknowledgment from
+                the recipient) indicating that the recipient received and
+                reviewed the email. Each Party shall promptly notify the other
+                Party of any changes to its designated email address for notices
+                under this Agreement.
+              </p>
+            </div>
+
+            {/* 17. EXPORT COMPLIANCE (IF APPLICABLE) */}
+            <div>
+              <h2 className="font-semibold">17. EXPORT COMPLIANCE</h2>
+              <p className="mt-2">
+                Each Party represents and warrants that it will comply with all
+                applicable export and import control laws and regulations in
+                providing and using the Services. The Charity shall not access
+                or use DigiDov’s platform in violation of any such laws or
+                regulations. Without limiting the foregoing, each Party agrees
+                that it shall not directly or indirectly export, re-export, or
+                transfer any technical data acquired from the other Party under
+                this Agreement to any destination or person restricted or
+                prohibited by any export control regulations, unless properly
+                authorized by the relevant government authority.
+              </p>
+            </div>
+
+            {/* 18. ELECTRONIC SIGNATURES AND EXECUTION */}
+            <div>
+              <h2 className="font-semibold">
+                18. ELECTRONIC SIGNATURES AND EXECUTION
+              </h2>
+              <p className="mt-2">
+                The Parties consent to the use of electronic signatures or
+                click-through acceptance and agree that either method shall be
+                deemed valid and enforceable. The Parties further agree that
+                this Agreement and any subsequent amendments or modifications
+                may be entered into electronically, and that any such electronic
+                signatures or manifestations of acceptance shall have the same
+                force and effect as an original ink-signed document.
               </p>
             </div>
 

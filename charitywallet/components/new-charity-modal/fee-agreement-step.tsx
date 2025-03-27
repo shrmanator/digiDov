@@ -7,7 +7,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { DollarSign } from "lucide-react";
+// Import the info icon from Lucide (or wherever you get your icons).
+import { Info } from "lucide-react";
 
 interface FeeAgreementStepProps {
   onAgree: () => void;
@@ -23,33 +24,21 @@ export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
   return (
     <>
       <DialogHeader>
-        <div className="flex items-center">
-          <DialogTitle>Fee Terms</DialogTitle>
-        </div>
+        <DialogTitle>Fee Terms</DialogTitle>
         <DialogDescription>
-          Please review the following fee details.
+          Please review the fee information below.
         </DialogDescription>
       </DialogHeader>
 
       <form onSubmit={handleSubmit}>
-        <div className="border rounded-lg p-4 text-sm">
-          <div className="flex items-start">
-            <DollarSign className="h-5 w-5 text-primary mr-2" />
-            <div>
-              <p className="font-medium">Fee Details</p>
-              <p className="mt-2">
-                DigiDov will receive a fee of 3% from each donation processed.
-                This fee covers operational costs and ensures the quality of our
-                services.
-              </p>
-            </div>
-          </div>
+        <div className="border border-neutral-700 rounded-md p-4 text-sm flex gap-2 items-start">
+          <Info className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <p>
+            DigiDov will receive a 3% fee from each donation, covering
+            operational costs and ensuring service quality. By continuing, you
+            confirm that you have read and consent to these terms.
+          </p>
         </div>
-
-        <p className="text-sm mt-4">
-          By clicking “Agree,” you confirm that you have read and consent to the
-          fee terms.
-        </p>
 
         <div className="mt-4 flex justify-between">
           <Button type="button" variant="outline" onClick={onBack}>
