@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DialogHeader,
@@ -20,7 +20,6 @@ export function ReceiptingAgreementStep({
   charityName,
   onBack,
 }: ReceiptingAgreementStepProps) {
-  // No checkbox needed; user’s acceptance is captured by pressing "Agree"
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onAgree();
@@ -40,6 +39,7 @@ export function ReceiptingAgreementStep({
       <form onSubmit={handleSubmit}>
         <div className="border rounded-lg">
           <div className="max-h-64 overflow-y-auto p-4 text-sm scrollbar-thin space-y-4">
+            {/* Intro */}
             <div className="flex items-start mb-2">
               <ScrollText className="h-5 w-5 text-primary mr-2" />
               <p className="font-medium">
@@ -54,7 +54,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
-            {/* --- FULL CONSOLIDATED AGREEMENT TEXT --- */}
+            {/* 1. DEFINITIONS */}
             <div>
               <h2 className="font-semibold">1. DEFINITIONS</h2>
               <p className="mt-2">
@@ -78,6 +78,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 2. SERVICES PROVIDED */}
             <div>
               <h2 className="font-semibold">2. SERVICES PROVIDED</h2>
               <p className="mt-2">
@@ -114,6 +115,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 3. AUTHORIZATION AND STANDING DELEGATION */}
             <div>
               <h2 className="font-semibold">
                 3. AUTHORIZATION AND STANDING DELEGATION
@@ -122,11 +124,12 @@ export function ReceiptingAgreementStep({
                 The Charity hereby grants DigiDov a standing authorization to
                 digitally sign all Tax Receipts issued on the Charity’s behalf.
                 This authorization is effective as of the Effective Date of this
-                agreement and remains in effect until terminated by either Party
+                Agreement and remains in effect until terminated by either Party
                 in accordance with the termination provisions of this Agreement.
               </p>
             </div>
 
+            {/* 4. TRANSACTION REPORTING */}
             <div>
               <h2 className="font-semibold">
                 4. TRANSACTION REPORTING AND ACCOUNTING INFORMATION
@@ -151,6 +154,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 5. CONFIDENTIALITY */}
             <div>
               <h2 className="font-semibold">5. CONFIDENTIALITY</h2>
               <p className="mt-2">
@@ -163,6 +167,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 6. LIMITATION OF LIABILITY AND INDEMNIFICATION */}
             <div>
               <h2 className="font-semibold">
                 6. LIMITATION OF LIABILITY AND INDEMNIFICATION
@@ -189,6 +194,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 7. DISPUTE RESOLUTION */}
             <div>
               <h2 className="font-semibold">7. DISPUTE RESOLUTION</h2>
               <p className="mt-2">
@@ -201,6 +207,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 8. TERM AND TERMINATION */}
             <div>
               <h2 className="font-semibold">8. TERM AND TERMINATION</h2>
               <p className="mt-2">
@@ -227,6 +234,7 @@ export function ReceiptingAgreementStep({
               </p>
             </div>
 
+            {/* 9. MISCELLANEOUS */}
             <div>
               <h2 className="font-semibold">9. MISCELLANEOUS</h2>
               <p className="mt-2">
@@ -250,6 +258,18 @@ export function ReceiptingAgreementStep({
                 <strong>Amendments:</strong> Any modifications to this Agreement
                 must be in writing and signed by authorized representatives of
                 both Parties.
+              </p>
+              {/* NEW ASSIGNMENT CLAUSE */}
+              <p>
+                <strong>Assignment:</strong> Neither Party may assign or
+                transfer this Agreement, in whole or in part, without the prior
+                written consent of the other Party; however, DigiDov may assign
+                or transfer this Agreement in the event of a merger,
+                acquisition, corporate reorganization, or sale of all or
+                substantially all of its assets. In such an event, the assigning
+                party shall provide written notice to the other party. This
+                Agreement shall be binding on and inure to the benefit of the
+                Parties and their respective successors and permitted assigns.
               </p>
             </div>
 
