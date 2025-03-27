@@ -34,9 +34,9 @@ export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
         <div className="border border-neutral-700 rounded-md p-4 text-sm flex gap-2 items-start">
           <Info className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <p>
-            DigiDov will receive a 3% fee from each donation, covering
-            operational costs and ensuring service quality. By continuing, you
-            confirm that you have read and consent to these terms.
+            DigiDov charges a 3% fee on each donation to cover operational costs
+            and maintain service quality. By continuing, you confirm that you
+            have read and agree to these terms.
           </p>
         </div>
 
