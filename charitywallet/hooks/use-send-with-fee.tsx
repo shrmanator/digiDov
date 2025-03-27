@@ -12,28 +12,33 @@ export function useSendWithFee(
 ) {
   const activeChain = useActiveWalletChain();
 
+  // USD1 Token Contract Address on Ethereum Mainnet
+  const USD1_CONTRACT_ADDRESS = "";
+
   // Retrieve the fee-enabled contract instance based on the active chain.
   const feeContract = useMemo(() => {
     if (!activeChain) return null;
 
     let contractAddress = "";
-    // Check the chain ID: 1 for Ethereum, 137 for Polygon.
+    // Check the chain ID: 1 for Ethereum Mainnet.
     if (activeChain.id === 1) {
-      // Ethereum mainnet
-      contractAddress = "0x27fEde2dC50C03EF8C90Bf1Aa9Cf69A3D181c9DF";
-    } else if (activeChain.id === 137) {
-      // Polygon mainnet
-      contractAddress = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
+      // Ethereum mainnet fee deduction contract
+      contractAddress = "0x52d3d75f268c24b101631d425c9c94c32aa00688";
     } else {
       console.error("Unsupported chain:", activeChain.id);
       return null;
     }
 
-    return getContract({
-      address: contractAddress,
-      chain: activeChain,
-      client,
-    });
+    try {
+      return getContract({
+        address: contractAddress,
+        chain: activeChain,
+        client,
+      });
+    } catch (error) {
+      console.error("getContract validation error:", error);
+      return null;
+    }
   }, [activeChain]);
 
   const {
@@ -50,9 +55,9 @@ export function useSendWithFee(
 
     const transaction = prepareContractCall({
       contract: feeContract,
-      method: "function sendWithFee(address recipient) payable",
-      params: [recipientAddress],
-      value: donationValue,
+      method:
+        "function sendWithFeeToken(uint256 donationAmount, address recipient, address tokenAddress)",
+      params: [donationValue, recipientAddress, USD1_CONTRACT_ADDRESS],
     });
 
     sendTx(transaction, {
