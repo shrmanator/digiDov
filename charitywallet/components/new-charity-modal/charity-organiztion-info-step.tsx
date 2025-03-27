@@ -59,7 +59,6 @@ export function CharityOrganizationInfoStep({
           <Input
             id="charity_name"
             name="charity_name"
-            placeholder="Registered Org. Name"
             value={formData.charity_name}
             onChange={handleChange}
             required
@@ -77,7 +76,6 @@ export function CharityOrganizationInfoStep({
                   }
                 : null,
               onChange: (option) => onAddressChange(option?.label || ""),
-              placeholder: "Registered Address",
               styles: googlePlacesStyles,
             }}
             autocompletionRequest={{

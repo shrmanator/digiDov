@@ -34,7 +34,7 @@ export function ReceiptingAgreementStep({
     <>
       <DialogHeader>
         <div className="flex items-center">
-          <DialogTitle>Third-Party Receipting Agreement</DialogTitle>
+          <DialogTitle>Agreement</DialogTitle>
         </div>
         <DialogDescription>
           Please review the following terms.
@@ -55,8 +55,8 @@ export function ReceiptingAgreementStep({
                   (&ldquo;the Charity&rdquo;) and{" "}
                   <span className="bg-primary/10 px-1 rounded">Digidov</span>{" "}
                   (&ldquo;the Platform Provider&rdquo;). The Charity agrees to
-                  use the Platform Provider’s services to facilitate the secure
-                  issuance and management of donation receipts.
+                  use the Platform Provider&apos;s services to facilitate the
+                  secure issuance and management of donation receipts.
                 </p>
               </div>
             </div>
