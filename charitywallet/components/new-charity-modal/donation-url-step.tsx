@@ -55,7 +55,7 @@ export function DonationUrlStep({
         <DialogDescription>
           This is your unique donation link for receiving crypto donations. You
           can copy and share it anywhere—on flyers, your website, social media,
-          etc.—to invite donors to support you.
+          etc.—for donors to support you.
           <br />
           <br />
         </DialogDescription>
