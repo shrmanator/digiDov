@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import "@/lib/moralis";
 import DashboardFooter from "./footer";
 
 export default async function DashboardLayout({
@@ -8,8 +7,8 @@ export default async function DashboardLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="w-full">
-      <main className="w-full flex-1">{children}</main>
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1 overflow-hidden">{children}</main>
       <DashboardFooter />
     </div>
   );

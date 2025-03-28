@@ -104,7 +104,6 @@ export default async function Overview() {
       <AppSidebar />
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          {/* Header with same style as the Audit tab */}
           <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
@@ -178,9 +177,7 @@ export default async function Overview() {
                 )}
               </TabsContent>
               <TabsContent value="analytics">
-                <ScrollArea className="h-[calc(98vh-250px)]">
-                  <AnalyticsCharts chartData={chartData} />
-                </ScrollArea>
+                <AnalyticsCharts chartData={chartData} />
               </TabsContent>
             </Tabs>
           </div>

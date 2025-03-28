@@ -255,18 +255,17 @@ export default function DonationHistory({
 
   return (
     <Card className="border-0 shadow-none bg-transparent">
-      <div className="h-[60vh] overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="space-y-4 pr-4">
-            {sortedDonations.map((donation) => (
-              <DonationCard
-                key={donation.transactionHash}
-                donation={donation}
-                receipt={receiptMap.get(donation.transactionHash)}
-              />
-            ))}
-          </div>
-        </ScrollArea>
+      {/* Use a calculated height and overflow-auto, just like in the audit component */}
+      <div className="h-[calc(98vh-310px)] overflow-auto">
+        <div className="space-y-4 pr-4">
+          {sortedDonations.map((donation) => (
+            <DonationCard
+              key={donation.transactionHash}
+              donation={donation}
+              receipt={receiptMap.get(donation.transactionHash)}
+            />
+          ))}
+        </div>
       </div>
     </Card>
   );
