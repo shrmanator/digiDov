@@ -12,18 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import {
-  AccountProvider,
-  AccountBalance,
-  useActiveAccount,
-  useSendTransaction,
-} from "thirdweb/react";
+import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { getWalletBalance } from "thirdweb/wallets";
 import { prepareTransaction, toWei } from "thirdweb";
 import { polygon, sepolia } from "thirdweb/chains";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
-import { ArrowUpRight, AlertCircle, CheckCircle, BellRing } from "lucide-react";
+import { ArrowUpRight, BellRing, AlertCircle, CheckCircle } from "lucide-react";
 
 interface SendingFundsModalProps {
   user: { walletAddress: string };
@@ -31,20 +25,24 @@ interface SendingFundsModalProps {
 
 export function SendingFundsModal({ user }: SendingFundsModalProps) {
   const [open, setOpen] = useState(false);
-  const [progress, setProgress] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
   const {
     register,
     handleSubmit,
-    reset,
-    setValue,
     formState: { errors },
+    setValue,
+    reset,
   } = useForm();
   const activeAccount = useActiveAccount();
-  const { mutate: sendTx, data, isPending, error } = useSendTransaction();
+
+  const {
+    mutate: sendTx,
+    data,
+    isPending,
+    error,
+    isSuccess,
+  } = useSendTransaction();
 
   // Fetch wallet balance
   useEffect(() => {
@@ -64,14 +62,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     fetchBalance();
   }, [user.walletAddress]);
 
-  // Cleanup any pending timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimeout) clearTimeout(closeTimeout);
-    };
-  }, [closeTimeout]);
-
-  // Set amount based on percentage. For Max (100%), subtract a small gas buffer.
+  // Helper to set amount based on percentage
   const handleSetPercentage = useCallback(
     (percentage: number) => {
       if (walletBalance === null) return;
@@ -85,13 +76,12 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     [walletBalance, setValue]
   );
 
-  const onSubmit = async (formData: FieldValues) => {
+  // Submit form
+  const onSubmit = (formData: FieldValues) => {
     if (!activeAccount) return;
-    setProgress(true);
-    setSuccess(false);
 
     const tx = prepareTransaction({
-      to: formData.withdrawalAddress,
+      to: formData.recipientAddress,
       value: toWei(formData.amount),
       chain: polygon,
       client: thirdwebClient,
@@ -99,129 +89,112 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
 
     sendTx(tx, {
       onSuccess: () => {
-        setProgress(false);
-        setSuccess(true);
         reset();
-        const timeout = setTimeout(() => {
-          setOpen(false);
-          setSuccess(false);
-        }, 10000);
-        setCloseTimeout(timeout);
       },
-      onError: () => {
-        setProgress(false);
-        setSuccess(false);
-      },
-      onSettled: () => setProgress(false),
     });
   };
 
-  const handleDialogChange = (nextOpen: boolean) => {
-    if (progress && !nextOpen) return;
-    if (closeTimeout && !nextOpen) {
-      clearTimeout(closeTimeout);
-      setCloseTimeout(null);
-    }
-    setOpen(nextOpen);
-    if (!nextOpen) setSuccess(false);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleDialogChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <ArrowUpRight size={16} /> Withdraw
+        <Button variant="outline" className="flex items-center gap-1">
+          <ArrowUpRight size={16} />
+          Withdraw
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-sm bg-neutral-900 text-white p-4 rounded-lg border border-neutral-800 shadow-xl">
+      <DialogContent
+        className="bg-neutral-900 text-white p-4 rounded-lg border border-neutral-800 shadow-xl"
+        style={{ width: "clamp(320px, 90vw, 480px)" }}
+      >
         <DialogHeader>
-          <DialogTitle className="text-base">Withdraw Funds</DialogTitle>
+          <DialogTitle className="text-base font-medium">
+            Withdraw Funds
+          </DialogTitle>
           <DialogDescription className="text-xs text-neutral-400">
-            Transfer to another wallet
+            Transfer crypto to another wallet
           </DialogDescription>
         </DialogHeader>
 
-        <Alert
-          variant="default"
-          className="mb-2 border-l-2 border-amber-400 bg-neutral-800 p-2"
-        >
+        {/* IMPORTANT NOTE (pinned banner) */}
+        <div className="my-2 border-l-2 border-amber-400 bg-neutral-800 p-2 rounded">
           <div className="flex items-start gap-2">
-            <BellRing className="mt-[2px]" size={14} />
-            <div>
-              <AlertTitle className="text-sm font-semibold">
-                Crypto-to-Bank Transfers Soon!
-              </AlertTitle>
-              <AlertDescription className="text-xs mt-1 text-neutral-300">
-                Until then, use Coinbase to move funds to your bank. Canadians:
-                Coinbase's e-Transfer is recommended.
-              </AlertDescription>
+            <BellRing size={14} className="text-amber-400 mt-0.5" />
+            <div className="text-xs text-neutral-300 leading-tight">
+              <p className="text-sm font-semibold text-amber-200">
+                Bank Transfers Coming Soon
+              </p>
+              <p className="mt-1">
+                Until then, use Coinbase to move crypto to your bank.
+              </p>
             </div>
           </div>
-        </Alert>
+        </div>
 
-        <div className="mb-2 p-2 bg-neutral-800 rounded">
-          <AccountProvider address={user.walletAddress} client={thirdwebClient}>
-            <p className="text-xs text-neutral-400 mb-1">Balance</p>
-            <AccountBalance
-              chain={sepolia}
-              className="text-base font-semibold"
-              loadingComponent={
-                <span className="animate-pulse">Loading...</span>
-              }
-            />
-          </AccountProvider>
+        {/* Your Balance */}
+        <div className="mb-2">
+          <label className="block text-xs text-neutral-500 mb-1">
+            Your Balance (ETH)
+          </label>
+          <div className="bg-neutral-800 p-2 rounded font-semibold text-base">
+            {walletBalance !== null ? walletBalance.toFixed(4) : "Loading..."}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          {/* Recipient Address */}
           <div>
-            <label className="block text-xs font-medium mb-1">Address</label>
+            <label className="block text-xs font-medium mb-1">
+              Recipient Wallet Address
+            </label>
             <Input
-              {...register("withdrawalAddress", {
-                required: "Required",
+              {...register("recipientAddress", {
+                required: "Recipient address is required",
                 pattern: {
                   value: /^0x[a-fA-F0-9]{40}$/,
-                  message: "Invalid address",
+                  message: "Invalid address (0x + 40 hex chars)",
                 },
               })}
               placeholder="0x..."
-              disabled={success}
+              disabled={isSuccess}
               className="bg-neutral-800 border-neutral-700 text-xs font-mono"
             />
-            {errors.withdrawalAddress && (
-              <p className="flex items-center gap-1 text-xs text-red-400 mt-1">
+            {errors.recipientAddress && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-400">
                 <AlertCircle size={12} />
-                {errors.withdrawalAddress.message as string}
+                {errors.recipientAddress.message as string}
               </p>
             )}
           </div>
 
+          {/* Amount */}
           <div>
             <label className="block text-xs font-medium mb-1">
-              Amount (ETH)
+              Amount to Send (ETH)
             </label>
             <Input
               {...register("amount", {
-                required: "Required",
+                required: "Amount is required",
                 pattern: {
                   value: /^[0-9]*[.,]?[0-9]+$/,
-                  message: "Invalid number",
+                  message: "Invalid number format",
                 },
               })}
-              placeholder="0.0"
+              placeholder="0.00"
               type="text"
               inputMode="decimal"
-              disabled={success}
+              disabled={isSuccess}
               className="bg-neutral-800 border-neutral-700 text-xs font-mono"
             />
             {errors.amount && (
-              <p className="flex items-center gap-1 text-xs text-red-400 mt-1">
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-400">
                 <AlertCircle size={12} />
                 {errors.amount.message as string}
               </p>
             )}
 
-            <div className="flex gap-1 mt-2">
+            {/* Percentage Buttons */}
+            <div className="flex gap-2 mt-2">
               {[
                 { label: "25%", value: 25 },
                 { label: "50%", value: 50 },
@@ -242,9 +215,10 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
             </div>
           </div>
 
+          {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isPending || success}
+            disabled={isPending || isSuccess}
             className="w-full bg-purple-600 hover:bg-purple-700 text-sm transition-colors"
           >
             {isPending ? (
@@ -252,7 +226,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
                 <span className="h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
                 Processing
               </span>
-            ) : success ? (
+            ) : isSuccess ? (
               <span className="flex items-center gap-2">
                 <CheckCircle size={14} className="text-emerald-400" />
                 Done
@@ -263,14 +237,17 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </Button>
         </form>
 
-        {data && success && (
+        {/* Success or Error Messages */}
+        {isSuccess && data && (
           <div className="mt-2 p-2 bg-neutral-800 border border-neutral-700 rounded text-xs">
             <div className="flex items-center gap-1 text-emerald-400">
               <CheckCircle size={14} />
-              Transaction submitted
+              Transaction Submitted
             </div>
             <p className="mt-1 font-mono break-all">{data.transactionHash}</p>
-            <p className="text-neutral-400 mt-1">Closing in 10s...</p>
+            <p className="text-neutral-400 mt-1">
+              You can close this dialog at any time.
+            </p>
           </div>
         )}
 
