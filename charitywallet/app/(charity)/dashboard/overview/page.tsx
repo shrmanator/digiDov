@@ -162,7 +162,7 @@ export default async function Overview() {
                   </CardDescription>
                 </CardHeader>
                 {isCharityComplete ? (
-                  <div className="w-full">
+                  <div className="h-[calc(98vh-250px)] overflow-auto">
                     <TransactionHistory
                       donations={donations}
                       receipts={receipts}
@@ -176,6 +176,7 @@ export default async function Overview() {
                   </div>
                 )}
               </TabsContent>
+
               <TabsContent value="analytics">
                 <AnalyticsCharts chartData={chartData} />
               </TabsContent>

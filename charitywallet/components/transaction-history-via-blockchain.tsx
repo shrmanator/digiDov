@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -109,7 +108,6 @@ function DonationCard({
   const getRelativeTime = (timestamp: number): string => {
     const now = Date.now();
     const diff = now - timestamp;
-
     const minute = 60 * 1000;
     const hour = minute * 60;
     const day = hour * 24;
@@ -255,7 +253,7 @@ export default function DonationHistory({
 
   return (
     <Card className="border-0 shadow-none bg-transparent">
-      {/* Use a calculated height and overflow-auto, just like in the audit component */}
+      {/* Reserve a calculated height for scrolling, similar to the audit component */}
       <div className="h-[calc(98vh-310px)] overflow-auto">
         <div className="space-y-4 pr-4">
           {sortedDonations.map((donation) => (
