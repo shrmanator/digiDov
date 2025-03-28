@@ -30,14 +30,12 @@ interface SendingFundsModalProps {
 }
 
 export function SendingFundsModal({ user }: SendingFundsModalProps) {
-  // State
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
-  // Form
   const {
     register,
     handleSubmit,
@@ -45,12 +43,10 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     setValue,
     formState: { errors },
   } = useForm();
-
-  // Thirdweb
   const activeAccount = useActiveAccount();
   const { mutate: sendTx, data, isPending, error } = useSendTransaction();
 
-  // Fetch balance
+  // Fetch wallet balance
   useEffect(() => {
     async function fetchBalance() {
       if (!user.walletAddress) return;
@@ -60,8 +56,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           client: thirdwebClient,
           chain: sepolia,
         });
-        const balance = parseFloat(balanceResponse.displayValue || "0");
-        setWalletBalance(balance);
+        setWalletBalance(parseFloat(balanceResponse.displayValue || "0"));
       } catch (err) {
         console.error("Error fetching balance:", err);
       }
@@ -69,27 +64,29 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     fetchBalance();
   }, [user.walletAddress]);
 
-  // Cleanup
+  // Cleanup any pending timeout on unmount
   useEffect(() => {
     return () => {
       if (closeTimeout) clearTimeout(closeTimeout);
     };
   }, [closeTimeout]);
 
-  // Percentage setter
+  // Set amount based on percentage. For Max (100%), subtract a small gas buffer.
   const handleSetPercentage = useCallback(
     (percentage: number) => {
       if (walletBalance === null) return;
-      const computedAmount = (walletBalance * percentage) / 100;
+      const gasBuffer = percentage === 100 ? 0.001 : 0;
+      const computedAmount = Math.max(
+        0,
+        (walletBalance * percentage) / 100 - gasBuffer
+      );
       setValue("amount", computedAmount.toString());
     },
     [walletBalance, setValue]
   );
 
-  // Submit handler
   const onSubmit = async (formData: FieldValues) => {
     if (!activeAccount) return;
-
     setProgress(true);
     setSuccess(false);
 
@@ -115,13 +112,10 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
         setProgress(false);
         setSuccess(false);
       },
-      onSettled: () => {
-        setProgress(false);
-      },
+      onSettled: () => setProgress(false),
     });
   };
 
-  // Dialog open/close
   const handleDialogChange = (nextOpen: boolean) => {
     if (progress && !nextOpen) return;
     if (closeTimeout && !nextOpen) {
@@ -148,7 +142,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Announcement */}
         <Alert
           variant="default"
           className="mb-2 border-l-2 border-amber-400 bg-neutral-800 p-2"
@@ -160,13 +153,13 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
                 Crypto-to-Bank Transfers Soon!
               </AlertTitle>
               <AlertDescription className="text-xs mt-1 text-neutral-300">
-                Until then, use Coinbase to move funds to your bank.
+                Until then, use Coinbase to move funds to your bank. Canadians:
+                Coinbase's e-Transfer is recommended.
               </AlertDescription>
             </div>
           </div>
         </Alert>
 
-        {/* Balance */}
         <div className="mb-2 p-2 bg-neutral-800 rounded">
           <AccountProvider address={user.walletAddress} client={thirdwebClient}>
             <p className="text-xs text-neutral-400 mb-1">Balance</p>
@@ -180,13 +173,9 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </AccountProvider>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-          {/* Address */}
           <div>
-            <label className="block text-xs font-medium mb-1">
-              Recipient Wallet Address
-            </label>
+            <label className="block text-xs font-medium mb-1">Address</label>
             <Input
               {...register("withdrawalAddress", {
                 required: "Required",
@@ -207,7 +196,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
             )}
           </div>
 
-          {/* Amount */}
           <div>
             <label className="block text-xs font-medium mb-1">
               Amount (ETH)
@@ -233,7 +221,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
               </p>
             )}
 
-            {/* Percentage Buttons */}
             <div className="flex gap-1 mt-2">
               {[
                 { label: "25%", value: 25 },
@@ -255,7 +242,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
             </div>
           </div>
 
-          {/* Submit */}
           <Button
             type="submit"
             disabled={isPending || success}
@@ -277,7 +263,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </Button>
         </form>
 
-        {/* Transaction Success */}
         {data && success && (
           <div className="mt-2 p-2 bg-neutral-800 border border-neutral-700 rounded text-xs">
             <div className="flex items-center gap-1 text-emerald-400">
@@ -289,7 +274,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </div>
         )}
 
-        {/* Transaction Error */}
         {error && (
           <div className="mt-2 p-2 bg-red-900/20 border border-red-400 rounded text-xs text-red-100">
             <p className="font-medium">Transaction failed</p>
