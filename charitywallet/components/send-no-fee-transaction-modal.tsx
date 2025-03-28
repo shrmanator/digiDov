@@ -1,256 +1,301 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, useCallback } from "react";
+import { useForm, FieldValues } from "react-hook-form";
 import {
   Dialog,
+  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
-  AccountBalance,
   AccountProvider,
+  AccountBalance,
   useActiveAccount,
   useSendTransaction,
 } from "thirdweb/react";
-import { polygon, sepolia } from "thirdweb/chains";
+import { getWalletBalance } from "thirdweb/wallets";
 import { prepareTransaction, toWei } from "thirdweb";
+import { polygon, sepolia } from "thirdweb/chains";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
-import { ArrowUpRight, AlertCircle, CheckCircle } from "lucide-react";
+import { ArrowUpRight, AlertCircle, CheckCircle, BellRing } from "lucide-react";
 
-export interface SendingFundsModalProps {
+interface SendingFundsModalProps {
   user: { walletAddress: string };
 }
 
-interface FormData {
-  withdrawalAddress: string;
-  amount: string;
-}
-
 export function SendingFundsModal({ user }: SendingFundsModalProps) {
+  // State
   const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  // Form
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm();
 
-  // Get the active account using thirdweb's hook
+  // Thirdweb
   const activeAccount = useActiveAccount();
+  const { mutate: sendTx, data, isPending, error } = useSendTransaction();
 
-  // Get the send transaction mutation hook
-  const {
-    mutate: sendTx,
-    data: transactionResult,
-    isPending,
-    error,
-  } = useSendTransaction();
+  // Fetch balance
+  useEffect(() => {
+    async function fetchBalance() {
+      if (!user.walletAddress) return;
+      try {
+        const balanceResponse = await getWalletBalance({
+          address: user.walletAddress,
+          client: thirdwebClient,
+          chain: sepolia,
+        });
+        const balance = parseFloat(balanceResponse.displayValue || "0");
+        setWalletBalance(balance);
+      } catch (err) {
+        console.error("Error fetching balance:", err);
+      }
+    }
+    fetchBalance();
+  }, [user.walletAddress]);
 
-  const [isTransactionInProgress, setIsTransactionInProgress] = useState(false);
-  const [transactionSuccess, setTransactionSuccess] = useState(false);
-  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // Clean up timeout on component unmount
+  // Cleanup
   useEffect(() => {
     return () => {
-      if (closeTimeout) {
-        clearTimeout(closeTimeout);
-      }
+      if (closeTimeout) clearTimeout(closeTimeout);
     };
   }, [closeTimeout]);
 
-  const onSubmit = (data: FormData) => {
-    if (!activeAccount) {
-      console.error("No wallet connected.");
-      return;
-    }
+  // Percentage setter
+  const handleSetPercentage = useCallback(
+    (percentage: number) => {
+      if (walletBalance === null) return;
+      const computedAmount = (walletBalance * percentage) / 100;
+      setValue("amount", computedAmount.toString());
+    },
+    [walletBalance, setValue]
+  );
 
-    setIsTransactionInProgress(true);
-    setTransactionSuccess(false);
+  // Submit handler
+  const onSubmit = async (formData: FieldValues) => {
+    if (!activeAccount) return;
 
-    // Prepare the transaction using thirdweb utilities:
-    const transaction = prepareTransaction({
-      to: data.withdrawalAddress,
-      value: toWei(data.amount), // converts ETH amount (as string) to Wei
+    setProgress(true);
+    setSuccess(false);
+
+    const tx = prepareTransaction({
+      to: formData.withdrawalAddress,
+      value: toWei(formData.amount),
       chain: polygon,
       client: thirdwebClient,
     });
 
-    // Trigger the transaction
-    sendTx(transaction, {
+    sendTx(tx, {
       onSuccess: () => {
-        setIsTransactionInProgress(false);
-        setTransactionSuccess(true);
+        setProgress(false);
+        setSuccess(true);
         reset();
-
-        // Set a timeout to close the modal after 10 seconds
         const timeout = setTimeout(() => {
           setOpen(false);
-          setTransactionSuccess(false);
+          setSuccess(false);
         }, 10000);
-
         setCloseTimeout(timeout);
       },
       onError: () => {
-        setIsTransactionInProgress(false);
-        setTransactionSuccess(false);
+        setProgress(false);
+        setSuccess(false);
       },
       onSettled: () => {
-        setIsTransactionInProgress(false);
+        setProgress(false);
       },
     });
   };
 
-  // Handle manual dialog close
-  const handleDialogChange = (newOpen: boolean) => {
-    // Only allow closing if no transaction is in progress
-    if (isTransactionInProgress && newOpen === false) {
-      return;
-    }
-
-    // Clear any pending timeouts when manually closing
-    if (closeTimeout && !newOpen) {
+  // Dialog open/close
+  const handleDialogChange = (nextOpen: boolean) => {
+    if (progress && !nextOpen) return;
+    if (closeTimeout && !nextOpen) {
       clearTimeout(closeTimeout);
       setCloseTimeout(null);
     }
-
-    setOpen(newOpen);
-
-    // Reset transaction success state when closing
-    if (!newOpen) {
-      setTransactionSuccess(false);
-    }
+    setOpen(nextOpen);
+    if (!nextOpen) setSuccess(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
-          <ArrowUpRight size={16} />
-          <span>Withdraw Funds</span>
+          <ArrowUpRight size={16} /> Withdraw
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+
+      <DialogContent className="sm:max-w-sm bg-neutral-900 text-white p-4 rounded-lg border border-neutral-800 shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Withdraw Funds
-          </DialogTitle>
-          <DialogDescription>
-            Withdraw funds to another wallet address.
+          <DialogTitle className="text-base">Withdraw Funds</DialogTitle>
+          <DialogDescription className="text-xs text-neutral-400">
+            Transfer to another wallet
           </DialogDescription>
         </DialogHeader>
 
-        <div className="my-4 p-4 bg-muted rounded-md">
-          <AccountProvider address={user.walletAddress} client={thirdwebClient}>
-            <div className="text-sm text-muted-foreground mb-1">
-              Available Balance
+        {/* Announcement */}
+        <Alert
+          variant="default"
+          className="mb-2 border-l-2 border-amber-400 bg-neutral-800 p-2"
+        >
+          <div className="flex items-start gap-2">
+            <BellRing className="mt-[2px]" size={14} />
+            <div>
+              <AlertTitle className="text-sm font-semibold">
+                Crypto-to-Bank Transfers Soon!
+              </AlertTitle>
+              <AlertDescription className="text-xs mt-1 text-neutral-300">
+                Until then, use Coinbase to move funds to your bank.
+              </AlertDescription>
             </div>
+          </div>
+        </Alert>
+
+        {/* Balance */}
+        <div className="mb-2 p-2 bg-neutral-800 rounded">
+          <AccountProvider address={user.walletAddress} client={thirdwebClient}>
+            <p className="text-xs text-neutral-400 mb-1">Balance</p>
             <AccountBalance
               chain={sepolia}
-              className="text-lg font-semibold"
+              className="text-base font-semibold"
               loadingComponent={
-                <span className="animate-pulse">Loading balance...</span>
+                <span className="animate-pulse">Loading...</span>
               }
             />
           </AccountProvider>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Withdrawal Address</label>
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          {/* Address */}
+          <div>
+            <label className="block text-xs font-medium mb-1">
+              Recipient Wallet Address
+            </label>
             <Input
               {...register("withdrawalAddress", {
-                required: "Withdrawal address is required",
+                required: "Required",
                 pattern: {
                   value: /^0x[a-fA-F0-9]{40}$/,
-                  message: "Please enter a valid Ethereum address",
+                  message: "Invalid address",
                 },
               })}
               placeholder="0x..."
-              className="font-mono text-sm"
-              disabled={transactionSuccess}
+              disabled={success}
+              className="bg-neutral-800 border-neutral-700 text-xs font-mono"
             />
             {errors.withdrawalAddress && (
-              <div className="flex items-center gap-1 text-xs text-red-500">
+              <p className="flex items-center gap-1 text-xs text-red-400 mt-1">
                 <AlertCircle size={12} />
-                <span>{errors.withdrawalAddress.message}</span>
-              </div>
+                {errors.withdrawalAddress.message as string}
+              </p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Amount (ETH)</label>
+          {/* Amount */}
+          <div>
+            <label className="block text-xs font-medium mb-1">
+              Amount (ETH)
+            </label>
             <Input
               {...register("amount", {
-                required: "Amount is required",
+                required: "Required",
                 pattern: {
                   value: /^[0-9]*[.,]?[0-9]+$/,
-                  message: "Please enter a valid number",
+                  message: "Invalid number",
                 },
               })}
               placeholder="0.0"
               type="text"
               inputMode="decimal"
-              disabled={transactionSuccess}
+              disabled={success}
+              className="bg-neutral-800 border-neutral-700 text-xs font-mono"
             />
             {errors.amount && (
-              <div className="flex items-center gap-1 text-xs text-red-500">
+              <p className="flex items-center gap-1 text-xs text-red-400 mt-1">
                 <AlertCircle size={12} />
-                <span>{errors.amount.message}</span>
-              </div>
+                {errors.amount.message as string}
+              </p>
             )}
+
+            {/* Percentage Buttons */}
+            <div className="flex gap-1 mt-2">
+              {[
+                { label: "25%", value: 25 },
+                { label: "50%", value: 50 },
+                { label: "75%", value: 75 },
+                { label: "Max", value: 100 },
+              ].map((btn) => (
+                <Button
+                  key={btn.label}
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleSetPercentage(btn.value)}
+                  className="px-2"
+                >
+                  {btn.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
+          {/* Submit */}
           <Button
             type="submit"
-            disabled={isPending || transactionSuccess}
-            className="w-full"
+            disabled={isPending || success}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-sm transition-colors"
           >
             {isPending ? (
               <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></span>
-                Processing...
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
+                Processing
               </span>
-            ) : transactionSuccess ? (
+            ) : success ? (
               <span className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-primary" />
-                Transaction Successful
+                <CheckCircle size={14} className="text-emerald-400" />
+                Done
               </span>
             ) : (
-              "Withdraw Funds"
+              "Withdraw"
             )}
           </Button>
-
-          {transactionResult && transactionSuccess && (
-            <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-md text-sm">
-              <div className="flex items-center gap-2 text-primary">
-                <CheckCircle size={16} />
-                <p className="font-medium">
-                  Transaction submitted successfully!
-                </p>
-              </div>
-              <p className="mt-2 text-xs font-mono break-all text-foreground">
-                Hash: {transactionResult.transactionHash}
-              </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                This dialog will close automatically in 10 seconds...
-              </p>
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-3 bg-destructive/10 border rounded text-destructive text-sm">
-              <p className="font-medium">Transaction failed</p>
-              <p className="mt-1 text-xs">{error.message}</p>
-            </div>
-          )}
         </form>
+
+        {/* Transaction Success */}
+        {data && success && (
+          <div className="mt-2 p-2 bg-neutral-800 border border-neutral-700 rounded text-xs">
+            <div className="flex items-center gap-1 text-emerald-400">
+              <CheckCircle size={14} />
+              Transaction submitted
+            </div>
+            <p className="mt-1 font-mono break-all">{data.transactionHash}</p>
+            <p className="text-neutral-400 mt-1">Closing in 10s...</p>
+          </div>
+        )}
+
+        {/* Transaction Error */}
+        {error && (
+          <div className="mt-2 p-2 bg-red-900/20 border border-red-400 rounded text-xs text-red-100">
+            <p className="font-medium">Transaction failed</p>
+            <p className="mt-1">{error.message}</p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
