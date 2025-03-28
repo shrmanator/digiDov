@@ -136,7 +136,7 @@ export default async function Overview() {
           </header>
 
           {/* Main content area */}
-          <div className="px-4 py-6 flex-1">
+          <div className="pl-4 pr-0 py-6 flex-1">
             <h2 className="text-2xl font-bold mb-6">Overview</h2>
             <Tabs defaultValue="transactions" className="w-full">
               <TabsList className="mb-4 w-full sm:w-auto">
