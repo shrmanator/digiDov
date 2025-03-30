@@ -33,7 +33,6 @@ import CombinedWalletBalance, {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getDonationLink } from "@/utils/get-donation-link";
 
