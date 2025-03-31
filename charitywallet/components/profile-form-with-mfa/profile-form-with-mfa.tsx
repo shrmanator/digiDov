@@ -22,20 +22,16 @@ interface ProfileWithMfaProps {
 
 export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
   const [isVerified, setIsVerified] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [pendingData, setPendingData] = useState<any>(null);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
 
-  // Handle form submission through MFA flow.
   const handleFormSubmit = async (formData: any) => {
     if (!isVerified) {
       setPendingData(formData);
-      setLoading(true);
       setError("");
 
-      // Show a loading toast with the email address.
       toast({
         title: `Sending OTP to ${
           charity.contact_email || "your-email@example.com"
@@ -65,8 +61,6 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
           description: err.message,
           variant: "destructive",
         });
-      } finally {
-        setLoading(false);
       }
     } else {
       await updateProfile(formData);
