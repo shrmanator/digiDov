@@ -56,6 +56,12 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.8
         version: 1.1.8(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@stytch/nextjs':
+        specifier: ^21.4.2
+        version: 21.4.2(@stytch/vanilla-js@5.20.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@stytch/vanilla-js':
+        specifier: ^5.20.1
+        version: 5.20.1
       '@supabase/supabase-js':
         specifier: ^2.48.1
         version: 2.48.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -134,6 +140,9 @@ importers:
       speakeasy:
         specifier: ^2.0.0
         version: 2.0.0
+      stytch:
+        specifier: ^12.12.0
+        version: 12.12.0
       swr:
         specifier: ^2.3.2
         version: 2.3.2(react@19.0.0)
@@ -1583,6 +1592,19 @@ packages:
   '@stablelib/x25519@1.0.3':
     resolution: {integrity: sha512-KnTbKmUhPhHavzobclVJQG5kuivH+qDLpe84iRqX3CLrKp881cF160JvXJ+hjn1aMyCwYOKeIZefIH/P5cJoRw==}
 
+  '@stytch/core@2.45.1':
+    resolution: {integrity: sha512-zK20pPNTOiOLVdcFPmnkoLSIcu4+fMlAiMspz8XxG8CEnE/7YBNp57njYUJcfcLC7/qb5znAYVg+mu1KCHoyUw==}
+
+  '@stytch/nextjs@21.4.2':
+    resolution: {integrity: sha512-7h8z1KWeKdZb5xVk3ydpjXWrf9S8GeaQcc9Fk/HxyQ4rUdiQ0Lewyn9yAxzNJjoIYHnVkYSmIMVTfjWcE4xwoQ==}
+    peerDependencies:
+      '@stytch/vanilla-js': ^5.0.0
+      react: '>= 17.0.2'
+      react-dom: '>= 17.0.2'
+
+  '@stytch/vanilla-js@5.20.1':
+    resolution: {integrity: sha512-llYj4cpDCGxd0Zv6gm2VDUJKcE0lGX73LyuBbBN28oUVpS13E0qiuKI6uGiERncHeCnrV/FUDqCd2Xe+UL4ZnQ==}
+
   '@supabase/auth-js@2.67.3':
     resolution: {integrity: sha512-NJDaW8yXs49xMvWVOkSIr8j46jf+tYHV0wHhrwOaLLMZSFO4g6kKAf+MfzQ2RaD06OCUkUHIzctLAxjTgEVpzw==}
 
@@ -1651,6 +1673,9 @@ packages:
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
+
+  '@types/google-one-tap@1.2.6':
+    resolution: {integrity: sha512-REmJsXVHvKb/sgI8DF+7IesMbDbcsEokHBqxU01ENZ8d98UPWdRLhUCtxEm9bhNFFg6PJGy7PNFdvovp0hK3jA==}
 
   '@types/google.maps@3.58.1':
     resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
@@ -3003,6 +3028,9 @@ packages:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
     hasBin: true
 
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
@@ -3923,6 +3951,10 @@ packages:
   stylis@4.2.0:
     resolution: {integrity: sha512-Orov6g6BB1sDfYgzWfTHDOxamtX1bE/zo104Dh9e6fqJ3PooipYyfJ0pUmrZO2wAvO8YbEyeFrkV91XTsGMSrw==}
 
+  stytch@12.12.0:
+    resolution: {integrity: sha512-0DZtV5QI0LPku2zYsr+Xen1vYPDiQBCHvhmczQPpDAWc0zw0k2B1uu0D/jNOsYHUhePCSA6Wa9PlwROOMUUo8w==}
+    engines: {node: '>= 18.0.0'}
+
   sucrase@3.35.0:
     resolution: {integrity: sha512-8EbVDiu9iN/nESwxeSxDKe0dunta1GOlHufmSSXxMD2z2/tMZpDMpvXQGsc+ajGo8y2uYUmixaSRUc/QPoQ0GA==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -4061,6 +4093,10 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
+  type-fest@4.15.0:
+    resolution: {integrity: sha512-tB9lu0pQpX5KJq54g+oHOLumOx+pMep4RaM6liXh2PKmVRFF+/vAtUP0ZaJ0kOySfVNjF6doBWPHhBhISKdlIA==}
+    engines: {node: '>=16'}
+
   typed-array-buffer@1.0.3:
     resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
     engines: {node: '>= 0.4'}
@@ -4097,6 +4133,10 @@ packages:
 
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+
+  undici@6.21.2:
+    resolution: {integrity: sha512-uROZWze0R0itiAKVPsYhFov9LxrPMHLMEQFszeI2gCN6bnIIZ8twzBCJcN2LJrBBLfrP0t1FW0g+JmKVl8Vk1g==}
+    engines: {node: '>=18.17'}
 
   unfetch@4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
@@ -4222,6 +4262,10 @@ packages:
 
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
+
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
 
   valtio@1.11.2:
     resolution: {integrity: sha512-1XfIxnUXzyswPAPXo1P3Pdx2mq/pIqZICkWN60Hby0d9Iqb+MEIpqgYVlbflvHdrp2YR/q3jyKWRPJJ100yxaw==}
@@ -5961,6 +6005,22 @@ snapshots:
       '@stablelib/random': 1.0.2
       '@stablelib/wipe': 1.0.1
 
+  '@stytch/core@2.45.1':
+    dependencies:
+      uuid: 8.3.2
+
+  '@stytch/nextjs@21.4.2(@stytch/vanilla-js@5.20.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@stytch/vanilla-js': 5.20.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@stytch/vanilla-js@5.20.1':
+    dependencies:
+      '@stytch/core': 2.45.1
+      '@types/google-one-tap': 1.2.6
+      type-fest: 4.15.0
+
   '@supabase/auth-js@2.67.3':
     dependencies:
       '@supabase/node-fetch': 2.6.15
@@ -6045,6 +6105,8 @@ snapshots:
   '@types/d3-timer@3.0.2': {}
 
   '@types/estree@1.0.6': {}
+
+  '@types/google-one-tap@1.2.6': {}
 
   '@types/google.maps@3.58.1': {}
 
@@ -7959,6 +8021,8 @@ snapshots:
 
   jiti@1.21.7: {}
 
+  jose@5.10.0: {}
+
   joycon@3.1.1: {}
 
   js-sha3@0.8.0: {}
@@ -8995,6 +9059,11 @@ snapshots:
 
   stylis@4.2.0: {}
 
+  stytch@12.12.0:
+    dependencies:
+      jose: 5.10.0
+      undici: 6.21.2
+
   sucrase@3.35.0:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
@@ -9152,6 +9221,8 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
+  type-fest@4.15.0: {}
+
   typed-array-buffer@1.0.3:
     dependencies:
       call-bound: 1.0.3
@@ -9203,6 +9274,8 @@ snapshots:
   uncrypto@0.1.3: {}
 
   undici-types@6.19.8: {}
+
+  undici@6.21.2: {}
 
   unfetch@4.2.0: {}
 
@@ -9274,6 +9347,8 @@ snapshots:
       is-generator-function: 1.1.0
       is-typed-array: 1.1.15
       which-typed-array: 1.1.18
+
+  uuid@8.3.2: {}
 
   valtio@1.11.2(@types/react@19.0.8)(react@19.0.0):
     dependencies:
