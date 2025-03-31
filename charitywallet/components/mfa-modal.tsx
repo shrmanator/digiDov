@@ -58,7 +58,7 @@ export default function MfaModal({
             Please enter the OTP sent to your email to confirm this action.
           </DialogDescription>
           {email && (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm">
               OTP was sent to <strong>{email}</strong>
             </p>
           )}

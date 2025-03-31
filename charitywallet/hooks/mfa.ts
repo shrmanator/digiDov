@@ -1,10 +1,28 @@
 import { useState } from "react";
 
-interface MfaResponse {
+/**
+ * Interface for MFA API responses.
+ */
+export interface MfaResponse {
   status_code?: number;
   error?: string;
 }
 
+/**
+ * Custom hook for handling MFA (Multi-Factor Authentication).
+ *
+ * Manages:
+ * - **isVerified**: whether the OTP has been verified.
+ * - **loading**: whether an OTP API call is in progress.
+ * - **error**: error message from OTP API calls.
+ *
+ * Provides:
+ * - **sendOtp(email: string)**: Sends an OTP to the given email.
+ * - **verifyOtp(methodId: string, code: string)**: Verifies the OTP for a given method ID.
+ * - **setIsVerified**: Allows manual update of the verification state.
+ *
+ * @returns An object with MFA state and functions.
+ */
 export function useMfa() {
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
