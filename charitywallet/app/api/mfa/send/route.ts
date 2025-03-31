@@ -2,15 +2,20 @@ import { NextResponse } from "next/server";
 import stytchClient from "@/lib/stytchClient";
 
 export async function POST(request: Request) {
-  const { email } = await request.json();
+  console.log("MFA send endpoint hit");
   try {
+    const { email } = await request.json();
+    console.log("Sending OTP to:", email);
     const response = await stytchClient.otps.email.send({
       email,
-      // Optional: expiration_minutes, locale, etc.
     });
-    // Use status_code from the response instead of status.
-    return NextResponse.json({ status: response.status_code });
+    console.log("OTP sent response:", response);
+    return NextResponse.json({
+      status_code: response.status_code,
+      email_id: response.email_id,
+    });
   } catch (error: any) {
+    console.error("Error in /api/mfa/send:", error);
     return NextResponse.json({ error: error.message });
   }
 }

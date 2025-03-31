@@ -16,13 +16,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import ProfileForm from "@/components/profile-form";
 import CombinedWalletBalance, {
   SupportedChain,
 } from "@/components/combine-wallet-balance";
 import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
+import ProfileFormWithMfa from "@/components/profile-form-with-mfa/profile-form-with-mfa";
 
 export default async function Profile() {
   const user = await getAuthenticatedUser();
@@ -83,7 +83,7 @@ export default async function Profile() {
           <div className="px-4 py-6 flex-1 overflow-auto">
             <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
             <div className="bg-card shadow rounded-md p-6">
-              <ProfileForm charity={charity} />
+              <ProfileFormWithMfa charity={charity} />
             </div>
           </div>
         </div>

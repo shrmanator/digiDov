@@ -34,9 +34,14 @@ interface ProfileFormProps {
     contact_mobile_phone?: string | null;
     wallet_address: string;
   };
+  /**
+   * Optional submit handler. If provided, this function will be called with the form data
+   * when the form is submitted.
+   */
+  onSubmit?: (formData: any) => Promise<void> | void;
 }
 
-export default function ProfileForm({ charity }: ProfileFormProps) {
+export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
   const [formData, setFormData] = useState({
     charity_name: charity.charity_name || "",
     registered_address: charity.registered_office_address || "",
@@ -62,13 +67,17 @@ export default function ProfileForm({ charity }: ProfileFormProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      fd.append(key, value);
-    });
     startTransition(async () => {
       try {
-        await updateCharityProfile(fd);
+        if (onSubmit) {
+          await onSubmit(formData);
+        } else {
+          const fd = new FormData();
+          Object.entries(formData).forEach(([key, value]) => {
+            fd.append(key, value);
+          });
+          await updateCharityProfile(fd);
+        }
         toast({
           title: "Success",
           description: "Profile updated successfully.",
@@ -91,23 +100,6 @@ export default function ProfileForm({ charity }: ProfileFormProps) {
         name="wallet_address"
         value={formData.wallet_address}
       />
-
-      {/* <div>
-        <Label
-          htmlFor="charity_name"
-          className="block text-sm font-medium text-foreground"
-        >
-          Charity Name
-        </Label>
-        <Input
-          id="charity_name"
-          name="charity_name"
-          placeholder="Charity Name"
-          value={formData.charity_name}
-          onChange={handleChange}
-          className="mt-1 w-full rounded-md border border-border bg-input p-2 text-foreground"
-        />
-      </div> */}
 
       <div>
         <Label
