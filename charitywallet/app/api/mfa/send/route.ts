@@ -6,8 +6,10 @@ export async function POST(request: Request) {
   try {
     const { email } = await request.json();
     console.log("Sending OTP to:", email);
-    const response = await stytchClient.otps.email.send({
+    // Use loginOrCreate to handle new emails in Live mode
+    const response = await stytchClient.otps.email.loginOrCreate({
       email,
+      // Optional parameters: expiration_minutes, locale, etc.
     });
     console.log("OTP sent response:", response);
     return NextResponse.json({

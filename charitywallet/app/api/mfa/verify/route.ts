@@ -2,16 +2,20 @@ import { NextResponse } from "next/server";
 import stytchClient from "@/lib/stytchClient";
 
 export async function POST(request: Request) {
-  // Expecting that the client sends { method_id, code }
-  const { method_id, code } = await request.json();
   try {
+    const { method_id, code } = await request.json();
+    console.log("Verification request received:", { method_id, code });
+
     const response = await stytchClient.otps.authenticate({
-      method_id, // This should be the email_id you got from sending the OTP
+      method_id, // This should be the email_id from the loginOrCreate response
       code,
-      // Include optional parameters if needed, e.g., session_duration_minutes
+      // Add optional parameters here if needed, e.g., session_duration_minutes
     });
-    return NextResponse.json({ status_code: response.status_code });
+
+    console.log("Stytch OTP authentication response:", response);
+    return NextResponse.json({ status_code: response.status_code, response });
   } catch (error: any) {
+    console.error("Error in /api/mfa/verify:", error);
     return NextResponse.json({ error: error.message });
   }
 }
