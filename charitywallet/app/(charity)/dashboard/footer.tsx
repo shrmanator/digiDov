@@ -20,19 +20,17 @@ export default async function DashboardFooter() {
   const email = "contact@digidov.com";
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 m-4 flex gap-2 justify-center items-center">
-      {/* Donor Link Copy Button */}
+    <div className="fixed bottom-0 left-0 right-0 m-4 px-4 flex gap-2 justify-center items-center">
       <CopyButton
         text={donationLink}
         label="Copy Donation Link"
-        leftIcon={<Link className="h-4 w-4" />}
+        leftIcon={<Link className="h-5 w-5" />}
         tooltip="Click to copy donation link"
       />
-      {/* Email Copy Button */}
       <CopyButton
         text={email}
         label={email}
-        leftIcon={<Mail className="h-4 w-4" />}
+        leftIcon={<Mail className="h-5 w-5" />}
         tooltip="Click to copy email"
       />
     </div>
