@@ -11,40 +11,40 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { verifyOtpAction } from "@/app/actions/mfa";
 
-type MfaModalProps = {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  methodId: string; // This is provided from the OTP send response
-  email?: string;
-  onVerified: () => void;
-};
-
+/**
+ * MFA Modal that uses a server action to verify the OTP.
+ */
 export default function MfaModal({
   isOpen,
   onOpenChange,
   methodId,
   email,
   onVerified,
-}: MfaModalProps) {
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  methodId: string; // Provided by the OTP send action
+  email?: string;
+  onVerified: () => void;
+}) {
   const [otp, setOtp] = useState("");
   const [localError, setLocalError] = useState("");
 
   async function handleVerify() {
     try {
-      const res = await fetch("/api/mfa/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method_id: methodId, code: otp }),
-      });
-      const data = await res.json();
-      if (data.status_code === 200) {
+      // Directly call the server action:
+      const result = await verifyOtpAction(methodId, otp);
+      console.log("Server action verify response:", result);
+      if (result.status_code === 200) {
         onVerified();
         onOpenChange(false);
       } else {
         setLocalError("Verification failed. Please try again.");
       }
     } catch (err: any) {
+      console.error("Error during MFA verification:", err);
       setLocalError("An error occurred during verification.");
     }
   }
@@ -67,7 +67,7 @@ export default function MfaModal({
           type="text"
           placeholder="Enter OTP"
           value={otp}
-          onChange={(e) => setOtp(e.target.value)}
+          onChange={(e) => setOtp(e.target.value.trim())}
           className="mt-4"
         />
         {localError && (

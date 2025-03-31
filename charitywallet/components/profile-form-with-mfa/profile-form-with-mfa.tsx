@@ -3,9 +3,9 @@
 import { useState } from "react";
 import ProfileForm from "@/components/profile-form-with-mfa/profile-form";
 import MfaModal from "@/components/mfa-modal";
-import { useMfa } from "@/hooks/mfa";
 import { toast } from "@/hooks/use-toast";
 import { updateCharityProfile } from "@/app/actions/charities";
+import { sendOtpAction } from "@/app/actions/mfa";
 
 interface ProfileWithMfaProps {
   charity: {
@@ -21,38 +21,59 @@ interface ProfileWithMfaProps {
 }
 
 export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
-  const { isVerified, setIsVerified, sendOtp } = useMfa();
+  const [isVerified, setIsVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [pendingData, setPendingData] = useState<any>(null);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
 
-  // Intercept the ProfileForm submission.
+  // Handle form submission through MFA flow.
   const handleFormSubmit = async (formData: any) => {
     if (!isVerified) {
       setPendingData(formData);
-      console.log("Sending OTP to:", charity.contact_email);
-      // Trigger sending the OTP email.
-      const response = await sendOtp(
-        charity.contact_email || "your-email@example.com"
-      );
-      // Expect response to include an email_id (your methodId)
-      if (response && (response as any).email_id) {
-        setMethodId((response as any).email_id);
-      } else {
+      setLoading(true);
+      setError("");
+
+      // Show a loading toast with the email address.
+      toast({
+        title: `Sending OTP to ${
+          charity.contact_email || "your-email@example.com"
+        }...`,
+        variant: "default",
+      });
+
+      try {
+        const response = await sendOtpAction(
+          charity.contact_email || "your-email@example.com"
+        );
+        // Expect response to include an email_id (used as methodId)
+        if (response?.email_id) {
+          setMethodId(response.email_id);
+          setIsMfaOpen(true);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to send OTP. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } catch (err: any) {
+        setError(err.message);
         toast({
           title: "Error",
-          description: "Failed to send OTP. Please try again.",
+          description: err.message,
           variant: "destructive",
         });
-        return;
+      } finally {
+        setLoading(false);
       }
-      setIsMfaOpen(true);
     } else {
       await updateProfile(formData);
     }
   };
 
-  // Called when MFA modal verifies the OTP successfully.
+  // Called when the MFA modal successfully verifies the OTP.
   const handleMfaVerified = async () => {
     setIsVerified(true);
     setIsMfaOpen(false);
@@ -63,7 +84,6 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
   };
 
   async function updateProfile(data: any) {
-    // Convert data object to FormData, as required by updateCharityProfile
     const fd = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       fd.append(key, String(value));
@@ -94,6 +114,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
         email={charity.contact_email || "your-email@example.com"}
         onVerified={handleMfaVerified}
       />
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }

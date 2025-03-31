@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { updateCharityProfile } from "@/app/actions/charities";
-import { toast } from "@/hooks/use-toast";
-import { useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -34,11 +31,7 @@ interface ProfileFormProps {
     contact_mobile_phone?: string | null;
     wallet_address: string;
   };
-  /**
-   * Optional submit handler. If provided, this function will be called with the form data
-   * when the form is submitted.
-   */
-  onSubmit?: (formData: any) => Promise<void> | void;
+  onSubmit: (formData: any) => Promise<void> | void;
 }
 
 export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
@@ -52,7 +45,6 @@ export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
     contact_phone: charity.contact_mobile_phone || "",
     wallet_address: charity.wallet_address,
   });
-  const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,30 +59,7 @@ export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    startTransition(async () => {
-      try {
-        if (onSubmit) {
-          await onSubmit(formData);
-        } else {
-          const fd = new FormData();
-          Object.entries(formData).forEach(([key, value]) => {
-            fd.append(key, value);
-          });
-          await updateCharityProfile(fd);
-        }
-        toast({
-          title: "Success",
-          description: "Profile updated successfully.",
-          variant: "default",
-        });
-      } catch {
-        toast({
-          title: "Error",
-          description: "Failed to update profile.",
-          variant: "destructive",
-        });
-      }
-    });
+    await onSubmit(formData);
   };
 
   return (
@@ -210,10 +179,9 @@ export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
 
       <Button
         type="submit"
-        disabled={isPending}
         className="w-full mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground"
       >
-        {isPending ? "Saving..." : "Save Profile"}
+        Save Profile
       </Button>
     </form>
   );
