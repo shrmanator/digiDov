@@ -13,6 +13,7 @@ interface CharityOrganizationInfoStepProps {
     charity_name: string;
     registered_address: string;
     registration_number: string;
+    postal_code: string; // Added new field
   };
   isLoading: boolean;
   errorMessage: string | null;
@@ -43,8 +44,22 @@ export function CharityOrganizationInfoStep({
     onChange(e);
   };
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Concatenate the postal code to the registered address if provided
+    const updatedAddress = formData.postal_code
+      ? `${formData.registered_address.trim()} ${formData.postal_code.trim()}`
+      : formData.registered_address;
+    console.log("Updated Address:", updatedAddress);
+    // Update the address with the concatenated postal code
+    onAddressChange(updatedAddress);
+
+    // Proceed with the original submission process
+    onNext(e);
+  };
+
   return (
-    <form onSubmit={onNext} className="max-w-2xl mx-auto space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-2">
         <Building2Icon className="text-blue-500" />
         <h2 className="text-xl font-semibold">Organization Details</h2>
@@ -81,6 +96,17 @@ export function CharityOrganizationInfoStep({
             autocompletionRequest={{
               componentRestrictions: { country: ["ca"] },
             }}
+          />
+        </div>
+        <div>
+          <Label htmlFor="postal_code">Postal Code</Label>
+          <Input
+            id="postal_code"
+            name="postal_code"
+            placeholder="Enter Postal Code"
+            value={formData.postal_code}
+            onChange={onChange}
+            required
           />
         </div>
         <div>

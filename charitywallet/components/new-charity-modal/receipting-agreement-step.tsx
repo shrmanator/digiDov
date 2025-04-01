@@ -12,14 +12,24 @@ import { ScrollText } from "lucide-react";
 interface ReceiptingAgreementStepProps {
   onAgree: () => void; // Called when user clicks "Agree"
   charityName: string; // Name of the Charity
+  charityRegistrationNumber: string; // Registration number of the Charity
+  charityAddress: string; // Address of the Charity
   onBack: () => void; // Called when user clicks "Back"
 }
 
 export function ReceiptingAgreementStep({
   onAgree,
   charityName,
+  charityRegistrationNumber,
+  charityAddress,
   onBack,
 }: ReceiptingAgreementStepProps) {
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onAgree();
@@ -48,16 +58,15 @@ export function ReceiptingAgreementStep({
             </div>
             <p>
               1.1. This Master Service Agreement (“Agreement”) is entered into
-              as of [Date], by and between <strong>digidov</strong>, a
-              [Province]-registered company with its principal office at
-              [Address], and{" "}
+              as of {currentDate}, by and between <strong>digidov</strong> and{" "}
               <strong className="bg-primary/10 px-1 rounded">
                 {charityName}
               </strong>{" "}
-              (“Charity”), a registered charity with CRA number [CRA Number] and
-              principal office at [Address]. By accessing or using digidov’s
-              platform and services, the Charity agrees to be bound by the terms
-              of this Agreement.
+              (“Charity”), a registered charity with CRA number{" "}
+              <strong>{charityRegistrationNumber}</strong> and principal office
+              at <strong>{charityAddress}</strong>. By accessing or using
+              digidov’s platform and services, the Charity agrees to be bound by
+              the terms of this Agreement.
             </p>
             <p>
               1.2. The Charity acknowledges that any wallet provided by digidov

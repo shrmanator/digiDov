@@ -169,6 +169,8 @@ export default function CharitySetupModal({
           <ReceiptingAgreementStep
             onAgree={handleDelegationAgree}
             charityName={formData.charity_name}
+            charityRegistrationNumber={formData.registration_number}
+            charityAddress={formData.registered_address}
             onBack={handleBack}
           />
         )}
