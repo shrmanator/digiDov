@@ -20,6 +20,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
   const [pendingData, setPendingData] = useState<ProfileFormData | null>(null);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
+  //wat
 
   const handleFormSubmit = async (formData: ProfileFormData) => {
     if (!isVerified) {
