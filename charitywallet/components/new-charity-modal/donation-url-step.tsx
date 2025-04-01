@@ -50,7 +50,7 @@ export function DonationUrlStep({
     <div className="space-y-4 p-4">
       <DialogHeader>
         <div className="flex items-center">
-          <DialogTitle>Your Donation Wallet</DialogTitle>
+          <DialogTitle>Your Donation Page Link</DialogTitle>
         </div>
         <DialogDescription>
           This is your unique donation link for receiving crypto donations. You

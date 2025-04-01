@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ChangeEvent } from "react";
+import { FormEvent, ChangeEvent, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
@@ -13,7 +13,7 @@ interface CharityOrganizationInfoStepProps {
     charity_name: string;
     registered_address: string;
     registration_number: string;
-    postal_code: string; // Added new field
+    postal_code: string;
   };
   isLoading: boolean;
   errorMessage: string | null;
@@ -34,6 +34,14 @@ export function CharityOrganizationInfoStep({
   onAddressChange,
   onNext,
 }: CharityOrganizationInfoStepProps) {
+  const [placeServiceReady, setPlaceServiceReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.google?.maps?.places) {
+      setPlaceServiceReady(true);
+    }
+  }, []);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -46,16 +54,37 @@ export function CharityOrganizationInfoStep({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Concatenate the postal code to the registered address if provided
-    const updatedAddress = formData.postal_code
-      ? `${formData.registered_address.trim()} ${formData.postal_code.trim()}`
-      : formData.registered_address;
-    console.log("Updated Address:", updatedAddress);
-    // Update the address with the concatenated postal code
-    onAddressChange(updatedAddress);
-
-    // Proceed with the original submission process
     onNext(e);
+  };
+
+  const extractComponent = (components: any[], type: string) =>
+    components.find((c) => c.types.includes(type))?.long_name || "";
+
+  const handlePlaceSelect = (option: any) => {
+    if (!option || !window.google) return;
+
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode({ placeId: option.value.place_id }, (results, status) => {
+      if (status === "OK" && results && results[0]) {
+        const components = results[0].address_components;
+
+        const fullAddress = results[0].formatted_address;
+        const postalCode = extractComponent(components, "postal_code");
+
+        onAddressChange(fullAddress);
+
+        // Trigger form update for postal code
+        const fakeEvent = {
+          target: {
+            name: "postal_code",
+            value: postalCode,
+          },
+        } as unknown as ChangeEvent<HTMLInputElement>;
+
+        onChange(fakeEvent);
+      }
+    });
   };
 
   return (
@@ -79,25 +108,31 @@ export function CharityOrganizationInfoStep({
             required
           />
         </div>
+
         <div>
           <Label>Registered Address</Label>
-          <GooglePlacesAutocomplete
-            apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!}
-            selectProps={{
-              value: formData.registered_address
-                ? {
-                    label: formData.registered_address,
-                    value: formData.registered_address,
-                  }
-                : null,
-              onChange: (option) => onAddressChange(option?.label || ""),
-              styles: googlePlacesStyles,
-            }}
-            autocompletionRequest={{
-              componentRestrictions: { country: ["ca"] },
-            }}
-          />
+          {placeServiceReady ? (
+            <GooglePlacesAutocomplete
+              apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!}
+              selectProps={{
+                value: formData.registered_address
+                  ? {
+                      label: formData.registered_address,
+                      value: formData.registered_address,
+                    }
+                  : null,
+                onChange: handlePlaceSelect,
+                styles: googlePlacesStyles,
+              }}
+              autocompletionRequest={{
+                componentRestrictions: { country: ["ca"] },
+              }}
+            />
+          ) : (
+            <p>Loading address service...</p>
+          )}
         </div>
+
         <div>
           <Label htmlFor="postal_code">Postal Code</Label>
           <Input
@@ -109,6 +144,7 @@ export function CharityOrganizationInfoStep({
             required
           />
         </div>
+
         <div>
           <Label htmlFor="registration_number">CRA Registration Number</Label>
           <Input

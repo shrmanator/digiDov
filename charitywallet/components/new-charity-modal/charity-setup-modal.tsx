@@ -9,7 +9,6 @@ import { DonationUrlStep } from "./donation-url-step";
 import { FeeAgreementStep } from "./fee-agreement-step";
 import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
-import { ReceiptingAgreementStep } from "./receipting-agreement-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -52,7 +51,7 @@ export default function CharitySetupModal({
     contact_first_name: "",
     contact_last_name: "",
     contact_phone: "",
-    shaduicn: false, // <-- 🔥 Add this
+    shaduicn: false,
   });
 
   const [charitySlug, setCharitySlug] = useState("");
@@ -113,8 +112,6 @@ export default function CharitySetupModal({
     }
   };
 
-  // After agreeing to the delegation terms, move to fee agreement
-  const handleDelegationAgree = () => setStep("feeAgreementStep");
   // After fee agreement, proceed to donation URL step
   const handleFeeAgree = () => setStep("donationUrlStep");
   const handleFinish = () => setOpen(false);
@@ -140,6 +137,7 @@ export default function CharitySetupModal({
               charity_name: formData.charity_name,
               registered_address: formData.registered_address,
               registration_number: formData.registration_number,
+              postal_code: formData.postal_code,
             }}
             isLoading={isLoadingForm}
             errorMessage={errorMessage}
@@ -162,16 +160,9 @@ export default function CharitySetupModal({
             onChange={handleChange}
             onSubmit={handleNextAuthorizedContact}
             onPrevious={handleBack}
-          />
-        )}
-
-        {step === "delegationAgreementStep" && (
-          <ReceiptingAgreementStep
-            onAgree={handleDelegationAgree}
             charityName={formData.charity_name}
             charityRegistrationNumber={formData.registration_number}
             charityAddress={formData.registered_address}
-            onBack={handleBack}
           />
         )}
 
