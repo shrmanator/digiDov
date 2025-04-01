@@ -64,8 +64,9 @@ export default function CharitySetupModal({
     if (name === "contact_phone") {
       setFormData({ ...formData, [name]: formatPhoneNumber(value) });
     } else if (name === "registration_number") {
-      if (/^\d{0,15}$/.test(value)) {
-        setFormData({ ...formData, [name]: value });
+      const upperValue = value.toUpperCase();
+      if (/^[A-Za-z0-9]{0,15}$/.test(upperValue)) {
+        setFormData({ ...formData, [name]: upperValue });
       }
     } else {
       setFormData({ ...formData, [name]: value });

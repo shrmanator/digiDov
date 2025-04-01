@@ -91,16 +91,9 @@ export function CharityOrganizationInfoStep({
             placeholder="123456789RR0001"
             value={formData.registration_number}
             onChange={onChange}
-            pattern="^\d{9}RR\d{4}$"
-            title="Must be in the format: 9 digits, followed by 'RR', followed by 4 digits (e.g., 123456789RR0001)"
             required
           />
-          <p className="text-sm text-muted-foreground mt-1">
-            Format: 9 digits + 'RR' + 4 digits (e.g.,{" "}
-            <code>123456789RR0001</code>)
-          </p>
         </div>
-
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
         )}
