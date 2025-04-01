@@ -124,7 +124,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
               <p className="text-sm text-yellow-400 font-semibold text-warning">
                 Bank Transfers Coming Soon
               </p>
-              <p className="mt-1 text-neutral-200">
+              <p className="mt-1">
                 Until then, use Coinbase to move crypto to your bank.
               </p>
             </div>
