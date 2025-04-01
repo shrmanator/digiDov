@@ -1,26 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import ProfileForm from "@/components/profile-form-with-mfa/profile-form";
+import ProfileForm, {
+  ProfileFormData,
+} from "@/components/profile-form-with-mfa/profile-form";
 import MfaModal from "@/components/mfa-modal";
 import { toast } from "@/hooks/use-toast";
 import { updateCharityProfile } from "@/app/actions/charities";
 import { sendOtpAction } from "@/app/actions/mfa";
-
-interface Charity {
-  charity_name?: string | null;
-  registered_office_address?: string | null;
-  registration_number?: string | null;
-  contact_first_name?: string | null;
-  contact_last_name?: string | null;
-  contact_email?: string | null;
-  contact_mobile_phone?: string | null;
-  wallet_address: string;
-}
-
-interface ProfileFormData {
-  [key: string]: string | number | boolean | null | undefined;
-}
+import { Charity } from "@/app/types/charity-client";
 
 interface ProfileWithMfaProps {
   charity: Charity;
@@ -60,21 +48,14 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
           });
         }
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-          toast({
-            title: "Error",
-            description: err.message,
-            variant: "destructive",
-          });
-        } else {
-          setError("An unknown error occurred");
-          toast({
-            title: "Error",
-            description: "An unknown error occurred",
-            variant: "destructive",
-          });
-        }
+        const errorMessage =
+          err instanceof Error ? err.message : "An unknown error occurred";
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
     } else {
       await updateProfile(formData);
@@ -102,7 +83,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
         description: "Profile updated successfully.",
         variant: "default",
       });
-    } catch (err: unknown) {
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update profile.",

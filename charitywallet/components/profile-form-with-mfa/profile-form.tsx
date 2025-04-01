@@ -4,12 +4,29 @@ import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Charity } from "@/app/types/charity-client";
 
-function capitalizeFirstLetter(value: string) {
+export interface ProfileFormData {
+  charity_name: string;
+  registered_address: string;
+  registration_number: string;
+  contact_first_name: string;
+  contact_last_name: string;
+  contact_email: string;
+  contact_phone: string;
+  wallet_address: string;
+}
+
+interface ProfileFormProps {
+  charity: Charity;
+  onSubmit: (formData: ProfileFormData) => Promise<void> | void;
+}
+
+function capitalizeFirstLetter(value: string): string {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
-function formatPhoneNumber(value: string) {
+function formatPhoneNumber(value: string): string {
   const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;
   if (phoneNumber.length <= 6)
@@ -20,22 +37,8 @@ function formatPhoneNumber(value: string) {
   )}-${phoneNumber.slice(6, 10)}`;
 }
 
-interface ProfileFormProps {
-  charity: {
-    charity_name?: string | null;
-    registered_office_address?: string | null;
-    registration_number?: string | null;
-    contact_first_name?: string | null;
-    contact_last_name?: string | null;
-    contact_email?: string | null;
-    contact_mobile_phone?: string | null;
-    wallet_address: string;
-  };
-  onSubmit: (formData: any) => Promise<void> | void;
-}
-
 export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     charity_name: charity.charity_name || "",
     registered_address: charity.registered_office_address || "",
     registration_number: charity.registration_number || "",
