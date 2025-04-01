@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,45 +13,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { verifyOtpAction } from "@/app/actions/mfa";
 
-/**
- * MFA Modal that uses a server action to verify the OTP.
- */
+interface MfaModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  methodId: string;
+  email?: string;
+  onVerified: () => void;
+}
+
 export default function MfaModal({
   isOpen,
   onOpenChange,
   methodId,
   email,
   onVerified,
-}: {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  methodId: string; // Provided by the OTP send action
-  email?: string;
-  onVerified: () => void;
-}) {
+}: MfaModalProps) {
   const [otp, setOtp] = useState("");
-  const [localError, setLocalError] = useState("");
+  const [error, setError] = useState("");
 
-  async function handleVerify() {
+  const handleChange = ({
+    target: { value },
+  }: ChangeEvent<HTMLInputElement>) => {
+    setOtp(value.trim());
+  };
+
+  const handleVerify = async () => {
     try {
-      // Directly call the server action:
-      const result = await verifyOtpAction(methodId, otp);
-      console.log("Server action verify response:", result);
-      if (result.status_code === 200) {
+      const { status_code } = await verifyOtpAction(methodId, otp);
+      if (status_code === 200) {
         onVerified();
         onOpenChange(false);
       } else {
-        setLocalError("Verification failed. Please try again.");
+        setError("Verification failed. Please try again.");
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error during MFA verification:", err);
-      } else {
-        console.error("Unexpected error", err);
-      }
-      setLocalError("An error occurred during verification.");
+    } catch (err) {
+      console.error("MFA verification error:", err);
+      setError("An error occurred during verification.");
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -59,7 +58,7 @@ export default function MfaModal({
         <DialogHeader>
           <DialogTitle>Two-Factor Authentication</DialogTitle>
           <DialogDescription>
-            Please enter the OTP sent to your email to confirm this action.
+            Please enter the OTP sent to your email.
           </DialogDescription>
           {email && (
             <p className="mt-2 text-sm">
@@ -71,12 +70,10 @@ export default function MfaModal({
           type="text"
           placeholder="Enter OTP"
           value={otp}
-          onChange={(e) => setOtp(e.target.value.trim())}
+          onChange={handleChange}
           className="mt-4"
         />
-        {localError && (
-          <p className="mt-2 text-sm text-red-600">{localError}</p>
-        )}
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         <DialogFooter className="mt-4 flex justify-end space-x-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
