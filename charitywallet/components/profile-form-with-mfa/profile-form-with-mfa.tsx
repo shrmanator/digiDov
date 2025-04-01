@@ -7,27 +7,33 @@ import { toast } from "@/hooks/use-toast";
 import { updateCharityProfile } from "@/app/actions/charities";
 import { sendOtpAction } from "@/app/actions/mfa";
 
+interface Charity {
+  charity_name?: string | null;
+  registered_office_address?: string | null;
+  registration_number?: string | null;
+  contact_first_name?: string | null;
+  contact_last_name?: string | null;
+  contact_email?: string | null;
+  contact_mobile_phone?: string | null;
+  wallet_address: string;
+}
+
+interface ProfileFormData {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
 interface ProfileWithMfaProps {
-  charity: {
-    charity_name?: string | null;
-    registered_office_address?: string | null;
-    registration_number?: string | null;
-    contact_first_name?: string | null;
-    contact_last_name?: string | null;
-    contact_email?: string | null;
-    contact_mobile_phone?: string | null;
-    wallet_address: string;
-  };
+  charity: Charity;
 }
 
 export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState("");
-  const [pendingData, setPendingData] = useState<any>(null);
+  const [pendingData, setPendingData] = useState<ProfileFormData | null>(null);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
 
-  const handleFormSubmit = async (formData: any) => {
+  const handleFormSubmit = async (formData: ProfileFormData) => {
     if (!isVerified) {
       setPendingData(formData);
       setError("");
@@ -43,7 +49,6 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
         const response = await sendOtpAction(
           charity.contact_email || "your-email@example.com"
         );
-        // Expect response to include an email_id (used as methodId)
         if (response?.email_id) {
           setMethodId(response.email_id);
           setIsMfaOpen(true);
@@ -54,20 +59,28 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
             variant: "destructive",
           });
         }
-      } catch (err: any) {
-        setError(err.message);
-        toast({
-          title: "Error",
-          description: err.message,
-          variant: "destructive",
-        });
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+          toast({
+            title: "Error",
+            description: err.message,
+            variant: "destructive",
+          });
+        } else {
+          setError("An unknown error occurred");
+          toast({
+            title: "Error",
+            description: "An unknown error occurred",
+            variant: "destructive",
+          });
+        }
       }
     } else {
       await updateProfile(formData);
     }
   };
 
-  // Called when the MFA modal successfully verifies the OTP.
   const handleMfaVerified = async () => {
     setIsVerified(true);
     setIsMfaOpen(false);
@@ -77,7 +90,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
     }
   };
 
-  async function updateProfile(data: any) {
+  const updateProfile = async (data: ProfileFormData) => {
     const fd = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       fd.append(key, String(value));
@@ -89,14 +102,14 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
         description: "Profile updated successfully.",
         variant: "default",
       });
-    } catch (error) {
+    } catch (err: unknown) {
       toast({
         title: "Error",
         description: "Failed to update profile.",
         variant: "destructive",
       });
     }
-  }
+  };
 
   return (
     <>
