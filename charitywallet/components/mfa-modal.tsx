@@ -43,8 +43,12 @@ export default function MfaModal({
       } else {
         setLocalError("Verification failed. Please try again.");
       }
-    } catch (err: any) {
-      console.error("Error during MFA verification:", err);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error during MFA verification:", err);
+      } else {
+        console.error("Unexpected error", err);
+      }
       setLocalError("An error occurred during verification.");
     }
   }
