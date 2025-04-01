@@ -33,6 +33,12 @@ async function generateUniqueSlug(charity_name: string): Promise<string> {
 export async function upsertCharity(data: CharityInput) {
   const walletAddress = data.wallet_address.toLowerCase();
 
+  if (data.registration_number) {
+    data.registration_number = validateAndFormatRegistrationNumber(
+      data.registration_number
+    );
+  }
+
   const existingCharity = await prisma.charity.findUnique({
     where: { wallet_address: walletAddress },
     select: { wallet_address: true },
@@ -83,6 +89,18 @@ export async function upsertCharity(data: CharityInput) {
   }
 
   return charity;
+}
+
+function validateAndFormatRegistrationNumber(input: string): string {
+  // Convert to uppercase
+  const regNumber = input.toUpperCase();
+  // Validate: must be alphanumeric and up to 15 characters
+  if (!/^[A-Z0-9]{1,15}$/.test(regNumber)) {
+    throw new Error(
+      "Invalid registration number. It must be alphanumeric, uppercase, and up to 15 characters."
+    );
+  }
+  return regNumber;
 }
 
 export async function updateCharityEmail(params: {
