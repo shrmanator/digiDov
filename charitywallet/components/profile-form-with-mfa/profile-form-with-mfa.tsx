@@ -23,7 +23,6 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
 
   const handleFormSubmit = async (formData: ProfileFormData) => {
     if (!isVerified) {
-      // Ensure we have a valid email before attempting to send an OTP
       if (!charity.contact_email) {
         const errorMessage = "No contact email provided.";
         setError(errorMessage);
