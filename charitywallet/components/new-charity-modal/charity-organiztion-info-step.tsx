@@ -92,8 +92,11 @@ export function CharityOrganizationInfoStep({
             value={formData.registration_number}
             onChange={onChange}
             required
+            maxLength={15}
+            minLength={15}
           />
         </div>
+
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
         )}
