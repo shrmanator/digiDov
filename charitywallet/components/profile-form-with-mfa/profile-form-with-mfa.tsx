@@ -83,7 +83,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
         description: "Profile updated successfully.",
         variant: "default",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update profile.",
