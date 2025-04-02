@@ -39,7 +39,6 @@ export default function CharitySetupModal({
   const [step, setStep] = useState<
     | "charityOrganizationInfoStep"
     | "authorizedContactInfoStep"
-    | "delegationAgreementStep"
     | "feeAgreementStep"
     | "donationUrlStep"
   >("charityOrganizationInfoStep");
@@ -103,7 +102,7 @@ export default function CharitySetupModal({
         is_profile_complete: true,
       });
       setCharitySlug(updatedCharity.slug || "");
-      setStep("delegationAgreementStep");
+      setStep("feeAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
       setErrorMessage("Error saving profile. Please try again.");
@@ -119,10 +118,8 @@ export default function CharitySetupModal({
   const handleBack = () => {
     if (step === "authorizedContactInfoStep") {
       setStep("charityOrganizationInfoStep");
-    } else if (step === "delegationAgreementStep") {
-      setStep("authorizedContactInfoStep");
     } else if (step === "feeAgreementStep") {
-      setStep("delegationAgreementStep");
+      setStep("authorizedContactInfoStep");
     } else if (step === "donationUrlStep") {
       setStep("feeAgreementStep");
     }
