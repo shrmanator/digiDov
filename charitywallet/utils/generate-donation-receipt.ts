@@ -49,6 +49,7 @@ export async function generateDonationReceiptPDF(
     ? new Date(receipt.created_at)
     : new Date();
   const receiptNumber = receipt.receipt_number || "N/A";
+  const signerTitle = receipt.charity?.contact_title;
   const signerFirstName = receipt.charity?.contact_first_name;
   const signerLastName = receipt.charity?.contact_last_name;
 
@@ -271,8 +272,8 @@ export async function generateDonationReceiptPDF(
   y -= lineHeight.normal;
 
   // Add digital signature text
-  if (signerFirstName && signerLastName) {
-    const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}`;
+  if (signerTitle && signerFirstName && signerLastName) {
+    const signatureText = `Digitally signed by: ${signerTitle} ${signerFirstName} ${signerLastName}`;
     const dateText = `Date: ${donationDate}`;
 
     y -= 5; // Small space below the line
