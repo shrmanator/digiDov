@@ -19,6 +19,7 @@ model charity {
     id                            String                  @id @default(uuid())
     charity_name                  String?
     registration_number           String?
+    contact_title                 String? // e.g., "Dr.", "Mr.", etc.
     contact_first_name            String?
     contact_last_name             String?
     contact_email                 String?
@@ -55,6 +56,7 @@ model charity_fund_transfer {
 
 model donor {
     id                  String             @id @default(uuid())
+    title               String? // New field: e.g., "Dr.", "Ms.", etc.
     wallet_address      String             @unique
     email               String?            @unique
     first_name          String?
