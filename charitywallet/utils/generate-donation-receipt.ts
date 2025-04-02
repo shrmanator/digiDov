@@ -226,7 +226,7 @@ export async function generateDonationReceiptPDF(
   drawField("Fair Market Value", `$${fiatAmount.toFixed(2)} CAD`);
   drawField(
     "Exchange Rate Used",
-    `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD`
+    `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
   );
   drawField("Transaction Hash", txHash);
   drawField("Wallet Address Used", walletAddress);
