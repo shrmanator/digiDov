@@ -13,7 +13,6 @@ interface CharityOrganizationInfoStepProps {
     charity_name: string;
     registered_address: string;
     registration_number: string;
-    postal_code: string;
   };
   isLoading: boolean;
   errorMessage: string | null;
@@ -44,11 +43,9 @@ export function CharityOrganizationInfoStep({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     if (name === "charity_name") {
       e.target.value = capitalizeFirstLetter(value);
     }
-
     onChange(e);
   };
 
@@ -57,32 +54,14 @@ export function CharityOrganizationInfoStep({
     onNext(e);
   };
 
-  const extractComponent = (components: any[], type: string) =>
-    components.find((c) => c.types.includes(type))?.long_name || "";
-
   const handlePlaceSelect = (option: any) => {
     if (!option || !window.google) return;
 
     const geocoder = new window.google.maps.Geocoder();
-
     geocoder.geocode({ placeId: option.value.place_id }, (results, status) => {
       if (status === "OK" && results && results[0]) {
-        const components = results[0].address_components;
-
         const fullAddress = results[0].formatted_address;
-        const postalCode = extractComponent(components, "postal_code");
-
         onAddressChange(fullAddress);
-
-        // Trigger form update for postal code
-        const fakeEvent = {
-          target: {
-            name: "postal_code",
-            value: postalCode,
-          },
-        } as unknown as ChangeEvent<HTMLInputElement>;
-
-        onChange(fakeEvent);
       }
     });
   };
@@ -131,18 +110,6 @@ export function CharityOrganizationInfoStep({
           ) : (
             <p>Loading address service...</p>
           )}
-        </div>
-
-        <div>
-          <Label htmlFor="postal_code">Postal Code</Label>
-          <Input
-            id="postal_code"
-            name="postal_code"
-            placeholder="Enter Postal Code"
-            value={formData.postal_code}
-            onChange={onChange}
-            required
-          />
         </div>
 
         <div>

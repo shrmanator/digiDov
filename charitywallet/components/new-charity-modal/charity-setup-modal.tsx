@@ -137,7 +137,6 @@ export default function CharitySetupModal({
               charity_name: formData.charity_name,
               registered_address: formData.registered_address,
               registration_number: formData.registration_number,
-              postal_code: formData.postal_code,
             }}
             isLoading={isLoadingForm}
             errorMessage={errorMessage}
