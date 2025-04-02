@@ -44,7 +44,7 @@ export async function generateDonationReceiptPDF(
     cryptoAmount > 0 ? (fiatAmount / cryptoAmount).toFixed(2) : "N/A";
   const txHash = receipt.transaction_hash || "N/A";
   const walletAddress = receipt.donor?.wallet_address || "N/A";
-  const issuedBy = "Digidov Toronto, Ontario, Canada";
+  const issuedBy = "digiDov Toronto, Ontario, Canada";
   const issueDate = receipt.created_at
     ? new Date(receipt.created_at)
     : new Date();
