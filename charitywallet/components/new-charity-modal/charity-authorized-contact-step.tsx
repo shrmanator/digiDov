@@ -27,10 +27,6 @@ interface AuthorizedContactInfoStepProps {
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }
 
-function capitalizeFirstLetter(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 function formatPhoneNumber(value: string) {
   const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;
@@ -64,9 +60,7 @@ export function AuthorizedContactInfoStep({
       onChange(syntheticEvent);
       return;
     }
-    if (name === "contact_first_name" || name === "contact_last_name") {
-      e.target.value = capitalizeFirstLetter(value);
-    } else if (name === "contact_phone") {
+    if (name === "contact_phone") {
       e.target.value = formatPhoneNumber(value);
     }
     onChange(e);
