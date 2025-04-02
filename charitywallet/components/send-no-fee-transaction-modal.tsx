@@ -116,12 +116,9 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
         {/* IMPORTANT NOTE (pinned banner) */}
         <div className="my-2 border-l-2 border-warning bg-muted p-2 rounded">
           <div className="flex items-start gap-2">
-            <BellRing
-              size={14}
-              className="text-warning text-yellow-400 mt-0.5"
-            />
+            <BellRing size={14} className="text-warning mt-0.5" />
             <div className="text-xs text-muted-foreground leading-tight">
-              <p className="text-sm text-yellow-400 font-semibold text-warning">
+              <p className="text-sm font-semibold text-warning">
                 Bank Transfers Coming Soon
               </p>
               <p className="mt-1">
