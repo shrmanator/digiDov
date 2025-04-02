@@ -11,6 +11,7 @@ import { ReceiptingAgreementDialog } from "./receipting-agreement-modal";
 
 interface AuthorizedContactInfoStepProps {
   formData: {
+    contact_title: string;
     contact_first_name: string;
     contact_last_name: string;
     contact_phone: string;
@@ -92,40 +93,59 @@ export function AuthorizedContactInfoStep({
           </p>
         </div>
 
-        {/* Contact Info */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="contact_first_name">First Name</Label>
-            <Input
-              id="contact_first_name"
-              name="contact_first_name"
-              value={formData.contact_first_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="contact_last_name">Last Name</Label>
-            <Input
-              id="contact_last_name"
-              name="contact_last_name"
-              value={formData.contact_last_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
+        <div className="grid gap-4">
+          {/* Row 1: Title + First + Last */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Title */}
+            <div className="sm:max-w-[90px]">
+              <Label htmlFor="contact_title">Title</Label>
+              <Input
+                id="contact_title"
+                name="contact_title"
+                value={formData.contact_title}
+                onChange={handleChange}
+                required
+                className="w-full"
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="contact_phone">Phone Number</Label>
-          <Input
-            id="contact_phone"
-            name="contact_phone"
-            placeholder="(123) 456-7890"
-            value={formData.contact_phone}
-            onChange={handleChange}
-            required
-          />
+            {/* First Name */}
+            <div>
+              <Label htmlFor="contact_first_name">First Name</Label>
+              <Input
+                id="contact_first_name"
+                name="contact_first_name"
+                value={formData.contact_first_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <Label htmlFor="contact_last_name">Last Name</Label>
+              <Input
+                id="contact_last_name"
+                name="contact_last_name"
+                value={formData.contact_last_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Row 2: Phone */}
+          <div>
+            <Label htmlFor="contact_phone">Phone Number</Label>
+            <Input
+              id="contact_phone"
+              name="contact_phone"
+              placeholder="(123) 456-7890"
+              value={formData.contact_phone}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
 
         {/* Authorization & Agreement */}

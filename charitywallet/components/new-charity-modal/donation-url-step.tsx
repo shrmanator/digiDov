@@ -53,9 +53,9 @@ export function DonationUrlStep({
           <DialogTitle>Your Donation Page Link</DialogTitle>
         </div>
         <DialogDescription>
-          This is your unique donation link for receiving crypto donations. You
-          can copy and share it anywhere&mdash;on your charity&apos;s donation
-          page, social media, flyers, etc.&mdash;for donors to support you.
+          This link directs donors to your crypto donation page. You can copy
+          and share it anywhere&mdash;on your charity&apos;s donation page,
+          social media, flyers, etc.&mdash;for donors to support you.
           <br />
           <br />
         </DialogDescription>

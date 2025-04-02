@@ -8,6 +8,7 @@ export interface CharityInput {
   charity_name?: string | null;
   registered_address?: string | null;
   registration_number?: string | null;
+  contact_title?: string | null;
   contact_first_name?: string | null;
   contact_last_name?: string | null;
   contact_email?: string | null;
@@ -56,6 +57,7 @@ export async function upsertCharity(data: CharityInput) {
       charity_name: data.charity_name ?? undefined,
       registered_office_address: data.registered_address ?? undefined,
       registration_number: data.registration_number ?? undefined,
+      contact_title: data.contact_title ?? undefined,
       contact_first_name: data.contact_first_name ?? undefined,
       contact_last_name: data.contact_last_name ?? undefined,
       contact_email: data.contact_email ?? undefined,

@@ -47,6 +47,7 @@ export default function CharitySetupModal({
     charity_name: "",
     registered_address: "",
     registration_number: "",
+    contact_title: "",
     contact_first_name: "",
     contact_last_name: "",
     contact_phone: "",
@@ -95,6 +96,7 @@ export default function CharitySetupModal({
         charity_name: formData.charity_name,
         registered_address: formData.registered_address,
         registration_number: formData.registration_number,
+        contact_title: formData.contact_title,
         contact_first_name: formData.contact_first_name,
         contact_last_name: formData.contact_last_name,
         contact_email: defaultEmail,
@@ -146,6 +148,7 @@ export default function CharitySetupModal({
         {step === "authorizedContactInfoStep" && (
           <AuthorizedContactInfoStep
             formData={{
+              contact_title: formData.contact_title,
               contact_first_name: formData.contact_first_name,
               contact_last_name: formData.contact_last_name,
               contact_phone: formData.contact_phone,
