@@ -48,16 +48,17 @@ export function ReceiptingAgreementDialog({
             </p>
           </div>
           <p>
-            1.1. This Master Service Agreement (“Agreement”) is entered into as
-            of {currentDate}, by and between <strong>digidov</strong> and{" "}
+            1.1. This Master Service Agreement (&ldquo;Agreement&rdquo;) is
+            entered into as of {currentDate}, by and between{" "}
+            <strong>digidov</strong> and{" "}
             <strong className="bg-primary/10 px-1 rounded">
               {charityName}
             </strong>{" "}
-            (“Charity”), a registered charity with CRA number{" "}
+            (&ldquo;Charity&rdquo;), a registered charity with CRA number{" "}
             <strong>{charityRegistrationNumber}</strong> and principal office at{" "}
-            <strong>{charityAddress}</strong>. By accessing or using digidov’s
-            platform and services, the Charity agrees to be bound by the terms
-            of this Agreement.
+            <strong>{charityAddress}</strong>. By accessing or using digidov&rsquo;s
+            platform and services, the Charity agrees to be bound by the terms of
+            this Agreement.
           </p>
           <p>
             1.2. The Charity acknowledges that any wallet provided by digidov is
@@ -73,18 +74,18 @@ export function ReceiptingAgreementDialog({
             digidov containing all information required under United States and
             Canadian regulatory standards for charitable donations. These
             receipts are sent to Donors via email and made available for
-            download in the Donor’s online dashboard.
+            download in the Donor&rsquo;s online dashboard.
           </p>
           <p>
             2.2. <strong>Crypto Donation</strong>: A transfer of cryptocurrency
-            that flows from the Donor’s wallet into a proxy or smart contract
+            that flows from the Donor&rsquo;s wallet into a proxy or smart contract
             wallet controlled by digidov{" "}
             <strong>solely for the purpose of</strong> forwarding the donated
-            funds to the Charity’s non-custodial wallet.
+            funds to the Charity&rsquo;s non-custodial wallet.
           </p>
           <p>
             2.3. <strong>Processing Fee</strong>: A fee equal to three percent
-            (3%) of each donation, automatically deducted to cover digidov’s
+            (3%) of each donation, automatically deducted to cover digidov&rsquo;s
             technology, administrative infrastructure, record keeping, and
             digital signature processing for Tax Receipts.
           </p>
@@ -92,13 +93,13 @@ export function ReceiptingAgreementDialog({
           {/* SERVICES PROVIDED */}
           <h2 className="font-semibold mt-4">3. SERVICES PROVIDED</h2>
           <p>
-            3.1. <strong>digidov</strong> agrees to provide the following
-            services to the Charity:
+            3.1. <strong>digidov</strong> agrees to provide the following services
+            to the Charity:
           </p>
           <ul className="list-disc list-inside mt-1">
             <li>
               (a) Enable the Charity to accept cryptocurrency donations through
-              digidov’s platform;
+              digidov&rsquo;s platform;
             </li>
             <li>
               (b){" "}
@@ -126,35 +127,35 @@ export function ReceiptingAgreementDialog({
             </li>
             <li>
               (g) Provide online dashboards allowing (i) the Charity to view
-              transactions and Tax Receipts for all its donors, and (ii) each
-              donor to view only that donor’s own transactions and Tax Receipts.
+              transactions and Tax Receipts for all its donors, and (ii) each donor
+              to view only that donor&rsquo;s own transactions and Tax Receipts.
             </li>
           </ul>
           <p className="mt-2">
             3.2. digidov does <strong>not</strong> assume custody of any donated
-            cryptocurrency. All Charity wallets used on digidov’s platform
-            remain non-custodial, with the Charity fully responsible for
-            managing and protecting its private keys, funds, and all associated
-            wallet security measures.
+            cryptocurrency. All Charity wallets used on digidov&rsquo;s platform
+            remain non-custodial, with the Charity fully responsible for managing
+            and protecting its private keys, funds, and all associated wallet
+            security measures.
           </p>
 
           {/* FEES AND TAXES */}
           <h2 className="font-semibold mt-4">4. FEES AND TAXES</h2>
           <p>
-            4.1. <strong>Processing Fee</strong>: digidov will charge the
-            Charity a 3% processing and platform fee on all donations received
-            through the platform. This fee is deducted before funds are
-            transferred to the Charity.
+            4.1. <strong>Processing Fee</strong>: digidov will charge the Charity a
+            3% processing and platform fee on all donations received through the
+            platform. This fee is deducted before funds are transferred to the
+            Charity.
           </p>
           <p>
             4.2. <strong>Applicable Taxes</strong>: If required by law,
-            applicable taxes (e.g., GST/HST) will be added to the 3% fee and
-            shown clearly on invoices.
+            applicable taxes (e.g., GST/HST) will be added to the 3% fee and shown
+            clearly on invoices.
           </p>
           <p>
             4.3. <strong>Network / Gas Fees</strong>: The Charity is responsible
-            for any blockchain network fees or gas fees incurred during
-            transfers or withdrawals.
+            for any blockchain network fees or gas fees incurred during transfers
+            or withdrawals.
           </p>
 
           {/* DONATION FLOW AND WALLET RESPONSIBILITY */}
@@ -163,59 +164,57 @@ export function ReceiptingAgreementDialog({
           </h2>
           <p>
             5.1. All donations initially route through a proxy or smart contract
-            wallet controlled by digidov <strong>solely</strong> to forward
-            donated funds to the Charity’s non-custodial wallet. The Charity
-            remains custodial of its funds at all times once they arrive in its
-            designated wallet. The Charity must take all necessary measures to
-            protect its wallet from threats, attacks, and unauthorized access,
-            and is solely responsible for any security breaches that occur.
+            wallet controlled by digidov <strong>solely</strong> to forward donated
+            funds to the Charity&rsquo;s non-custodial wallet. The Charity remains
+            custodial of its funds at all times once they arrive in its designated
+            wallet. The Charity must take all necessary measures to protect its
+            wallet from threats, attacks, and unauthorized access, and is solely
+            responsible for any security breaches that occur.
           </p>
 
           {/* TAX RECEIPT ISSUANCE */}
           <h2 className="font-semibold mt-4">6. TAX RECEIPT ISSUANCE</h2>
           <p>
-            6.1. digidov will issue CRA-compliant tax receipts to donors on
-            behalf of the Charity, using information provided by the Charity.
-            The Charity is responsible for the accuracy of its legal name, CRA
-            registration number, and business address.
+            6.1. digidov will issue CRA-compliant tax receipts to donors on behalf
+            of the Charity, using information provided by the Charity. The Charity
+            is responsible for the accuracy of its legal name, CRA registration number,
+            and business address.
           </p>
           <p>
-            6.2. The Charity must inform digidov of any changes to its status as
-            a registered charity or any material changes to donation eligibility
-            rules.
+            6.2. The Charity must inform digidov of any changes to its status as a
+            registered charity or any material changes to donation eligibility rules.
           </p>
 
           {/* TERM AND TERMINATION */}
           <h2 className="font-semibold mt-4">7. TERM AND TERMINATION</h2>
           <p>
-            7.1. <strong>Cancellation / Termination</strong>: Either party may
-            cancel or terminate this Agreement at any time, with or without
-            cause, effective immediately upon notice to the other party.
+            7.1. <strong>Cancellation / Termination</strong>: Either party may cancel
+            or terminate this Agreement at any time, with or without cause, effective
+            immediately upon notice to the other party.
           </p>
           <p>
-            7.2. <strong>Termination for Cause</strong>: If one party believes
-            the other has materially breached this Agreement, it may terminate
-            immediately upon providing notice to the breaching party.
+            7.2. <strong>Termination for Cause</strong>: If one party believes the
+            other has materially breached this Agreement, it may terminate immediately
+            upon providing notice to the breaching party.
           </p>
           <p>
-            7.3. <strong>Termination Without Cause</strong>: Either party may
-            also terminate this Agreement without cause at any time, effective
-            immediately upon notice.
+            7.3. <strong>Termination Without Cause</strong>: Either party may also
+            terminate this Agreement without cause at any time, effective immediately
+            upon notice.
           </p>
 
           {/* DATA & CONFIDENTIALITY */}
           <h2 className="font-semibold mt-4">8. DATA &amp; CONFIDENTIALITY</h2>
           <p>
-            8.1. digidov will take reasonable steps to protect the
-            confidentiality of donor and Charity data.
+            8.1. digidov will take reasonable steps to protect the confidentiality
+            of donor and Charity data.
           </p>
-
           <p>
-            8.2. Each Party agrees to maintain the confidentiality of all
-            Confidential Information disclosed under this Agreement and to use
-            such information solely for performing its obligations hereunder.
-            Confidential Information includes, but is not limited to, donor
-            data, transaction records, proprietary systems, and processes.
+            8.2. Each Party agrees to maintain the confidentiality of all Confidential
+            Information disclosed under this Agreement and to use such information solely
+            for performing its obligations hereunder. Confidential Information includes,
+            but is not limited to, donor data, transaction records, proprietary systems,
+            and processes.
           </p>
 
           {/* LIMITATION OF LIABILITY AND INDEMNIFICATION */}
@@ -224,47 +223,43 @@ export function ReceiptingAgreementDialog({
           </h2>
           <p>
             9.1. <strong>Limitation of Liability</strong>:{" "}
-            <strong>To the fullest extent permitted by law</strong>, digidov is
-            not liable for crypto market fluctuations or tax-related decisions
-            made by the Charity.
+            <strong>To the fullest extent permitted by law</strong>, digidov is not
+            liable for crypto market fluctuations or tax-related decisions made by the
+            Charity.
           </p>
           <p>
-            9.2. <strong>Scope of Responsibility</strong>: The Charity
-            acknowledges that digidov’s responsibility is limited to
-            facilitating the transmission and record keeping of Crypto
-            Donations, and to issuing any relevant Tax Receipts. digidov may
-            temporarily route donations through a proxy wallet{" "}
-            <strong>solely</strong> to forward the funds to the Charity’s
-            designated wallet. However, digidov does not assume custody or
-            long-term control of donated funds at any point. Once the donation
-            has been transferred out of the proxy wallet to the Charity’s
-            wallet, digidov shall have no liability or responsibility for the
-            custody, management, conversion, or protection of the funds.
+            9.2. <strong>Scope of Responsibility</strong>: The Charity acknowledges that
+            digidov&rsquo;s responsibility is limited to facilitating the transmission
+            and record keeping of Crypto Donations, and to issuing any relevant Tax
+            Receipts. digidov may temporarily route donations through a proxy wallet{" "}
+            <strong>solely</strong> to forward the funds to the Charity&rsquo;s designated
+            wallet. However, digidov does not assume custody or long-term control of donated
+            funds at any point. Once the donation has been transferred out of the proxy wallet
+            to the Charity&rsquo;s wallet, digidov shall have no liability or responsibility for
+            the custody, management, conversion, or protection of the funds.
           </p>
           <p>
-            9.3. <strong>Indemnification</strong>: The Charity shall indemnify,
-            defend, and hold harmless digidov, its affiliates, officers,
-            directors, employees, and agents from any and all claims, losses, or
-            damages arising out of or related to the Charity’s failure to secure
-            or manage its cryptocurrency funds or its obligations under this
-            Agreement.
+            9.3. <strong>Indemnification</strong>: The Charity shall indemnify, defend,
+            and hold harmless digidov, its affiliates, officers, directors, employees, and
+            agents from any and all claims, losses, or damages arising out of or related to
+            the Charity&rsquo;s failure to secure or manage its cryptocurrency funds or its
+            obligations under this Agreement.
           </p>
 
           {/* GOVERNING LAW */}
           <h2 className="font-semibold mt-4">10. GOVERNING LAW</h2>
           <p>
-            10.1. This Agreement shall be governed by the laws of the Province
-            of [Province], Canada (or the jurisdiction in which digidov is
-            organized), without regard to conflict-of-law rules.
+            10.1. This Agreement shall be governed by the laws of the Province of [Province],
+            Canada (or the jurisdiction in which digidov is organized), without regard to
+            conflict-of-law rules.
           </p>
 
           {/* ENTIRE AGREEMENT */}
           <h2 className="font-semibold mt-4">11. ENTIRE AGREEMENT</h2>
           <p>
-            11.1. This Agreement constitutes the entire agreement between the
-            parties regarding the subject matter hereof and supersedes all prior
-            or contemporaneous communications, understandings, or agreements,
-            whether written or oral.
+            11.1. This Agreement constitutes the entire agreement between the parties regarding
+            the subject matter hereof and supersedes all prior or contemporaneous communications,
+            understandings, or agreements, whether written or oral.
           </p>
 
           {/* AUTHORIZATION AND STANDING DELEGATION */}
@@ -272,11 +267,10 @@ export function ReceiptingAgreementDialog({
             12. AUTHORIZATION AND STANDING DELEGATION
           </h2>
           <p>
-            12.1. The Charity hereby grants digidov a standing authorization to
-            digitally sign all Tax Receipts issued on the Charity’s behalf. This
-            authorization is effective as of the Effective Date of this
-            Agreement and remains in effect until terminated by either Party in
-            accordance with the termination provisions of this Agreement.
+            12.1. The Charity hereby grants digidov a standing authorization to digitally sign
+            all Tax Receipts issued on the Charity&rsquo;s behalf. This authorization is effective
+            as of the Effective Date of this Agreement and remains in effect until terminated by
+            either Party in accordance with the termination provisions of this Agreement.
           </p>
 
           {/* TRANSACTION REPORTING AND ACCOUNTING INFORMATION */}
@@ -284,9 +278,9 @@ export function ReceiptingAgreementDialog({
             13. TRANSACTION REPORTING AND ACCOUNTING INFORMATION
           </h2>
           <p>
-            13.1. digidov shall provide the Charity with detailed transaction
-            statements through the Charity’s online dashboard. These statements
-            shall, for each Crypto Donation, include:
+            13.1. digidov shall provide the Charity with detailed transaction statements through
+            the Charity&rsquo;s online dashboard. These statements shall, for each Crypto Donation,
+            include:
           </p>
           <ul className="list-disc list-inside mt-1">
             <li>(a) The gross donation amount;</li>
@@ -296,44 +290,39 @@ export function ReceiptingAgreementDialog({
             <li>(e) Corresponding Tax Receipt identifiers.</li>
           </ul>
           <p className="mt-2">
-            13.2. The information available on the dashboard shall serve as the
-            official record for all processed transactions and fee deductions
-            for the Charity’s accounting, auditing, and regulatory compliance
-            purposes.
+            13.2. The information available on the dashboard shall serve as the official record
+            for all processed transactions and fee deductions for the Charity&rsquo;s accounting,
+            auditing, and regulatory compliance purposes.
           </p>
 
           {/* DISPUTE RESOLUTION */}
           <h2 className="font-semibold mt-4">14. DISPUTE RESOLUTION</h2>
           <p>
-            14.1. The Parties agree to resolve any dispute arising out of or
-            related to this Agreement in good faith through direct negotiation.
-            If such dispute cannot be resolved through negotiation, the Parties
-            shall attempt to resolve it through mediation. If mediation fails,
-            the dispute shall be submitted to binding arbitration before any
-            legal action may be initiated.
+            14.1. The Parties agree to resolve any dispute arising out of or related to this
+            Agreement in good faith through direct negotiation. If such dispute cannot be
+            resolved through negotiation, the Parties shall attempt to resolve it through
+            mediation. If mediation fails, the dispute shall be submitted to binding arbitration
+            before any legal action may be initiated.
           </p>
 
           {/* MISCELLANEOUS */}
           <h2 className="font-semibold mt-4">15. MISCELLANEOUS</h2>
           <p>
-            15.1. <strong>Severability</strong>: If any provision of this
-            Agreement is held invalid or unenforceable, the remaining provisions
-            shall remain in full force and effect.
+            15.1. <strong>Severability</strong>: If any provision of this Agreement is held
+            invalid or unenforceable, the remaining provisions shall remain in full force and
+            effect.
           </p>
           <p>
-            15.2. <strong>Amendments</strong>: Any modifications to this
-            Agreement must be in writing and signed by authorized
-            representatives of both Parties.
+            15.2. <strong>Amendments</strong>: Any modifications to this Agreement must be in
+            writing and signed by authorized representatives of both Parties.
           </p>
           <p>
-            15.3. <strong>Assignment</strong>: Neither Party may assign or
-            transfer this Agreement, in whole or in part, without the prior
-            written consent of the other Party; except that digidov may assign
-            or transfer this Agreement in the event of a merger, acquisition,
-            corporate reorganization, or sale of all or substantially all of its
-            assets. This Agreement shall be binding on and inure to the benefit
-            of the Parties and their respective successors and permitted
-            assigns.
+            15.3. <strong>Assignment</strong>: Neither Party may assign or transfer this Agreement,
+            in whole or in part, without the prior written consent of the other Party; except that
+            digidov may assign or transfer this Agreement in the event of a merger, acquisition,
+            corporate reorganization, or sale of all or substantially all of its assets. This
+            Agreement shall be binding on and inure to the benefit of the Parties and their
+            respective successors and permitted assigns.
           </p>
 
           {/* INTELLECTUAL PROPERTY OWNERSHIP */}
@@ -341,64 +330,56 @@ export function ReceiptingAgreementDialog({
             16. INTELLECTUAL PROPERTY OWNERSHIP
           </h2>
           <p>
-            16.1. <strong>digidov’s IP</strong>: All right, title, and interest
-            in and to the digidov platform, software, trademarks, trade names,
-            and any related or underlying technology (including any
-            modifications or derivatives) are and shall remain the exclusive
-            property of digidov.
+            16.1. <strong>digidov&rsquo;s IP</strong>: All right, title, and interest in and
+            to the digidov platform, software, trademarks, trade names, and any related or
+            underlying technology (including any modifications or derivatives) are and shall
+            remain the exclusive property of digidov.
           </p>
           <p>
-            16.2. <strong>Charity’s IP</strong>: The Charity retains all right,
-            title, and interest in and to its own trademarks, logos, proprietary
-            content, and other intellectual property. No rights or licenses are
-            granted to digidov under this Agreement except as needed to perform
-            the services described herein.
+            16.2. <strong>Charity&rsquo;s IP</strong>: The Charity retains all right, title,
+            and interest in and to its own trademarks, logos, proprietary content, and other
+            intellectual property. No rights or licenses are granted to digidov under this
+            Agreement except as needed to perform the services described herein.
           </p>
 
           {/* WARRANTY DISCLAIMER */}
           <h2 className="font-semibold mt-4">17. WARRANTY DISCLAIMER</h2>
           <p>
-            17.1. EXCEPT AS EXPRESSLY PROVIDED HEREIN, DIGIDOV PROVIDES ITS
-            PLATFORM AND SERVICES ON AN “AS IS” AND “AS AVAILABLE” BASIS, AND
-            HEREBY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR
-            IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-            MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
-            NON-INFRINGEMENT. DIGIDOV DOES NOT WARRANT THAT THE SERVICES WILL BE
-            UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE, OR THAT DEFECTS
-            WILL BE CORRECTED.
+            17.1. EXCEPT AS EXPRESSLY PROVIDED HEREIN, DIGIDOV PROVIDES ITS PLATFORM AND
+            SERVICES ON AN &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; BASIS, AND
+            HEREBY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING,
+            BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+            PARTICULAR PURPOSE, AND NON-INFRINGEMENT. DIGIDOV DOES NOT WARRANT THAT THE
+            SERVICES WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE, OR THAT
+            DEFECTS WILL BE CORRECTED.
           </p>
 
           {/* FORCE MAJEURE */}
           <h2 className="font-semibold mt-4">18. FORCE MAJEURE</h2>
           <p>
-            18.1. Neither Party shall be liable for any failure or delay in the
-            performance of its obligations under this Agreement if such failure
-            or delay is caused by events beyond the Party’s reasonable control,
-            including but not limited to acts of God, war, terrorism, riots,
-            embargoes, acts of civil or military authorities, fires, floods,
-            accidents, strikes, or shortages of transportation facilities, fuel,
-            energy, labor, or materials. The affected Party shall promptly
-            notify the other Party of the occurrence of a force majeure event
-            and shall use commercially reasonable efforts to mitigate its
+            18.1. Neither Party shall be liable for any failure or delay in the performance
+            of its obligations under this Agreement if such failure or delay is caused by events
+            beyond the Party&rsquo;s reasonable control, including but not limited to acts of God,
+            war, terrorism, riots, embargoes, acts of civil or military authorities, fires, floods,
+            accidents, strikes, or shortages of transportation facilities, fuel, energy, labor,
+            or materials. The affected Party shall promptly notify the other Party of the occurrence
+            of a force majeure event and shall use commercially reasonable efforts to mitigate its
             effects and resume performance as soon as practicable.
           </p>
 
           {/* PUBLICITY / MARKETING */}
           <h2 className="font-semibold mt-4">19. PUBLICITY / MARKETING</h2>
           <p>
-            19.1. Neither Party shall publicly reference or use the other
-            Party’s name, trademarks, or logos in any marketing, press releases,
-            promotional materials, or public announcements without the prior
-            written consent of the other Party, which may be withheld at the
-            Party’s sole discretion.
+            19.1. Neither Party shall publicly reference or use the other Party&rsquo;s name,
+            trademarks, or logos in any marketing, press releases, promotional materials, or public
+            announcements without the prior written consent of the other Party, which may be withheld
+            at the Party&rsquo;s sole discretion.
           </p>
           <p>
-            19.2. However, unless the Charity objects in writing, digidov may
-            display the Charity’s name and/or logo in a publicly accessible
-            directory or general list of customers for informational or
-            promotional purposes, provided that digidov does not expressly or
-            implicitly endorse the Charity or misrepresent the nature of the
-            relationship.
+            19.2. However, unless the Charity objects in writing, digidov may display the Charity&rsquo;s
+            name and/or logo in a publicly accessible directory or general list of customers for
+            informational or promotional purposes, provided that digidov does not expressly or implicitly
+            endorse the Charity or misrepresent the nature of the relationship.
           </p>
 
           {/* NO JOINT VENTURE / PARTNERSHIP */}
@@ -406,10 +387,10 @@ export function ReceiptingAgreementDialog({
             20. NO JOINT VENTURE / PARTNERSHIP
           </h2>
           <p>
-            20.1. Nothing in this Agreement shall be construed to create a joint
-            venture, partnership, agency, or fiduciary relationship between the
-            Parties. Both Parties are independent contractors, and neither Party
-            has the authority to bind the other to any obligations.
+            20.1. Nothing in this Agreement shall be construed to create a joint venture,
+            partnership, agency, or fiduciary relationship between the Parties. Both Parties are
+            independent contractors, and neither Party has the authority to bind the other to any
+            obligations.
           </p>
 
           {/* NO THIRD-PARTY BENEFICIARIES */}
@@ -417,39 +398,33 @@ export function ReceiptingAgreementDialog({
             21. NO THIRD-PARTY BENEFICIARIES
           </h2>
           <p>
-            21.1. This Agreement is entered into solely for the benefit of the
-            Parties hereto and their respective successors and permitted
-            assigns. No provision of this Agreement is intended to confer any
-            rights, benefits, remedies, or claims upon any person or entity not
+            21.1. This Agreement is entered into solely for the benefit of the Parties hereto and
+            their respective successors and permitted assigns. No provision of this Agreement is
+            intended to confer any rights, benefits, remedies, or claims upon any person or entity not
             a Party to this Agreement.
           </p>
 
           {/* NOTICES */}
           <h2 className="font-semibold mt-4">22. NOTICES</h2>
           <p>
-            22.1. Any notice or other communication required or permitted to be
-            given under this Agreement shall be in writing and delivered by
-            email to the addresses designated by each Party. Notices shall be
-            deemed effective upon the sending Party’s receipt of a confirmation
-            (via read receipt or a written acknowledgment from the recipient)
-            indicating that the recipient received and reviewed the email. Each
-            Party shall promptly notify the other Party of any changes to its
-            designated email address for notices under this Agreement.
+            22.1. Any notice or other communication required or permitted to be given under this
+            Agreement shall be in writing and delivered by email to the addresses designated by each
+            Party. Notices shall be deemed effective upon the sending Party&rsquo;s receipt of a confirmation
+            (via read receipt or a written acknowledgment from the recipient) indicating that the recipient
+            received and reviewed the email. Each Party shall promptly notify the other Party of any changes
+            to its designated email address for notices under this Agreement.
           </p>
 
           {/* EXPORT COMPLIANCE */}
           <h2 className="font-semibold mt-4">23. EXPORT COMPLIANCE</h2>
           <p>
-            23.1. Each Party represents and warrants that it will comply with
-            all applicable export and import control laws and regulations in
-            providing and using the Services. The Charity shall not access or
-            use digidov’s platform in violation of any such laws or regulations.
-            Without limiting the foregoing, each Party agrees that it shall not
-            directly or indirectly export, re-export, or transfer any technical
-            data acquired from the other Party under this Agreement to any
-            destination or person restricted or prohibited by any export control
-            regulations, unless properly authorized by the relevant government
-            authority.
+            23.1. Each Party represents and warrants that it will comply with all applicable export and
+            import control laws and regulations in providing and using the Services. The Charity shall
+            not access or use digidov&rsquo;s platform in violation of any such laws or regulations.
+            Without limiting the foregoing, each Party agrees that it shall not directly or indirectly
+            export, re-export, or transfer any technical data acquired from the other Party under this
+            Agreement to any destination or person restricted or prohibited by any export control regulations,
+            unless properly authorized by the relevant government authority.
           </p>
 
           {/* ELECTRONIC SIGNATURES AND EXECUTION */}
@@ -457,20 +432,16 @@ export function ReceiptingAgreementDialog({
             24. ELECTRONIC SIGNATURES AND EXECUTION
           </h2>
           <p>
-            24.1. The Parties consent to the use of electronic signatures or
-            click-through acceptance and agree that either method shall be
-            deemed valid and enforceable. For the purposes of this Agreement, an
-            electronic signature may include the act of typing one’s first and
-            last name into a form. The Parties further agree that this Agreement
-            and any subsequent amendments or modifications may be entered into
-            electronically, and that any such electronic signatures or
-            manifestations of acceptance shall have the same force and effect as
-            an original ink-signed document.
+            24.1. The Parties consent to the use of electronic signatures or click-through acceptance and agree
+            that either method shall be deemed valid and enforceable. For the purposes of this Agreement, an
+            electronic signature may include the act of typing one&rsquo;s first and last name into a form.
+            The Parties further agree that this Agreement and any subsequent amendments or modifications may be
+            entered into electronically, and that any such electronic signatures or manifestations of acceptance
+            shall have the same force and effect as an original ink-signed document.
           </p>
 
           <p className="text-sm mt-4">
-            By clicking "Close" below, you confirm that you have reviewed the
-            terms of this Agreement.
+            By clicking &quot;Close&quot; below, you confirm that you have reviewed the terms of this Agreement.
           </p>
         </div>
       </div>

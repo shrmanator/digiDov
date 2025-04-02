@@ -21,6 +21,12 @@ interface CharityOrganizationInfoStepProps {
   onNext: (e: FormEvent<HTMLFormElement>) => void;
 }
 
+// Define the OptionType for GooglePlacesAutocomplete option
+interface OptionType {
+  label: string;
+  value: google.maps.places.AutocompletePrediction;
+}
+
 function capitalizeFirstLetter(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
@@ -54,7 +60,7 @@ export function CharityOrganizationInfoStep({
     onNext(e);
   };
 
-  const handlePlaceSelect = (option: any) => {
+  const handlePlaceSelect = (option: OptionType | null) => {
     if (!option || !window.google) return;
 
     const geocoder = new window.google.maps.Geocoder();
