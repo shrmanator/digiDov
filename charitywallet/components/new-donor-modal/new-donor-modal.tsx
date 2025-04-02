@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import validator from "validator";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ interface DonorProfileModalProps {
 
 interface GooglePlaceOption {
   label: string;
-  value: string;
+  value: google.maps.places.AutocompletePrediction;
 }
 
 export default function DonorProfileModal({
@@ -47,6 +48,10 @@ export default function DonorProfileModal({
     address: "",
   });
 
+  // Track the selected place for the autocomplete component
+  const [selectedPlace, setSelectedPlace] = useState<GooglePlaceOption | null>(
+    null
+  );
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -54,14 +59,35 @@ export default function DonorProfileModal({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddressChange = (value: GooglePlaceOption | null) => {
-    setFormData({ ...formData, address: value?.label || "" });
+  const handleAddressChange = (option: GooglePlaceOption | null) => {
+    if (!option || !window.google) return;
+
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ placeId: option.value.place_id }, (results, status) => {
+      if (status === "OK" && results && results[0]) {
+        const fullAddress = results[0].formatted_address;
+        // Update the form with the full formatted address
+        setFormData((prev) => ({
+          ...prev,
+          address: fullAddress,
+        }));
+        // Update the selected place to display the full address in the input field
+        setSelectedPlace({ label: fullAddress, value: option.value });
+      }
+    });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoadingForm(true);
     setErrorMessage(null);
+
+    // Validate email using the validator library
+    if (!validator.isEmail(formData.email)) {
+      setErrorMessage("Please enter a valid email address.");
+      setIsLoadingForm(false);
+      return;
+    }
 
     try {
       await upsertDonor({
@@ -75,7 +101,6 @@ export default function DonorProfileModal({
       onClose();
     } catch (err: unknown) {
       console.error(err);
-
       if (err instanceof Error && err.message === "EMAIL_ALREADY_EXISTS") {
         setErrorMessage(
           "This email is already taken. Please use a different one."
@@ -138,9 +163,7 @@ export default function DonorProfileModal({
           <GooglePlacesAutocomplete
             apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY!}
             selectProps={{
-              value: formData.address
-                ? { label: formData.address, value: formData.address }
-                : null,
+              value: selectedPlace,
               onChange: handleAddressChange,
               placeholder: "Address",
               styles: googlePlacesStyles,
