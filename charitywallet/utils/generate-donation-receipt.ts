@@ -208,7 +208,7 @@ export async function generateDonationReceiptPDF(
   drawField("Name", donorName);
   drawField("Address", donorAddress);
   drawField("Donation Received", formatDate(donationDate));
-  drawField("Issued on", formatDate(issueDate));
+  drawField("Tax Receipt Issued on", formatDate(issueDate));
 
   y -= lineHeight.small;
 
