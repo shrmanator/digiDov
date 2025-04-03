@@ -6,7 +6,7 @@ import { inAppWallet } from "thirdweb/wallets";
 const wallets = [inAppWallet()];
 
 const appMetadata = {
-  name: "Digidov Wallet",
+  name: "digiDov Wallet",
   iconURL: "/favicon.png",
   logoURL: "/favicon.png",
 };

@@ -21,7 +21,7 @@ export async function sendContactEmailAction(formData: FormData) {
   const message = formData.get("message") as string;
 
   const emailParams = new EmailParams()
-    .setFrom(new Sender("contact@digidov.com", "Digidov Contact"))
+    .setFrom(new Sender("contact@digidov.com", "digiDov Contact"))
     .setTo([new Recipient(to)])
     .setSubject(subject)
     .setHtml(`<p>${message}</p>`);
@@ -62,7 +62,7 @@ export async function notifyDonorOfDonation(
     const shortReceiptLink = `https://digidov.com/r/${charitySlug}`;
 
     const emailParams = new EmailParams()
-      .setFrom(new Sender("contact@digidov.com", "Digidov Receipts"))
+      .setFrom(new Sender("contact@digidov.com", "digiDov Receipts"))
       .setTo([new Recipient(donorEmail, donorName)])
       .setSubject("Your Donation Receipt")
       .setHtml(
@@ -74,7 +74,7 @@ export async function notifyDonorOfDonation(
          <p><strong>Receipt Number:</strong> ${receiptNumber}</p>
          <p><strong>Transaction hash:</strong> ${txLink}</p>
          <p>Warm regards,</p>
-         <p>Digidov</p>`
+         <p>digiDov</p>`
       )
       .setAttachments([
         new Attachment(
@@ -120,7 +120,7 @@ export async function notifyCharityOfDonation(
     }
 
     const emailParams = new EmailParams()
-      .setFrom(new Sender("contact@digidov.com", "Digidov Alerts"))
+      .setFrom(new Sender("contact@digidov.com", "digiDov Alerts"))
       .setTo([new Recipient(charityEmail, charityName)])
       .setSubject("New Donation Received")
       .setHtml(
@@ -134,7 +134,7 @@ export async function notifyCharityOfDonation(
          </ul>
          <p>You can view this donation and its official receipt in your dashboard:</p>
          <p><a href="https://www.digidov.com/dashboard/audits">Go to dashboard</a></p>
-         <p>– Digidov</p>`
+         <p>– digiDov</p>`
       );
 
     await mailerSend.email.send(emailParams);

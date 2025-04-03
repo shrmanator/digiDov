@@ -41,6 +41,8 @@ export default function Home() {
 
           <h1 className="text-5xl text-orange-600 font-tsukimi">digiDov</h1>
         </div>
+        {/* <p className="mb-6 text-center text-xs">Crypto, Tax Receipts, Audit Trail</p> */}
+
         <ConnectEmbed
           client={client}
           wallets={wallets}
