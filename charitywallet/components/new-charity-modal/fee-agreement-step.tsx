@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-// Import the info icon from Lucide (or wherever you get your icons).
 import { Info } from "lucide-react";
 
 interface FeeAgreementStepProps {

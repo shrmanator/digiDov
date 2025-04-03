@@ -9,6 +9,7 @@ import { DonationUrlStep } from "./donation-url-step";
 import { FeeAgreementStep } from "./fee-agreement-step";
 import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -28,6 +29,7 @@ function formatPhoneNumber(value: string) {
 export default function CharitySetupModal({
   walletAddress,
 }: CharitySetupModalProps) {
+  const router = useRouter();
   const { data: profiles } = useProfiles({ client });
 
   const defaultEmail =
@@ -104,6 +106,8 @@ export default function CharitySetupModal({
         is_profile_complete: true,
       });
       setCharitySlug(updatedCharity.slug || "");
+      router.refresh();
+
       setStep("feeAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
