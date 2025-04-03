@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-md flex flex-col items-center">
-        <div className="flex items-center mb-5">
+        <div className="flex items-center">
           <Image
             src="/images/dovcoin-logo.png"
             alt="Dovcoin Logo"
@@ -39,10 +39,13 @@ export default function Home() {
             quality={100}
           />
 
-          <h1 className="text-5xl text-orange-600 font-tsukimi">digiDov</h1>
+          <h1 className="text-5xl ml-2 text-orange-600 font-tsukimi font-bold">
+            digiDov
+          </h1>
         </div>
-        {/* <p className="mb-6 text-center text-xs">Crypto, Tax Receipts, Audit Trail</p> */}
-
+        <p className="mb-6 ml-28 text-center text-xs font-tsukimi">
+          Crypto Donations, Simplified
+        </p>
         <ConnectEmbed
           client={client}
           wallets={wallets}
@@ -71,6 +74,10 @@ export default function Home() {
             },
           }}
         />
+
+        <p className="text-xs text-gray-500 mt-4">
+          🔒 Your data remains private and secure.
+        </p>
       </div>
     </div>
   );

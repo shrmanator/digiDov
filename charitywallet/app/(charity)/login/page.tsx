@@ -37,9 +37,13 @@ export default function Home() {
             quality={100}
           />
 
-          <h1 className="text-5xl text-orange-600 font-tsukimi">digiDov</h1>
+          <h1 className="text-5xl text-orange-600 font-tsukimi font-bold">
+            digiDov
+          </h1>
         </div>
-        {/* <p className="mb-6 text-center text-xs">Crypto, Tax Receipts, Audit Trail</p> */}
+        {/* <p className="mb-6 text-center text-xs">
+          Easiest way to accept crypto donations
+        </p> */}
 
         <ConnectEmbed
           client={client}
