@@ -132,7 +132,16 @@ export default function CharitySetupModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        // Only allow the modal to be opened programmatically.
+        if (isOpen) {
+          setOpen(true);
+        }
+        // Otherwise, ignore attempts to close (such as clicking outside)
+      }}
+    >
       <DialogContent className="[&>button]:hidden sm:max-w-xl">
         {step === "charityOrganizationInfoStep" && (
           <CharityOrganizationInfoStep

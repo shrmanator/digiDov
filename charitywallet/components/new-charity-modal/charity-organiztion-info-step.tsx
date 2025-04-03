@@ -27,10 +27,6 @@ interface OptionType {
   value: google.maps.places.AutocompletePrediction;
 }
 
-function capitalizeFirstLetter(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 export function CharityOrganizationInfoStep({
   formData,
   isLoading,
@@ -48,10 +44,7 @@ export function CharityOrganizationInfoStep({
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === "charity_name") {
-      e.target.value = capitalizeFirstLetter(value);
-    }
+    // Removed auto-capitalization logic
     onChange(e);
   };
 
