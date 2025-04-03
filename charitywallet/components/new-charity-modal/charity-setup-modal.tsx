@@ -9,7 +9,7 @@ import { DonationUrlStep } from "./donation-url-step";
 import { FeeAgreementStep } from "./fee-agreement-step";
 import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
+import { useRouter } from "next/navigation";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -106,8 +106,7 @@ export default function CharitySetupModal({
         is_profile_complete: true,
       });
       setCharitySlug(updatedCharity.slug || "");
-      router.refresh();
-
+      // Do not refresh here!
       setStep("feeAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
@@ -119,7 +118,12 @@ export default function CharitySetupModal({
 
   // After fee agreement, proceed to donation URL step
   const handleFeeAgree = () => setStep("donationUrlStep");
-  const handleFinish = () => setOpen(false);
+
+  // Call router.refresh() when finishing the modal, after it’s closed.
+  const handleFinish = () => {
+    setOpen(false);
+    router.refresh();
+  };
 
   const handleBack = () => {
     if (step === "authorizedContactInfoStep") {
@@ -139,7 +143,6 @@ export default function CharitySetupModal({
         if (isOpen) {
           setOpen(true);
         }
-        // Otherwise, ignore attempts to close (such as clicking outside)
       }}
     >
       <DialogContent className="[&>button]:hidden sm:max-w-xl">
