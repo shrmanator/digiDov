@@ -27,52 +27,39 @@ export function DonationSummary({
 }: DonationSummaryProps) {
   const donorAmount =
     selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
-
-  const shortenedCharityName =
+  const shortName =
     charityName.length > 20 ? `${charityName.slice(0, 20)}...` : charityName;
 
   return (
-    <div className="mt-6 p-4 bg-muted/50 rounded-md">
-      <h4 className="font-medium mb-2">Donation Summary</h4>
-      <div className="space-y-1 text-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Checkbox
-            id="cover-fee"
-            checked={coverFee}
-            onCheckedChange={onCoverFeeChange}
-          />
-          <Label
-            htmlFor="cover-fee"
-            className="text-sm font-medium cursor-pointer"
-          >
-            Cover the 3% platform fee
-          </Label>
-        </div>
-
-        <div className="flex justify-between">
-          <span>You pay:</span>
-          <span>${donorAmount.toFixed(2)} USD</span>
-        </div>
-
-        <div className="flex justify-between text-muted-foreground">
-          <span>Processing fee (3%):</span>
-          <span>
-            {coverFee ? "" : "-"}${feeAmount.toFixed(2)} USD
-          </span>
-        </div>
-
-        <Separator className="my-2" />
-
-        <div className="flex justify-between font-medium">
-          <span>
-            <span className="capitalize">{shortenedCharityName}</span> receives:
-          </span>
-          <span>${charityReceives.toFixed(2)} USD</span>
-        </div>
-
-        <div className="text-xs text-muted-foreground text-right mt-1">
-          ~{tokenFloat.toFixed(5)} {nativeSymbol} sent to charity
-        </div>
+    <div className="p-3 bg-muted/50 rounded-md shadow-sm">
+      <h4 className="text-sm font-semibold mb-2">Donation Summary</h4>
+      <div className="flex items-center gap-2 mb-3">
+        <Checkbox
+          id="cover-fee"
+          checked={coverFee}
+          onCheckedChange={onCoverFeeChange}
+        />
+        <Label htmlFor="cover-fee" className="text-sm cursor-pointer">
+          Cover 3% fee
+        </Label>
+      </div>
+      <div className="flex justify-between text-sm mb-1">
+        <span>You pay:</span>
+        <span>${donorAmount.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between text-sm text-muted-foreground mb-2">
+        <span>Fee:</span>
+        <span>
+          {coverFee ? `$${feeAmount.toFixed(2)}` : `-$${feeAmount.toFixed(2)}`}
+        </span>
+      </div>
+      <Separator className="my-2" />
+      <div className="flex justify-between text-sm font-medium">
+        <span>{shortName} receives:</span>
+        <span>${charityReceives.toFixed(2)}</span>
+      </div>
+      <div className="text-right text-xs text-muted-foreground mt-1">
+        ~{tokenFloat.toFixed(5)} {nativeSymbol}
       </div>
     </div>
   );
