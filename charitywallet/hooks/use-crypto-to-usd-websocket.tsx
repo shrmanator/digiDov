@@ -23,6 +23,7 @@ export function usePriceWebSocket(
       try {
         const response = await fetch("https://open.er-api.com/v6/latest/USD");
         const data = await response.json();
+        console.log("the data");
         if (
           data &&
           data.result === "success" &&

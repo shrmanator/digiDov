@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
-import { usePriceWebSocket } from "@/hooks/use-crypto-to-usd";
 import { useDonationCalculator } from "@/hooks/use-donation-calculator";
 import { useAuth } from "@/contexts/auth-context";
 import { useSendWithFee } from "@/hooks/use-send-with-fee";
@@ -23,6 +22,7 @@ import { DonationLoading } from "./donation-loading";
 import { DonationSummary } from "./donation-summary";
 import { CheckCircle, Loader2 } from "lucide-react"; // Added CheckCircle icon
 import { useLogin } from "@/hooks/use-thirdweb-headless-login";
+import { useStaticConversionRate } from "@/hooks/use-current-crypto-price";
 
 // Types
 interface DonationFormProps {
@@ -54,9 +54,17 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Chain data
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
+  console.log("Native symbol:", activeChain);
+  // External data using static conversion rate hook
+  const activeChainId = activeChain?.id?.toString() || "";
+  const { conversionRate: tokenPrice, error: conversionRateError } =
+    useStaticConversionRate(activeChainId, "usd");
 
-  // External data
-  const tokenPrice = usePriceWebSocket(nativeSymbol, "USD");
+  useEffect(() => {
+    if (conversionRateError) {
+      console.error("Conversion hook error:", conversionRateError);
+    }
+  }, [conversionRateError]);
 
   // Derived calculations
   const {
@@ -85,10 +93,8 @@ export default function DonationForm({ charity }: DonationFormProps) {
   useEffect(() => {
     if (activeChain?.id && tokenPrice !== null && tokenPrice > 0) {
       setCalculatedChainId(activeChain.id);
-    } else if (activeChain?.id !== calculatedChainId) {
-      setCalculatedChainId(undefined);
     }
-  }, [activeChain, tokenPrice, calculatedChainId]);
+  }, [activeChain?.id, tokenPrice]);
 
   // Check for incomplete profiles
   useEffect(() => {
