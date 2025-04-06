@@ -18,14 +18,20 @@ import { prepareTransaction, toWei } from "thirdweb";
 import { polygon, sepolia } from "thirdweb/chains";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, BellRing, AlertCircle, CheckCircle } from "lucide-react";
+import { sendOtpAction, verifyOtpAction } from "@/app/actions/otp";
+import OtpModal from "./opt-modal";
 
 interface SendingFundsModalProps {
-  user: { walletAddress: string };
+  user: { walletAddress: string; email?: string };
 }
 
 export function SendingFundsModal({ user }: SendingFundsModalProps) {
   const [open, setOpen] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [pendingTx, setPendingTx] = useState<FieldValues | null>(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [methodId, setMethodId] = useState("");
+  const [otpError, setOtpError] = useState("");
 
   const {
     register,
@@ -76,10 +82,12 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     [walletBalance, setValue]
   );
 
-  // Submit form
+  // Instead of sending the transaction immediately,
+  // store the transaction details and trigger OTP flow.
   const onSubmit = (formData: FieldValues) => {
     if (!activeAccount) return;
 
+    // Prepare the transaction.
     const tx = prepareTransaction({
       to: formData.recipientAddress,
       value: toWei(formData.amount),
@@ -87,11 +95,58 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
       client: thirdwebClient,
     });
 
-    sendTx(tx, {
-      onSuccess: () => {
-        reset();
-      },
-    });
+    // Store the pending transaction and trigger OTP.
+    setPendingTx(tx);
+
+    // Ensure we have an email to send OTP to.
+    if (!user.email) {
+      // In a highly secure app, you might require an email for OTP.
+      console.error("No email provided for OTP.");
+      return;
+    }
+
+    // Send OTP
+    sendOtpAction(user.email)
+      .then((response) => {
+        if (response?.email_id) {
+          setMethodId(response.email_id);
+          setIsOtpModalOpen(true);
+        } else {
+          console.error("Failed to send OTP.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error sending OTP:", err);
+      });
+  };
+
+  // This function is called when the OTP modal returns the OTP code.
+  // It performs a backend OTP verification and, if successful, sends the funds.
+  const handleOtpVerified = async (otp: string) => {
+    setIsOtpModalOpen(false);
+    setOtpError("");
+
+    try {
+      // Verify the OTP on the backend (this call consumes the OTP)
+      const verification = await verifyOtpAction(methodId, otp);
+      if (verification.status_code !== 200) {
+        setOtpError("OTP verification failed. Please try again.");
+        return;
+      }
+    } catch (err: unknown) {
+      setOtpError("OTP verification failed. Please try again.");
+      return;
+    }
+
+    // Now that OTP is verified, send the transaction.
+    if (pendingTx) {
+      sendTx(pendingTx, {
+        onSuccess: () => {
+          reset();
+        },
+      });
+      setPendingTx(null);
+    }
   };
 
   return (
@@ -113,7 +168,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* IMPORTANT NOTE (pinned banner) */}
+        {/* Pinned Banner */}
         <div className="my-2 border-l-2 border-warning bg-muted p-2 rounded">
           <div className="flex items-start gap-2">
             <BellRing size={14} className="text-warning mt-0.5" />
@@ -153,7 +208,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
                 },
               })}
               placeholder="0x..."
-              disabled={isSuccess}
               className="font-mono"
             />
             {errors.recipientAddress && (
@@ -180,7 +234,6 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
               placeholder="0.00"
               type="text"
               inputMode="decimal"
-              disabled={isSuccess}
               className="font-mono"
             />
             {errors.amount && (
@@ -215,8 +268,8 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isPending || isSuccess}
             className="w-full"
+            disabled={isPending || isSuccess}
           >
             {isPending ? (
               <span className="flex items-center gap-2">
@@ -234,7 +287,13 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </Button>
         </form>
 
-        {/* Success or Error Messages */}
+        {error && (
+          <div className="mt-2 p-2 bg-destructive/20 border border-destructive rounded text-xs text-destructive">
+            <p className="font-medium">Transaction failed</p>
+            <p className="mt-1">{error.message}</p>
+          </div>
+        )}
+
         {isSuccess && data && (
           <div className="mt-2 p-2 bg-muted border rounded text-xs">
             <div className="flex items-center gap-1 text-success">
@@ -247,14 +306,18 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
             </p>
           </div>
         )}
-
-        {error && (
-          <div className="mt-2 p-2 bg-destructive/20 border border-destructive rounded text-xs text-destructive">
-            <p className="font-medium">Transaction failed</p>
-            <p className="mt-1">{error.message}</p>
-          </div>
-        )}
       </DialogContent>
+
+      {/* OTP Modal for extra security */}
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onOpenChange={setIsOtpModalOpen}
+        // We pass the methodId so the backend can verify the OTP.
+        // The OTP modal simply collects the OTP.
+        methodId={methodId}
+        email={user.email || "your-email@example.com"}
+        onVerified={handleOtpVerified}
+      />
     </Dialog>
   );
 }

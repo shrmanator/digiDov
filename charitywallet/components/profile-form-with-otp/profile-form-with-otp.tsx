@@ -67,7 +67,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
     }
   };
 
-  // The OTP modal now returns the OTP without performing verification.
   const handleOtpVerified = async (otp: string) => {
     setIsOtpModalOpen(false);
     if (pendingData) {
@@ -82,7 +81,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
       fd.append(key, String(value));
     });
     try {
-      // Pass both the OTP and methodId to the server.
       await updateCharityProfileAction(fd, otp, methodId);
       toast({
         title: "Success",
