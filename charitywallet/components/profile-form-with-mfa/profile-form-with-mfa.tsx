@@ -7,7 +7,7 @@ import ProfileForm, {
 import MfaModal from "@/components/mfa-modal";
 import { toast } from "@/hooks/use-toast";
 import { updateCharityProfile } from "@/app/actions/charities";
-import { sendOtpAction } from "@/app/actions/mfa";
+import { sendOtpAction } from "@/app/actions/otp";
 import { Charity } from "@/app/types/charity-client";
 
 interface ProfileWithMfaProps {
@@ -15,62 +15,58 @@ interface ProfileWithMfaProps {
 }
 
 export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
-  const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState("");
   const [pendingData, setPendingData] = useState<ProfileFormData | null>(null);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
 
   const handleFormSubmit = async (formData: ProfileFormData) => {
-    if (!isVerified) {
-      if (!charity.contact_email) {
-        const errorMessage = "No contact email provided.";
-        setError(errorMessage);
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setPendingData(formData);
-      setError("");
-
+    if (!charity.contact_email) {
+      const errorMessage = "No contact email provided.";
+      setError(errorMessage);
       toast({
-        title: `Sending OTP to ${charity.contact_email}...`,
-        variant: "default",
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
       });
+      return;
+    }
 
-      try {
-        const response = await sendOtpAction(charity.contact_email);
-        if (response?.email_id) {
-          setMethodId(response.email_id);
-          setIsMfaOpen(true);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to send OTP. Please try again.",
-            variant: "destructive",
-          });
-        }
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : "An unknown error occurred";
-        setError(errorMessage);
+    // Always trigger the OTP flow for every sensitive operation.
+    setPendingData(formData);
+    setError("");
+
+    toast({
+      title: `Sending OTP to ${charity.contact_email}...`,
+      variant: "default",
+    });
+
+    try {
+      const response = await sendOtpAction(charity.contact_email);
+      if (response?.email_id) {
+        setMethodId(response.email_id);
+        setIsMfaOpen(true);
+      } else {
         toast({
           title: "Error",
-          description: errorMessage,
+          description: "Failed to send OTP. Please try again.",
           variant: "destructive",
         });
       }
-    } else {
-      await updateProfile(formData);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
+  // When OTP verification succeeds, proceed with the update.
   const handleMfaVerified = async () => {
-    setIsVerified(true);
     setIsMfaOpen(false);
     if (pendingData) {
       await updateProfile(pendingData);
