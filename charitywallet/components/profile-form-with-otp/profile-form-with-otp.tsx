@@ -5,7 +5,7 @@ import ProfileForm, {
   ProfileFormData,
 } from "@/components/profile-form-with-otp/profile-form";
 import { toast } from "@/hooks/use-toast";
-import { updateCharityProfile } from "@/app/actions/charities";
+import { updateCharityProfileAction } from "@/app/actions/charities";
 import { sendOtpAction } from "@/app/actions/otp";
 import { Charity } from "@/app/types/charity-client";
 import OtpModal from "../opt-modal";
@@ -83,13 +83,13 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
     });
     try {
       // Pass both the OTP and methodId to the server.
-      await updateCharityProfile(fd, otp, methodId);
+      await updateCharityProfileAction(fd, otp, methodId);
       toast({
         title: "Success",
         description: "Profile updated successfully.",
         variant: "default",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       let friendlyMessage = "Failed to update profile.";
       if (err instanceof Error) {
         if (err.message.includes("otp_code_not_found")) {
@@ -113,7 +113,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
       <OtpModal
         isOpen={isOtpModalOpen}
         onOpenChange={setIsOtpModalOpen}
-        methodId={methodId}
         email={charity.contact_email || "your-email@example.com"}
         onVerified={handleOtpVerified}
       />

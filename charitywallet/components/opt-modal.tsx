@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 interface OtpModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  methodId: string;
   email?: string;
   onVerified: (otp: string) => void;
 }
@@ -23,7 +22,6 @@ interface OtpModalProps {
 export default function OtpModal({
   isOpen,
   onOpenChange,
-  methodId,
   email,
   onVerified,
 }: OtpModalProps) {

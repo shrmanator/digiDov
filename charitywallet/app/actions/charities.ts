@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma";
 import slugify from "slugify";
 import { addWalletAddressToMoralis } from "./moralis";
-import stytchClient from "@/lib/stytchClient";
 import { verifyOtpAction } from "./otp";
 
 export interface CharityInput {
@@ -214,7 +213,7 @@ export async function getCharityByWalletAddress(wallet_address: string) {
  * @param otp - The OTP code provided by the user.
  * @param methodId - The method_id returned from sendOtpAction.
  */
-export async function updateCharityProfile(
+export async function updateCharityProfileAction(
   formData: FormData,
   otp: string,
   methodId: string
