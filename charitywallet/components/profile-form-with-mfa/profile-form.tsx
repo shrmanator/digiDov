@@ -144,7 +144,7 @@ export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
         </div>
       </div>
 
-      <div>
+      {/* <div>
         <Label
           htmlFor="contact_email"
           className="block text-sm font-medium text-foreground"
@@ -160,7 +160,7 @@ export default function ProfileForm({ charity, onSubmit }: ProfileFormProps) {
           onChange={handleChange}
           className="mt-1 w-full rounded-md border border-border bg-input p-2 text-foreground"
         />
-      </div>
+      </div> */}
 
       <div>
         <Label
