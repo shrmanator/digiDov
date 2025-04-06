@@ -11,23 +11,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { verifyOtpAction } from "@/app/actions/mfa";
 
-interface MfaModalProps {
+interface OtpModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   methodId: string;
   email?: string;
-  onVerified: () => void;
+  onVerified: (otp: string) => void;
 }
 
-export default function MfaModal({
+export default function OtpModal({
   isOpen,
   onOpenChange,
   methodId,
   email,
   onVerified,
-}: MfaModalProps) {
+}: OtpModalProps) {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
 
@@ -37,19 +36,15 @@ export default function MfaModal({
     setOtp(value.trim());
   };
 
+  // Instead of verifying OTP here, simply return the OTP value.
   const handleVerify = async () => {
-    try {
-      const { status_code } = await verifyOtpAction(methodId, otp);
-      if (status_code === 200) {
-        onVerified();
-        onOpenChange(false);
-      } else {
-        setError("Verification failed. Please try again.");
-      }
-    } catch (err) {
-      console.error("MFA verification error:", err);
-      setError("An error occurred during verification.");
+    if (!otp) {
+      setError("Please enter the OTP.");
+      return;
     }
+    // Close the modal and pass the OTP back.
+    onVerified(otp);
+    onOpenChange(false);
   };
 
   return (

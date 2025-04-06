@@ -3,21 +3,21 @@
 import { useState } from "react";
 import ProfileForm, {
   ProfileFormData,
-} from "@/components/profile-form-with-mfa/profile-form";
-import MfaModal from "@/components/mfa-modal";
+} from "@/components/profile-form-with-otp/profile-form";
 import { toast } from "@/hooks/use-toast";
 import { updateCharityProfile } from "@/app/actions/charities";
 import { sendOtpAction } from "@/app/actions/otp";
 import { Charity } from "@/app/types/charity-client";
+import OtpModal from "../opt-modal";
 
-interface ProfileWithMfaProps {
+interface ProfileWithOtpProps {
   charity: Charity;
 }
 
-export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
+export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
   const [error, setError] = useState("");
   const [pendingData, setPendingData] = useState<ProfileFormData | null>(null);
-  const [isMfaOpen, setIsMfaOpen] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
 
   const handleFormSubmit = async (formData: ProfileFormData) => {
@@ -32,7 +32,6 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
       return;
     }
 
-    // Always trigger the OTP flow for every sensitive operation.
     setPendingData(formData);
     setError("");
 
@@ -45,7 +44,7 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
       const response = await sendOtpAction(charity.contact_email);
       if (response?.email_id) {
         setMethodId(response.email_id);
-        setIsMfaOpen(true);
+        setIsOtpModalOpen(true);
       } else {
         toast({
           title: "Error",
@@ -65,31 +64,32 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
     }
   };
 
-  // When OTP verification succeeds, proceed with the update.
-  const handleMfaVerified = async () => {
-    setIsMfaOpen(false);
+  // The OTP modal now returns the OTP without performing verification.
+  const handleOtpVerified = async (otp: string) => {
+    setIsOtpModalOpen(false);
     if (pendingData) {
-      await updateProfile(pendingData);
+      await updateProfile(pendingData, otp);
       setPendingData(null);
     }
   };
 
-  const updateProfile = async (data: ProfileFormData) => {
+  const updateProfile = async (data: ProfileFormData, otp: string) => {
     const fd = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       fd.append(key, String(value));
     });
     try {
-      await updateCharityProfile(fd);
+      // Pass both the OTP and methodId to the server.
+      await updateCharityProfile(fd, otp, methodId);
       toast({
         title: "Success",
         description: "Profile updated successfully.",
         variant: "default",
       });
-    } catch {
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: "Failed to update profile.",
+        description: err.message || "Failed to update profile.",
         variant: "destructive",
       });
     }
@@ -98,12 +98,12 @@ export default function ProfileWithMfa({ charity }: ProfileWithMfaProps) {
   return (
     <>
       <ProfileForm charity={charity} onSubmit={handleFormSubmit} />
-      <MfaModal
-        isOpen={isMfaOpen}
-        onOpenChange={setIsMfaOpen}
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onOpenChange={setIsOtpModalOpen}
         methodId={methodId}
         email={charity.contact_email || "your-email@example.com"}
-        onVerified={handleMfaVerified}
+        onVerified={handleOtpVerified}
       />
       {error && <p style={{ color: "red" }}>{error}</p>}
     </>

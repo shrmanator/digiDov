@@ -3,6 +3,8 @@
 import prisma from "@/lib/prisma";
 import slugify from "slugify";
 import { addWalletAddressToMoralis } from "./moralis";
+import stytchClient from "@/lib/stytchClient";
+import { verifyOtpAction } from "./otp";
 
 export interface CharityInput {
   charity_name?: string | null;
@@ -206,7 +208,25 @@ export async function getCharityByWalletAddress(wallet_address: string) {
   });
 }
 
-export async function updateCharityProfile(formData: FormData): Promise<void> {
+/**
+ * Updates a charity profile only if the provided OTP is verified.
+ * @param formData - The form data containing the charity profile.
+ * @param otp - The OTP code provided by the user.
+ * @param methodId - The method_id returned from sendOtpAction.
+ */
+export async function updateCharityProfile(
+  formData: FormData,
+  otp: string,
+  methodId: string
+): Promise<void> {
+  // Verify the OTP on the server (this call consumes the OTP).
+  const { status_code } = await verifyOtpAction(methodId, otp);
+  if (status_code !== 200) {
+    throw new Error("OTP verification failed.");
+  }
+  console.log("OTP verified successfully.", status_code);
+
+  // Prepare the charity input.
   const charityInput: CharityInput = {
     charity_name: formData.get("charity_name")?.toString() || null,
     registered_address: formData.get("registered_address")?.toString() || null,
@@ -220,5 +240,6 @@ export async function updateCharityProfile(formData: FormData): Promise<void> {
     is_profile_complete: true,
   };
 
+  // Proceed with updating the charity profile.
   await upsertCharity(charityInput);
 }
