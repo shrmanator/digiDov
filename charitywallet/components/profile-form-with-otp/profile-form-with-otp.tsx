@@ -15,7 +15,6 @@ interface ProfileWithOtpProps {
 }
 
 export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
-  const [error, setError] = useState("");
   const [pendingData, setPendingData] = useState<ProfileFormData | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
@@ -23,7 +22,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
   const handleFormSubmit = async (formData: ProfileFormData) => {
     if (!charity.contact_email) {
       const errorMessage = "No contact email provided.";
-      setError(errorMessage);
       toast({
         title: "Error",
         description: errorMessage,
@@ -33,7 +31,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
     }
 
     setPendingData(formData);
-    setError("");
 
     toast({
       title: `Sending OTP to ${charity.contact_email}...`,
@@ -53,9 +50,15 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
         });
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unknown error occurred";
-      setError(errorMessage);
+      let errorMessage = "An unknown error occurred.";
+      if (err instanceof Error) {
+        if (err.message.includes("Too many requests")) {
+          errorMessage =
+            "Too many OTP requests. Please wait a few minutes before trying again.";
+        } else {
+          errorMessage = err.message;
+        }
+      }
       toast({
         title: "Error",
         description: errorMessage,
@@ -87,9 +90,18 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
         variant: "default",
       });
     } catch (err: any) {
+      let friendlyMessage = "Failed to update profile.";
+      if (err instanceof Error) {
+        if (err.message.includes("otp_code_not_found")) {
+          friendlyMessage =
+            "The passcode was incorrect. Please try again or request a new one.";
+        } else {
+          friendlyMessage = err.message;
+        }
+      }
       toast({
         title: "Error",
-        description: err.message || "Failed to update profile.",
+        description: friendlyMessage,
         variant: "destructive",
       });
     }
@@ -105,7 +117,6 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
         email={charity.contact_email || "your-email@example.com"}
         onVerified={handleOtpVerified}
       />
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }
