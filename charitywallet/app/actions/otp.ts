@@ -22,7 +22,7 @@ export interface OtpResponse {
 /**
  * Sends an OTP email via Stytch using the loginOrCreate endpoint.
  * @param email - The email address to send the OTP to.
- * @returns A promise resolving to an OtpResponse.
+ * @returns A promise resolving to an OTP response.
  */
 export async function sendOtpAction(email: string): Promise<OtpResponse> {
   console.info(`Sending OTP to ${email}`);
@@ -37,11 +37,14 @@ export async function sendOtpAction(email: string): Promise<OtpResponse> {
       email_id: response.email_id,
     };
   } catch (error: unknown) {
-    const stytchError = error as StytchError;
+    const stytchError = error as {
+      status_code?: number;
+      error_message?: string;
+    };
     const status_code = stytchError.status_code ?? 500;
+    // Use the error message provided by Stytch, if available.
     const error_message =
-      stytchError.error_message ||
-      "Too many requests. Please wait a moment and try again.";
+      stytchError.error_message || "Failed to send OTP. Please try again.";
     console.error("Failed to send OTP", stytchError);
     return {
       status_code,

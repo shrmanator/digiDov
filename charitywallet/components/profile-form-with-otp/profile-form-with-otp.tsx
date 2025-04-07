@@ -42,6 +42,12 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
       if (response?.email_id) {
         setMethodId(response.email_id);
         setIsOtpModalOpen(true);
+      } else if (response?.error_message) {
+        toast({
+          title: "Error",
+          description: response.error_message,
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Error",
@@ -68,10 +74,15 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
   };
 
   const handleOtpVerified = async (otp: string) => {
-    setIsOtpModalOpen(false);
-    if (pendingData) {
-      await updateProfile(pendingData, otp);
-      setPendingData(null);
+    try {
+      if (pendingData) {
+        await updateProfile(pendingData, otp);
+        setPendingData(null);
+        setIsOtpModalOpen(false);
+      }
+    } catch (error) {
+      // The error thrown will be caught by the OTP modal.
+      throw error;
     }
   };
 
@@ -97,11 +108,7 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
           friendlyMessage = err.message;
         }
       }
-      toast({
-        title: "Error",
-        description: friendlyMessage,
-        variant: "destructive",
-      });
+      throw new Error(friendlyMessage);
     }
   };
 
