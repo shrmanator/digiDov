@@ -16,7 +16,7 @@ export interface OtpModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   email?: string;
-  onVerified: (otp: string) => void;
+  onVerified: (otp: string) => Promise<void>;
 }
 
 export default function OtpModal({
@@ -27,22 +27,37 @@ export default function OtpModal({
 }: OtpModalProps) {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleChange = ({
     target: { value },
   }: ChangeEvent<HTMLInputElement>) => {
     setOtp(value.trim());
+    if (error) setError("");
   };
 
-  // Instead of verifying OTP here, simply return the OTP value.
+  // Pass the OTP back to the parent for verification and handle errors inline.
   const handleVerify = async () => {
     if (!otp) {
       setError("Please enter the OTP.");
       return;
     }
-    // Pass the OTP back to the parent for verification.
-    onVerified(otp);
-    // Do not close the modal here; the parent will decide based on verification.
+    setIsVerifying(true);
+    try {
+      // This call will now throw if OTP verification fails.
+      await onVerified(otp);
+      setError("");
+      onOpenChange(false);
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "OTP verification failed. Please try again.";
+      setError(errorMsg);
+      // Keep modal open for another attempt.
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -68,10 +83,16 @@ export default function OtpModal({
         />
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         <DialogFooter className="mt-4 flex justify-end space-x-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isVerifying}
+          >
             Cancel
           </Button>
-          <Button onClick={handleVerify}>Verify</Button>
+          <Button onClick={handleVerify} disabled={isVerifying}>
+            {isVerifying ? "Verifying..." : "Verify"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -63,7 +63,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
     }
     fetchBalance();
   }, [charity]);
-  
 
   // Helper to set amount based on percentage.
   const handleSetPercentage = useCallback(
@@ -124,21 +123,25 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
   // This function is called when the OTP modal returns the OTP code.
   // It performs a backend OTP verification and, if successful, sends the transaction.
   const handleOtpVerified = async (otp: string) => {
-    setOtpError("");
-
     try {
       const verification = await verifyOtpAction(methodId, otp);
       if (verification.status_code !== 200) {
-        setOtpError("Too many requests. Please wait a moment and try again.");
-        return;
+        const errorResponse = verification.response as {
+          error_message?: string;
+        };
+        const errorMsg =
+          errorResponse.error_message ||
+          "OTP verification failed. Please try again.";
+        // Throw error to be caught in the OTP modal.
+        throw new Error(errorMsg);
       }
-    } catch {
-      setOtpError("Too many requests. Please wait a moment and try again.");
-      return;
+    } catch (error) {
+      // Propagate the error so that the OTP modal can catch it and display it.
+      throw error;
     }
 
+    // OTP verified successfully, so close the modal and process the transaction.
     setIsOtpModalOpen(false);
-
     if (pendingTx) {
       sendTx(pendingTx, {
         onSuccess: () => {

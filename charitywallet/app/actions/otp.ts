@@ -2,7 +2,18 @@
 
 import stytchClient from "@/lib/stytchClient";
 
-interface OtpResponse {
+/**
+ * Custom error interface to capture expected properties from Stytch errors.
+ */
+interface StytchError extends Error {
+  status_code?: number;
+  error_message?: string;
+}
+
+/**
+ * Standard response interface for OTP operations.
+ */
+export interface OtpResponse {
   status_code: number;
   email_id?: string;
   error_message?: string;
@@ -11,7 +22,7 @@ interface OtpResponse {
 /**
  * Sends an OTP email via Stytch using the loginOrCreate endpoint.
  * @param email - The email address to send the OTP to.
- * @returns A promise resolving to an OTP response.
+ * @returns A promise resolving to an OtpResponse.
  */
 export async function sendOtpAction(email: string): Promise<OtpResponse> {
   console.info(`Sending OTP to ${email}`);
@@ -26,12 +37,15 @@ export async function sendOtpAction(email: string): Promise<OtpResponse> {
       email_id: response.email_id,
     };
   } catch (error: unknown) {
-    const err = error as { status_code?: number };
-    const status_code = err.status_code ?? 500;
-    console.error("Failed to send OTP", error);
+    const stytchError = error as StytchError;
+    const status_code = stytchError.status_code ?? 500;
+    const error_message =
+      stytchError.error_message ||
+      "Too many requests. Please wait a moment and try again.";
+    console.error("Failed to send OTP", stytchError);
     return {
       status_code,
-      error_message: "Too many requests. Please wait a moment and try again.",
+      error_message,
     };
   }
 }
@@ -58,12 +72,12 @@ export async function verifyOtpAction(
       response,
     };
   } catch (error: unknown) {
-    const err = error as { status_code?: number };
-    const status_code = err.status_code ?? 500;
-    console.error("OTP verification failed", error);
+    const stytchError = error as StytchError;
+    const status_code = stytchError.status_code ?? 500;
+    console.error("OTP verification failed", stytchError);
     return {
       status_code,
-      response: error,
+      response: stytchError,
     };
   }
 }
