@@ -29,14 +29,12 @@ export default async function Profile() {
   if (!user) {
     redirect("/login");
   }
-
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
   });
   if (!charity) {
     return <p>No charity found.</p>;
   }
-
   const chains: SupportedChain[] = ["ethereum", "polygon"];
   const COIN_IDS: Record<SupportedChain, string> = {
     ethereum: "ethereum",
@@ -76,7 +74,7 @@ export default async function Profile() {
                 />
               </div>
               <div className="mt-1">
-                <SendingFundsModal user={user} />
+                <SendingFundsModal charity={charity} />
               </div>
             </div>
           </header>

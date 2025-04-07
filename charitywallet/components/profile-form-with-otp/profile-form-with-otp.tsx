@@ -111,7 +111,7 @@ export default function ProfileWithOtp({ charity }: ProfileWithOtpProps) {
       <OtpModal
         isOpen={isOtpModalOpen}
         onOpenChange={setIsOtpModalOpen}
-        email={charity.contact_email || "your-email@example.com"}
+        email={charity.contact_email || "no email"}
         onVerified={handleOtpVerified}
       />
     </>

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { getWalletBalance } from "thirdweb/wallets";
-import { prepareTransaction, toWei } from "thirdweb";
+import { PreparedTransaction, prepareTransaction, toWei } from "thirdweb";
 import { polygon, sepolia } from "thirdweb/chains";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, BellRing, AlertCircle, CheckCircle } from "lucide-react";
@@ -22,13 +22,16 @@ import { sendOtpAction, verifyOtpAction } from "@/app/actions/otp";
 import OtpModal from "./opt-modal";
 
 interface SendingFundsModalProps {
-  user: { walletAddress: string; email?: string };
+  charity: {
+    wallet_address: string;
+    contact_email?: string | null;
+  };
 }
 
-export function SendingFundsModal({ user }: SendingFundsModalProps) {
+export function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const [open, setOpen] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
-  const [pendingTx, setPendingTx] = useState<FieldValues | null>(null);
+  const [pendingTx, setPendingTx] = useState<PreparedTransaction | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [methodId, setMethodId] = useState("");
   const [otpError, setOtpError] = useState("");
@@ -41,22 +44,16 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
     reset,
   } = useForm();
   const activeAccount = useActiveAccount();
+  const { mutate: sendTx, data, isPending, isSuccess } = useSendTransaction();
 
-  const {
-    mutate: sendTx,
-    data,
-    isPending,
-    error,
-    isSuccess,
-  } = useSendTransaction();
-
-  // Fetch wallet balance
+  // Fetch wallet balance using charity.wallet_address
   useEffect(() => {
     async function fetchBalance() {
-      if (!user.walletAddress) return;
+      console.log("Fetching balance for charity:", charity);
+      if (!charity.wallet_address) return;
       try {
         const balanceResponse = await getWalletBalance({
-          address: user.walletAddress,
+          address: charity.wallet_address,
           client: thirdwebClient,
           chain: sepolia,
         });
@@ -66,9 +63,9 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
       }
     }
     fetchBalance();
-  }, [user.walletAddress]);
+  }, [charity.wallet_address]);
 
-  // Helper to set amount based on percentage
+  // Helper to set amount based on percentage.
   const handleSetPercentage = useCallback(
     (percentage: number) => {
       if (walletBalance === null) return;
@@ -95,18 +92,18 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
       client: thirdwebClient,
     });
 
-    // Store the pending transaction and trigger OTP.
+    // Store the pending transaction.
     setPendingTx(tx);
 
-    // Ensure we have an email to send OTP to.
-    if (!user.email) {
-      // In a highly secure app, you might require an email for OTP.
+    // Use the charity's email for OTP.
+    const otpEmail = charity.contact_email || "";
+    if (!otpEmail) {
       console.error("No email provided for OTP.");
       return;
     }
 
-    // Send OTP
-    sendOtpAction(user.email)
+    // Send OTP.
+    sendOtpAction(otpEmail)
       .then((response) => {
         if (response?.email_id) {
           setMethodId(response.email_id);
@@ -121,7 +118,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
   };
 
   // This function is called when the OTP modal returns the OTP code.
-  // It performs a backend OTP verification and, if successful, sends the funds.
+  // It performs a backend OTP verification and, if successful, sends the transaction.
   const handleOtpVerified = async (otp: string) => {
     setIsOtpModalOpen(false);
     setOtpError("");
@@ -287,10 +284,10 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
           </Button>
         </form>
 
-        {error && (
+        {otpError && (
           <div className="mt-2 p-2 bg-destructive/20 border border-destructive rounded text-xs text-destructive">
             <p className="font-medium">Transaction failed</p>
-            <p className="mt-1">{error.message}</p>
+            <p className="mt-1">{otpError}</p>
           </div>
         )}
 
@@ -312,10 +309,7 @@ export function SendingFundsModal({ user }: SendingFundsModalProps) {
       <OtpModal
         isOpen={isOtpModalOpen}
         onOpenChange={setIsOtpModalOpen}
-        // We pass the methodId so the backend can verify the OTP.
-        // The OTP modal simply collects the OTP.
-        methodId={methodId}
-        email={user.email || "your-email@example.com"}
+        email={charity.contact_email || "no email"}
         onVerified={handleOtpVerified}
       />
     </Dialog>
