@@ -40,9 +40,9 @@ export default function OtpModal({
       setError("Please enter the OTP.");
       return;
     }
-    // Close the modal and pass the OTP back.
+    // Pass the OTP back to the parent for verification.
     onVerified(otp);
-    onOpenChange(false);
+    // Do not close the modal here; the parent will decide based on verification.
   };
 
   return (

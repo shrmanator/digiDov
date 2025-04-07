@@ -81,6 +81,7 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
 
   // Instead of sending the transaction immediately,
   // store the transaction details and trigger OTP flow.
+
   const onSubmit = (formData: FieldValues) => {
     if (!activeAccount) return;
 
@@ -108,34 +109,36 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
         if (response?.email_id) {
           setMethodId(response.email_id);
           setIsOtpModalOpen(true);
+        } else if (response?.error_message) {
+          setOtpError(response.error_message);
         } else {
           console.error("Failed to send OTP.");
         }
       })
       .catch((err) => {
         console.error("Error sending OTP:", err);
+        setOtpError("Unable to send OTP, please try again later.");
       });
   };
 
   // This function is called when the OTP modal returns the OTP code.
   // It performs a backend OTP verification and, if successful, sends the transaction.
   const handleOtpVerified = async (otp: string) => {
-    setIsOtpModalOpen(false);
     setOtpError("");
 
     try {
-      // Verify the OTP on the backend (this call consumes the OTP)
       const verification = await verifyOtpAction(methodId, otp);
       if (verification.status_code !== 200) {
-        setOtpError("OTP verification failed. Please try again.");
+        setOtpError("Too many requests. Please wait a moment and try again.");
         return;
       }
-    } catch (err: unknown) {
-      setOtpError("OTP verification failed. Please try again.");
+    } catch {
+      setOtpError("Too many requests. Please wait a moment and try again.");
       return;
     }
 
-    // Now that OTP is verified, send the transaction.
+    setIsOtpModalOpen(false);
+
     if (pendingTx) {
       sendTx(pendingTx, {
         onSuccess: () => {

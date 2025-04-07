@@ -5,20 +5,28 @@ import stytchClient from "@/lib/stytchClient";
 /**
  * Sends an OTP email via Stytch using the loginOrCreate endpoint.
  * @param email - The email address to send the OTP to.
- * @returns An object containing the status_code and email_id.
+ * @returns An object containing the status_code and email_id or a friendly error message.
  */
 export async function sendOtpAction(email: string) {
   console.log("Sending OTP to:", email);
-  const response = await stytchClient.otps.email.loginOrCreate({
-    email,
-    expiration_minutes: 2,
-    // Optional:  locale, etc.
-  });
-  console.log("OTP sent response:", response);
-  return {
-    status_code: response.status_code,
-    email_id: response.email_id,
-  };
+  try {
+    const response = await stytchClient.otps.email.loginOrCreate({
+      email,
+      expiration_minutes: 2,
+    });
+    console.log("OTP sent response:", response);
+    return {
+      status_code: response.status_code,
+      email_id: response.email_id,
+    };
+  } catch (error: any) {
+    console.error("Error sending OTP:", error);
+    // Return a friendly message for 429 errors
+    return {
+      status_code: error.status_code || 500,
+      error_message: "Too many requests. Please wait a moment and try again.",
+    };
+  }
 }
 
 /**
