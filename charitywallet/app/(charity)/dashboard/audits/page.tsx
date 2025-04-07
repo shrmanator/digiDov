@@ -82,7 +82,7 @@ export default async function Dashboard() {
                 />
               </div>
               <div className="mt-1">
-                <SendingFundsModal user={user} />
+                <SendingFundsModal charity={charity} />
               </div>
             </div>
           </header>

@@ -46,7 +46,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const activeAccount = useActiveAccount();
   const { mutate: sendTx, data, isPending, isSuccess } = useSendTransaction();
 
-  // Fetch wallet balance using charity.wallet_address
   useEffect(() => {
     async function fetchBalance() {
       console.log("Fetching balance for charity:", charity);
@@ -63,7 +62,8 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
       }
     }
     fetchBalance();
-  }, [charity.wallet_address]);
+  }, [charity]);
+  
 
   // Helper to set amount based on percentage.
   const handleSetPercentage = useCallback(
