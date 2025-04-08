@@ -59,7 +59,7 @@ export async function notifyDonorOfDonation(
       : "N/A";
     const charitySlug = receipt.charity?.slug || "your-charity";
     // Shortened link for viewing all receipts
-    const shortReceiptLink = `https://digidov.com/r/${charitySlug}`;
+    const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
 
     const emailParams = new EmailParams()
       .setFrom(new Sender("contact@digidov.com", "digiDov Receipts"))
