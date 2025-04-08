@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
-import { inAppWallet } from "thirdweb/wallets";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { polygon } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import Image from "next/image";
@@ -14,13 +14,15 @@ import {
   charityLogin,
 } from "./actions/auth";
 
-// Configure the wallet(s) you want to support—in this case, an in-app wallet with Google and email auth
 const wallets = [
   inAppWallet({
     auth: {
       options: ["google", "email"],
     },
   }),
+  createWallet("io.metamask"),
+  createWallet("app.phantom"),
+  createWallet("com.ledger"),
 ];
 
 export default function Home() {
