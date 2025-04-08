@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
-import { polygon } from "thirdweb/chains";
+import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import Image from "next/image";
 import {
@@ -15,12 +15,9 @@ import {
 } from "./actions/auth";
 import AboutSection from "./about-us";
 
-// Import the AboutSection component
-
 export default function Home() {
   const router = useRouter();
 
-  // Instantiate wallets inside the component
   const wallets = [
     inAppWallet({
       auth: { options: ["google", "email"] },
@@ -31,9 +28,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="h-screen overflow-y-scroll snap-y snap-mandatory">
+    <div className="overflow-y-auto">
       {/* Login / Connect Section */}
-      <section className="h-screen snap-start flex flex-col items-center justify-center p-8">
+      <section className="min-h-screen flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-md flex flex-col items-center">
           <div className="flex items-center">
             <Image
@@ -56,7 +53,7 @@ export default function Home() {
             wallets={wallets}
             header={{ title: " " }}
             showThirdwebBranding={false}
-            chain={polygon}
+            chain={ethereum}
             auth={{
               isLoggedIn: async (address) => {
                 console.log("Checking if logged in", { address });
@@ -70,7 +67,7 @@ export default function Home() {
               getLoginPayload: async ({ address }) =>
                 generatePayload({
                   address: address.toLowerCase(),
-                  chainId: polygon.id,
+                  chainId: ethereum.id,
                 }),
               doLogout: async () => {
                 console.log("Logging out!");
@@ -85,7 +82,9 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <AboutSection />
+      <section className="mt-[-20] mb-20">
+        <AboutSection />
+      </section>
     </div>
   );
 }

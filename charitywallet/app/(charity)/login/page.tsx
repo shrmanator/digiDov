@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
-import { polygon } from "thirdweb/chains";
+import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
   isLoggedIn,
@@ -53,7 +53,7 @@ export default function Home() {
           wallets={wallets}
           header={{ title: "" }}
           showThirdwebBranding={false}
-          chain={polygon}
+          chain={ethereum}
           auth={{
             isLoggedIn: async (address) => {
               console.log("Checking if logged in", { address });
@@ -67,7 +67,7 @@ export default function Home() {
             getLoginPayload: async ({ address }) =>
               generatePayload({
                 address: address.toLowerCase(),
-                chainId: polygon.id,
+                chainId: ethereum.id,
               }),
             doLogout: async () => {
               console.log("Logging out!");
