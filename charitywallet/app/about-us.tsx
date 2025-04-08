@@ -1,70 +1,53 @@
-// components/AboutSection.tsx
 "use client";
-
-import React from "react";
 
 export default function AboutSection() {
   return (
-    <section className="h-screen snap-start flex flex-col items-center justify-center p-8">
-      <div className="max-w-3xl text-center">
-        <h2 className="text-4xl font-bold mb-4">About Us</h2>
-        <p className="text-lg mb-8">
-          At digiDov, we believe charitable giving should be simple, secure, and
-          effective. Our platform leverages blockchain technology to ensure
-          every donation is transparent and impactful. We are committed to
-          connecting donors with the causes that matter, fostering a community
-          dedicated to lasting change.
-        </p>
+    <section className="h-screen snap-start bg-black text-white flex items-center justify-center">
+      <div className="max-w-4xl w-full px-6 md:px-10 py-20 space-y-20">
+        {/* Section: About */}
+        <div className="space-y-6">
+          <h2 className="text-3xl md:text-4xl font-semibold">About digiDov</h2>
+          <p className="text-base md:text-lg text-neutral-300 leading-relaxed">
+            digiDov makes crypto donations simple, transparent, and compliant.
+            Donors get instant receipts. Charities get a dashboard and
+            auto-tracking.
+          </p>
+        </div>
 
-        {/* Use Cases Section */}
-        <div className="text-left">
-          <h3 className="text-2xl font-semibold mb-4">Use Cases</h3>
+        {/* Section: Charities & DAFs */}
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold">Charities & DAFs</h3>
+          <p className="text-base md:text-lg text-neutral-300 leading-relaxed">
+            Accept crypto donations without needing to set up a wallet or manage
+            exchanges. Attract crypto-native donors with ease. digiDov
+            auto-issues CRA-compliant receipts and provides a live dashboard for
+            tracking donations and fund flows. Organizations can embed a
+            donation button with no development work, choose to use their own
+            wallet or have digiDov manage it, and access real-time insights — no
+            crypto expertise required.
+          </p>
+        </div>
 
-          {/* For Charities */}
-          <div className="mb-6">
-            <h4 className="text-xl font-medium mb-2">For Charities:</h4>
-            <ul className="list-disc ml-6 space-y-1">
-              <li>
-                Accept crypto donations without managing wallets or exchanges.
-              </li>
-              <li>Expand to a new donor base—crypto-native givers.</li>
-              <li>
-                Stay compliant and issue government-approved receipts
-                automatically.
-              </li>
-              <li>
-                Track donations and fund flows via an intuitive dashboard.
-              </li>
-            </ul>
-          </div>
+        {/* Section: Donors */}
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold">Donors</h3>
+          <p className="text-base md:text-lg text-neutral-300 leading-relaxed">
+            Donate easily using any EVM-compatible wallet. Receive instant tax
+            receipts and support causes you care about using your digital
+            assets. The process is fast, secure, and streamlined for a seamless
+            giving experience.
+          </p>
+        </div>
 
-          {/* For Donors */}
-          <div className="mb-6">
-            <h4 className="text-xl font-medium mb-2">For Donors:</h4>
-            <ul className="list-disc ml-6 space-y-1">
-              <li>
-                Donate ETH or other EVM-chain tokens using their wallet (e.g.,
-                MetaMask).
-              </li>
-              <li>Get instant tax receipts—no follow-up required.</li>
-              <li>Support causes they care about using digital assets.</li>
-            </ul>
-          </div>
-
-          {/* For Regulators / Auditors / Finance Teams */}
-          <div>
-            <h4 className="text-xl font-medium mb-2">
-              For Regulators / Auditors / Finance Teams:
-            </h4>
-            <ul className="list-disc ml-6 space-y-1">
-              <li>Transparent, on-chain donation tracking.</li>
-              <li>Receipts include all necessary legal details.</li>
-              <li>
-                Future features like digiDov Accounting for detailed wallet
-                activity reporting.
-              </li>
-            </ul>
-          </div>
+        {/* Section: Auditors */}
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold">Auditors</h3>
+          <p className="text-base md:text-lg text-neutral-300 leading-relaxed">
+            All donations are recorded on-chain for transparency. Receipts
+            include full legal details, making audits simpler and more reliable.
+            digiDov Accounting (coming soon) will offer comprehensive compliance
+            reports tailored for professional oversight.
+          </p>
         </div>
       </div>
     </section>
