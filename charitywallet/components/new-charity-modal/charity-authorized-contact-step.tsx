@@ -1,5 +1,4 @@
-"use client";
-
+// AuthorizedContactInfoStep.tsx
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ interface AuthorizedContactInfoStepProps {
     contact_title: string;
     contact_first_name: string;
     contact_last_name: string;
+    contact_email: string;
     contact_phone: string;
     shaduicn: boolean;
   };
@@ -25,6 +25,8 @@ interface AuthorizedContactInfoStepProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onPrevious: () => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  // New prop to decide whether to show the email input.
+  showEmailField: boolean;
 }
 
 function formatPhoneNumber(value: string) {
@@ -48,6 +50,7 @@ export function AuthorizedContactInfoStep({
   onChange,
   onPrevious,
   onSubmit,
+  showEmailField, // now received from parent
 }: AuthorizedContactInfoStepProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -90,7 +93,6 @@ export function AuthorizedContactInfoStep({
         <div className="grid gap-4">
           {/* Row 1: Title + First + Last */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Title */}
             <div className="sm:max-w-[90px]">
               <Label htmlFor="contact_title">Title</Label>
               <Input
@@ -102,8 +104,6 @@ export function AuthorizedContactInfoStep({
                 className="w-full"
               />
             </div>
-
-            {/* First Name */}
             <div>
               <Label htmlFor="contact_first_name">First Name</Label>
               <Input
@@ -114,8 +114,6 @@ export function AuthorizedContactInfoStep({
                 required
               />
             </div>
-
-            {/* Last Name */}
             <div>
               <Label htmlFor="contact_last_name">Last Name</Label>
               <Input
@@ -127,6 +125,22 @@ export function AuthorizedContactInfoStep({
               />
             </div>
           </div>
+
+          {/* Conditionally render the Email input based on the showEmailField prop */}
+          {showEmailField && (
+            <div>
+              <Label htmlFor="contact_email">Email</Label>
+              <Input
+                id="contact_email"
+                name="contact_email"
+                type="email"
+                placeholder="Enter your email address"
+                value={formData.contact_email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
 
           {/* Row 2: Phone */}
           <div>

@@ -32,10 +32,14 @@ export default function CharitySetupModal({
   const router = useRouter();
   const { data: profiles } = useProfiles({ client });
 
+  // Get the default email from the profile (if available)
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
       : "";
+
+  // Determine whether to display the email field (only if defaultEmail is empty)
+  const showEmailField = defaultEmail === "";
 
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<
@@ -52,6 +56,7 @@ export default function CharitySetupModal({
     contact_title: "",
     contact_first_name: "",
     contact_last_name: "",
+    contact_email: defaultEmail,
     contact_phone: "",
     shaduicn: false,
   });
@@ -101,12 +106,11 @@ export default function CharitySetupModal({
         contact_title: formData.contact_title,
         contact_first_name: formData.contact_first_name,
         contact_last_name: formData.contact_last_name,
-        contact_email: defaultEmail,
+        contact_email: formData.contact_email,
         contact_phone: formData.contact_phone,
         is_profile_complete: true,
       });
       setCharitySlug(updatedCharity.slug || "");
-      // Do not refresh here!
       setStep("feeAgreementStep");
     } catch (err) {
       console.error("Error upserting charity:", err);
@@ -116,7 +120,6 @@ export default function CharitySetupModal({
     }
   };
 
-  // After fee agreement, proceed to donation URL step
   const handleFeeAgree = () => setStep("donationUrlStep");
 
   // Call router.refresh() when finishing the modal, after it’s closed.
@@ -167,6 +170,7 @@ export default function CharitySetupModal({
               contact_title: formData.contact_title,
               contact_first_name: formData.contact_first_name,
               contact_last_name: formData.contact_last_name,
+              contact_email: formData.contact_email,
               contact_phone: formData.contact_phone,
               shaduicn: formData.shaduicn,
             }}
@@ -178,6 +182,7 @@ export default function CharitySetupModal({
             charityName={formData.charity_name}
             charityRegistrationNumber={formData.registration_number}
             charityAddress={formData.registered_address}
+            showEmailField={showEmailField} // Pass the flag here
           />
         )}
 
