@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Define the mapping directly here.
 const chainIdToCoingeckoId: Record<string, string> = {
   "0x1": "ethereum",
   "0x89": "matic-network",
@@ -37,7 +36,10 @@ export async function GET(request: Request) {
       throw new Error(`No conversion data for CoinGecko ID: ${coingeckoId}`);
     }
     return NextResponse.json({ conversionRate: rate });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Unknown error" }, { status: 500 });
   }
 }

@@ -55,7 +55,7 @@ export default function Home() {
             showThirdwebBranding={false}
             chain={ethereum}
             auth={{
-              isLoggedIn: async (address) => {
+              isLoggedIn: async () => {
                 return await isLoggedIn();
               },
               doLogin: async (params) => {
