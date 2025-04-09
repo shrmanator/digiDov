@@ -48,7 +48,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
 
   useEffect(() => {
     async function fetchBalance() {
-      console.log("Fetching balance for charity:", charity);
       if (!charity.wallet_address) return;
       try {
         const balanceResponse = await getWalletBalance({

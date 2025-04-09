@@ -21,7 +21,6 @@ export function useStaticConversionRate(chainId: string, fiat = "usd") {
     const hexChainId = chainId.startsWith("0x")
       ? chainId
       : "0x" + parseInt(chainId, 10).toString(16);
-    console.log("Converted Chain ID:", hexChainId);
 
     // Get the CoinGecko ID from the chain ID.
     const coingeckoId: string | null = getCoingeckoIdFromChainId(hexChainId);
@@ -40,7 +39,6 @@ export function useStaticConversionRate(chainId: string, fiat = "usd") {
         const { data } = await axios.get(
           `https://api.coingecko.com/api/v3/simple/price?ids=${validCoingeckoId}&vs_currencies=${fiat}`
         );
-        console.log("CoinGecko API Response:", data);
         if (!data[validCoingeckoId]) {
           throw new Error(
             `No data found for CoinGecko ID: ${validCoingeckoId}`

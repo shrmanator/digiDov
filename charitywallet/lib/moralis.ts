@@ -11,7 +11,6 @@ export const initializeMoralis = async () => {
       );
     }
     await Moralis.start({ apiKey });
-    console.log("Moralis initialized successfully.");
     isInitialized = true;
   }
 };

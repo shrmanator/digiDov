@@ -56,11 +56,9 @@ export default function Home() {
           chain={ethereum}
           auth={{
             isLoggedIn: async (address) => {
-              console.log("Checking if logged in", { address });
               return await isLoggedIn();
             },
             doLogin: async (params) => {
-              console.log("Logging in!");
               await charityLogin(params);
               router.push("/dashboard/overview");
             },
@@ -70,7 +68,6 @@ export default function Home() {
                 chainId: ethereum.id,
               }),
             doLogout: async () => {
-              console.log("Logging out!");
               await logout();
             },
           }}

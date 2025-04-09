@@ -23,7 +23,6 @@ export function usePriceWebSocket(
       try {
         const response = await fetch("https://open.er-api.com/v6/latest/USD");
         const data = await response.json();
-        console.log("the data");
         if (
           data &&
           data.result === "success" &&
@@ -49,10 +48,6 @@ export function usePriceWebSocket(
     const pair = `${lowerSymbol}usdt`; // e.g. "ethusdt" for ETH
     const wsUrl = `wss://stream.binance.com:9443/ws/${pair}@ticker`;
     const socket = new WebSocket(wsUrl);
-
-    socket.onopen = () => {
-      console.log("Connected to Binance WebSocket:", wsUrl);
-    };
 
     socket.onmessage = (event) => {
       try {

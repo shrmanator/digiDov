@@ -49,7 +49,6 @@ export default function DonorConnectWalletButton({
           return user?.walletAddress === normalized;
         },
         doLogin: async (params: VerifyLoginPayloadParams) => {
-          console.log("Logging in!");
           await loginDonor(params);
           router.refresh();
         },
@@ -60,7 +59,6 @@ export default function DonorConnectWalletButton({
             chainId: activeChain.id,
           }),
         doLogout: async () => {
-          console.log("Logging out!");
           await logout();
           router.refresh();
         },

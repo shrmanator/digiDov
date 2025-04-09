@@ -1,4 +1,3 @@
-// WalletInfo.tsx
 "use client";
 import { useActiveAccount } from "thirdweb/react";
 import { shortenAddress } from "thirdweb/utils";
@@ -13,8 +12,6 @@ export default function WalletInfo({ truncated = false }: WalletInfoProps) {
     account?.address && truncated
       ? shortenAddress(account.address)
       : account?.address;
-
-  console.log("wallet address", account?.address);
 
   return (
     <div>

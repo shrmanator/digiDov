@@ -77,7 +77,6 @@ export function TaxReceiptDrawer({
     try {
       // Pass walletAddress to getDonationReceipts
       const data = await getDonationReceiptsForDonor(walletAddress);
-      console.log("Fetched receipts:", data);
       // Sort receipts by donation_date descending (most recent first)
       const sortedReceipts = data.sort(
         (a, b) =>
