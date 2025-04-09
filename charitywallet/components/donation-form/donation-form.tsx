@@ -195,7 +195,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
             className={buttonClasses}
           >
             {showConversionMessage ? (
-              "Updating conversion..."
+              "Getting conversion rates..."
             ) : isPending ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
