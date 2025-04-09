@@ -44,9 +44,6 @@ export default function Home() {
             digiDov
           </h1>
         </div>
-        {/* <p className="mb-6 text-center text-xs">
-          Easiest way to accept crypto donations
-        </p> */}
 
         <ConnectEmbed
           client={client}
@@ -55,7 +52,7 @@ export default function Home() {
           showThirdwebBranding={false}
           chain={ethereum}
           auth={{
-            isLoggedIn: async (address) => {
+            isLoggedIn: async () => {
               return await isLoggedIn();
             },
             doLogin: async (params) => {
@@ -73,9 +70,9 @@ export default function Home() {
           }}
         />
 
-        {/* <p className="text-xs text-gray-500 mt-4">
+        <p className="text-xs text-gray-500 mt-4">
           🔒 Your data remains private and secure.
-        </p> */}
+        </p>
       </div>
     </div>
   );
