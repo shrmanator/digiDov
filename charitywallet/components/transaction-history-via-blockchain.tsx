@@ -189,7 +189,6 @@ function DonationCard({
 
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <ArrowDown size={16} className="text-green-500" />
           <span className="font-bold text-lg">${usdValue.toFixed(2)}</span>
           <span className="text-muted-foreground text-sm">
             ({parseFloat(nativeValue).toFixed(4)} {chainSymbol})
