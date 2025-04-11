@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function AboutSection() {
   return (
     <section className="flex items-center justify-center">
-      <Card className="w-full max-w-4xl mx-4 md:mx-0 bg-zinc-900">
+      <Card className="w-full max-w-4xl mx-4 md:mx-0">
         <CardContent className="px-6 md:px-10 py-20 space-y-20">
           {/* Section: About */}
           <div className="space-y-6">
