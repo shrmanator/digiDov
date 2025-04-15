@@ -222,20 +222,20 @@ async function fetchDonationsFromChain(
 const fetchAllChainDonations = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
-  const [ethereumDonations, polygonDonations] = await Promise.all([
+  const [ethereumDonations] = await Promise.all([
     fetchDonationsFromChain(
       ethereum.id,
       CONTRACT_ADDRESSES.ethereum,
       walletAddress
     ),
     // Uncomment below to include Polygon donations:
-    fetchDonationsFromChain(
-      polygon.id,
-      CONTRACT_ADDRESSES.polygon,
-      walletAddress
-    ),
+    // fetchDonationsFromChain(
+    //   polygon.id,
+    //   CONTRACT_ADDRESSES.polygon,
+    //   walletAddress
+    // ),
   ]);
-  return [...ethereumDonations, ...polygonDonations];
+  return [...ethereumDonations];
 };
 
 async function fetchCryptoPrices() {

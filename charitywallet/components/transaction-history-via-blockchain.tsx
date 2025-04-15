@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowDown, Copy, User } from "lucide-react";
+import { Copy, User } from "lucide-react";
 import { DonationEvent } from "@/utils/fetch-contract-transactions";
 import { DonationReceipt } from "@/app/types/receipt";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
