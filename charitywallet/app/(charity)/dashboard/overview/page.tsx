@@ -22,7 +22,7 @@ import {
   DonationEvent,
   fetchDonationsToWallet,
 } from "@/utils/fetch-contract-transactions";
-import { ethereum, polygon } from "thirdweb/chains";
+import { ethereum } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
