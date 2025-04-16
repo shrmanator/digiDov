@@ -17,11 +17,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Copy, User } from "lucide-react";
-import { DonationEvent } from "@/utils/fetch-contract-transactions";
 import { DonationReceipt } from "@/app/types/receipt";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
 import Web3 from "web3";
 import { CopyButton } from "./copy-button";
+import { DonationEvent } from "@/app/types/donation-event";
 
 const web3 = new Web3();
 
