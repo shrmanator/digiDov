@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
-import TransactionHistory from "@/components/transaction-history-via-blockchain";
 import {
   SidebarProvider,
   SidebarInset,

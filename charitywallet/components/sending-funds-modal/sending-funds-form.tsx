@@ -1,18 +1,18 @@
 "use client";
 
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, FieldValues } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { AlertCircle } from "lucide-react";
 
 interface Props {
-  register: UseFormRegister<any>;
+  register: UseFormRegister<FieldValues>;
   errors: FieldErrors;
 }
 
 const SendingFundsForm = ({ register, errors }: Props) => (
   <>
     {/* Recipient */}
-    <div>
+    <div className="mb-4">
       <label className="block text-xs font-medium mb-1">
         Recipient Wallet Address
       </label>
