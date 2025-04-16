@@ -1,94 +1,81 @@
-import { DonationEvent } from "@/app/types/donation-event";
 import Web3 from "web3";
+import { DonationEvent } from "@/app/types/donation-event";
 
 const web3 = new Web3();
 
-/* ------------------------------------------------------------------ */
-/*  Constants                                                         */
-/* ------------------------------------------------------------------ */
+/* config ---------------------------------------------------------------- */
 
-const DONATION_FORWARDED_TOPIC_HASH = web3.utils.keccak256(
+const API = "https://insight.thirdweb.com/v1/events";
+const KEY = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+const HEAD: HeadersInit | undefined = KEY ? { "x-client-id": KEY } : undefined;
+
+const SIG = web3.utils.keccak256(
   "DonationForwarded(address,address,uint256,uint256,uint256)"
 );
 
-const API_BASE = "https://insight.thirdweb.com/v1/events";
-const API_KEY = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+/* public ---------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
-
-const toHexNum = (hex: string) => web3.utils.hexToNumberString(`0x${hex}`);
-
-/* ------------------------------------------------------------------ */
-/*  Public functions                                                  */
-/* ------------------------------------------------------------------ */
-
+/** Raw Insight response (max 50 logs) */
 export async function fetchChainTransactions(
   chain: number,
-  contractAddress: string
+  contract: string
 ): Promise<any[]> {
-  const url = `${API_BASE}/${contractAddress}?chain=${chain}&limit=50`;
-  const headers: HeadersInit = API_KEY ? { "x-client-id": API_KEY } : {};
-
-  const res = await fetch(url, { headers });
+  const url = `${API}/${contract}?chain=${chain}&limit=50`;
+  const res = await fetch(url, HEAD ? { headers: HEAD } : undefined);
 
   if (!res.ok) {
-    const body = await res.text();
     throw new Error(
-      `Insight API ${res.status} ${res.statusText}: ${body.slice(0, 120)}…`
+      `Insight ${res.status}: ${(await res.text()).slice(0, 120)}…`
     );
   }
-
-  const { data } = await res.json();
-  return data ?? [];
+  return (await res.json()).data ?? [];
 }
 
+/** Donations sent to `wallet`, decoded & sorted */
 export async function fetchDonationsToWallet(
   chain: number,
-  contractAddress: string,
-  walletAddress: string
+  contract: string,
+  wallet: string
 ): Promise<DonationEvent[]> {
   try {
-    const events = await fetchChainTransactions(chain, contractAddress);
+    const logs = await fetchChainTransactions(chain, contract);
 
-    return events
+    return logs
       .filter(
-        (log: any) =>
-          log.topics[0] === DONATION_FORWARDED_TOPIC_HASH &&
-          ("0x" + log.topics[2].slice(-40)).toLowerCase() ===
-            walletAddress.toLowerCase()
+        (l: any) =>
+          l.topics[0] === SIG &&
+          ("0x" + l.topics[2].slice(-40)).toLowerCase() === wallet.toLowerCase()
       )
-      .map((log: any) => ({ ...decodeDonationLog(log), chain }))
+      .map((l: any) => ({ ...decodeLog(l), chain }))
       .sort((a, b) => a.timestamp.raw - b.timestamp.raw);
-  } catch (err) {
-    console.error("Error fetching donation events:", err);
+  } catch (e) {
+    console.error("fetchDonationsToWallet:", e);
     return [];
   }
 }
 
-function decodeDonationLog(log: any): DonationEvent {
-  const donor = "0x" + log.topics[1].slice(-40);
-  const charity = "0x" + log.topics[2].slice(-40);
-  const data = log.data.slice(2);
+/* helpers --------------------------------------------------------------- */
+
+const num = (hex: string) => web3.utils.hexToNumberString(`0x${hex}`);
+
+function decodeLog(log: any): DonationEvent {
+  const [, donorHex, charityHex] = log.topics;
+  const d = log.data.slice(2);
 
   return {
-    donor,
-    charity,
-    fullAmount: toHexNum(data.slice(0, 64)),
-    netAmount: toHexNum(data.slice(64, 128)),
-    fee: toHexNum(data.slice(128, 192)),
+    donor: "0x" + donorHex.slice(-40),
+    charity: "0x" + charityHex.slice(-40),
+    fullAmount: num(d.slice(0, 64)),
+    netAmount: num(d.slice(64, 128)),
+    fee: num(d.slice(128, 192)),
     transactionHash: log.transaction_hash,
-    timestamp: formatTimestamp(log.block_timestamp),
-    chain: 1, // overwritten by fetchDonationsToWallet
+    timestamp: ts(log.block_timestamp),
+    chain: 1, // overwritten by caller
   };
 }
 
-function formatTimestamp(timestampSec: string): {
-  formatted: string;
-  raw: number;
-} {
-  const raw = Number(timestampSec) * 1_000;
+const ts = (sec: string) => {
+  const raw = +sec * 1_000;
   return {
     raw,
     formatted: new Date(raw).toLocaleString("en-US", {
@@ -100,4 +87,4 @@ function formatTimestamp(timestampSec: string): {
       hour12: true,
     }),
   };
-}
+};
