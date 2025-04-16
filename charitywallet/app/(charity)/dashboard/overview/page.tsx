@@ -17,11 +17,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import {
-  DonationEvent,
-  fetchDonationsToWallet,
-} from "@/utils/fetch-contract-transactions";
-import { ethereum, polygon } from "thirdweb/chains";
+import { fetchDonationsToWallet } from "@/utils/fetch-contract-transactions";
+import { ethereum } from "thirdweb/chains";
 import { DonationReceipt } from "@/app/types/receipt";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
@@ -35,6 +32,9 @@ import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getDonationLink } from "@/utils/get-donation-link";
 import SendingFundsModal from "@/components/sending-funds-modal";
+import { Suspense } from "react";
+import DonationsStream from "./donations/donations-stream";
+import { DonationEvent } from "@/app/types/donation-event";
 
 export const revalidate = 60;
 
@@ -162,11 +162,17 @@ export default async function Overview() {
                 </CardHeader>
                 {isCharityComplete ? (
                   <div className="h-[calc(98vh-250px)] overflow-auto">
-                    <TransactionHistory
-                      donations={donations}
-                      receipts={receipts}
-                      donationLink={donationLink}
-                    />
+                    <Suspense
+                      fallback={
+                        <p className="animate-pulse">Loading donations…</p>
+                      }
+                    >
+                      <DonationsStream
+                        wallet={charity.wallet_address}
+                        receipts={receipts}
+                        donationLink={donationLink}
+                      />
+                    </Suspense>
                   </div>
                 ) : (
                   <div className="text-center">
@@ -222,20 +228,20 @@ async function fetchDonationsFromChain(
 const fetchAllChainDonations = async (
   walletAddress: string
 ): Promise<DonationEvent[]> => {
-  const [ethereumDonations, polygonDonations] = await Promise.all([
+  const [ethereumDonations] = await Promise.all([
     fetchDonationsFromChain(
       ethereum.id,
       CONTRACT_ADDRESSES.ethereum,
       walletAddress
     ),
     // Uncomment below to include Polygon donations:
-    fetchDonationsFromChain(
-      polygon.id,
-      CONTRACT_ADDRESSES.polygon,
-      walletAddress
-    ),
+    // fetchDonationsFromChain(
+    //   polygon.id,
+    //   CONTRACT_ADDRESSES.polygon,
+    //   walletAddress
+    // ),
   ]);
-  return [...ethereumDonations, ...polygonDonations];
+  return [...ethereumDonations];
 };
 
 async function fetchCryptoPrices() {
