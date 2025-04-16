@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import {
   DonationEvent,
   fetchDonationsToWallet,
@@ -35,6 +34,7 @@ import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getDonationLink } from "@/utils/get-donation-link";
+import SendingFundsModal from "@/components/sending-funds-modal";
 
 export const revalidate = 60;
 
