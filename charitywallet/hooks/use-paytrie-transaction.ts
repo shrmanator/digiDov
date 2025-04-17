@@ -1,32 +1,40 @@
-import { TxPayload } from "@/app/types/paytrie-transaction-validation";
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
+import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
 
 export interface PayTrieResponse {
   tx: string;
-  fxRate: string /* … */;
+  fxRate: string;
 }
 
-export function usePayTrieTransaction(payload: TxPayload | null) {
+export function usePayTrieTransaction() {
   const [data, setData] = useState<PayTrieResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!payload) return;
+  const execute = useCallback(async (payload: TxPayload) => {
     setLoading(true);
-    fetch("/api/paytrie/transaction", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [payload]);
+    setError(null);
+    try {
+      const res = await fetch("/api/paytrie/transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_PAYTRIE_API_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYTRIE_JWT!}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = (await res.json()) as PayTrieResponse;
+      setData(json);
+      return json;
+    } catch (e: any) {
+      setError(e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  return { data, error, isLoading };
+  return { execute, data, error, isLoading };
 }

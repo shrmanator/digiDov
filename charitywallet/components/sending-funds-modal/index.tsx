@@ -1,150 +1,107 @@
+// components/SendingFundsModal.tsx
 "use client";
-
-import { useState, useCallback } from "react";
+import { useState, FormEvent } from "react";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, BellRing, CheckCircle } from "lucide-react";
-import { useTransactionFlow } from "@/hooks/use-transaction-flow";
-import OtpModal from "../opt-modal";
+import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
+import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
+import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
 import BalanceDisplay from "./balance-display";
-import PercentageButtons from "./percentage-buttons";
-import SendingFundsForm from "./sending-funds-form";
 import { useWalletBalance } from "@/hooks/use-wallet-balance";
+import QuoteDisplay from "./quote-display";
 
-interface Props {
-  charity: {
-    wallet_address: string;
-    contact_email?: string | null;
-  };
-}
-
-export default function SendingFundsModal({ charity }: Props) {
+export default function SendingFundsModal({
+  charity,
+}: {
+  charity: { wallet_address: string; contact_email?: string | null };
+}) {
   const [open, setOpen] = useState(false);
-
   const balance = useWalletBalance(charity.wallet_address);
 
-  const {
-    register,
-    handleSubmit,
-    errors,
-    setValue,
-    submitForm,
-    handleOtpVerified,
-    isPending,
-    isSuccess,
-    data,
-    otpError,
-    isOtpModalOpen,
-    setIsOtpModalOpen,
-  } = useTransactionFlow(charity.contact_email || "");
+  const { quote, isLoading: qL, error: qE } = usePayTrieQuote();
+  const [amount, setAmount] = useState("");
 
-  const handleSetPercentage = useCallback(
-    (pct: number) => {
-      if (balance === null) return;
-      const gasBuffer = pct === 100 ? 0.001 : 0;
-      const computed = Math.max(0, (balance * pct) / 100 - gasBuffer);
-      setValue("amount", computed.toString());
-    },
-    [balance, setValue]
-  );
+  const { execute, data, error, isLoading } = usePayTrieTransaction();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!quote || isLoading) return;
+
+    const payload: TxPayload = {
+      quoteId: quote.id,
+      gasId: quote.gasId,
+      email: charity.contact_email ?? "",
+      wallet: charity.wallet_address,
+      leftSideLabel: "USDC-POLY",
+      leftSideValue: parseFloat(amount),
+      rightSideLabel: "CAD",
+    };
+
+    try {
+      await execute(payload);
+    } catch {
+      // error is in `error`
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-1">
-          <ArrowUpRight size={16} />
-          Withdraw
-        </Button>
+        <Button>Withdraw</Button>
       </DialogTrigger>
-
-      <DialogContent style={{ width: "clamp(320px,90vw,480px)" }}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-base font-medium">
-            Withdraw Funds
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Transfer crypto to another wallet
-          </DialogDescription>
+          <DialogTitle>Withdraw Funds</DialogTitle>
         </DialogHeader>
 
-        {/* Banner */}
-        <div className="my-2 border-l-2 border-warning bg-muted p-2 rounded">
-          <div className="flex items-start gap-2">
-            <BellRing size={14} className="text-warning mt-0.5" />
-            <div className="text-xs text-muted-foreground leading-tight">
-              <p className="text-sm font-semibold text-warning">
-                Bank Transfers Coming Soon
-              </p>
-              <p className="mt-1">
-                Until then, use Coinbase to move crypto to your bank.
-              </p>
-            </div>
-          </div>
-        </div>
-
         <BalanceDisplay balance={balance} />
+        <QuoteDisplay />
 
-        <form onSubmit={handleSubmit(submitForm)} className="space-y-2">
-          <SendingFundsForm register={register} errors={errors} />
-
-          <PercentageButtons onSelect={handleSetPercentage} />
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <input
+            type="number"
+            step="0.0001"
+            min="0"
+            placeholder="Amount (USDC‑POLY)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+            className="w-full border rounded p-2"
+          />
 
           <Button
             type="submit"
+            disabled={
+              !quote || !amount || isNaN(Number(amount)) || isLoading || !!data
+            }
             className="w-full"
-            disabled={isPending || isSuccess}
           >
-            {isPending ? (
-              <span className="flex items-center gap-2">
-                <span className="h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
-                Processing
-              </span>
-            ) : isSuccess ? (
-              <span className="flex items-center gap-2">
-                <CheckCircle size={14} className="text-success" />
-                Done
-              </span>
-            ) : (
-              "Withdraw"
-            )}
+            {isLoading ? "Processing…" : data ? "Done!" : "Withdraw"}
           </Button>
         </form>
 
-        {otpError && (
-          <div className="mt-2 p-2 bg-destructive/20 border border-destructive rounded text-xs text-destructive">
-            <p className="font-medium">Transaction failed</p>
-            <p className="mt-1">{otpError}</p>
-          </div>
+        {qL && <p>Loading pricing…</p>}
+        {qE && <p className="text-red-600">{qE.message}</p>}
+
+        {error && (
+          <p className="text-red-600 mt-2">
+            Something went wrong: {error.message}
+          </p>
         )}
 
-        {isSuccess && data && (
-          <div className="mt-2 p-2 bg-muted border rounded text-xs">
-            <div className="flex items-center gap-1 text-success">
-              <CheckCircle size={14} />
-              Transaction Submitted
-            </div>
-            <p className="mt-1 font-mono break-all">{data.transactionHash}</p>
-            <p className="text-muted-foreground mt-1">
-              You can close this dialog at any time.
-            </p>
+        {data && (
+          <div className="mt-2 p-2 bg-muted border rounded text-sm">
+            <p className="text-success font-medium">Success! 🎉</p>
+            <p className="break-all font-mono mt-1">{data.tx}</p>
           </div>
         )}
       </DialogContent>
-
-      {/* OTP */}
-      <OtpModal
-        isOpen={isOtpModalOpen}
-        onOpenChange={setIsOtpModalOpen}
-        email={charity.contact_email || "no email"}
-        onVerified={handleOtpVerified}
-      />
     </Dialog>
   );
 }

@@ -1,40 +1,32 @@
+// app/api/paytrie/quotes/route.ts
 import { NextResponse } from "next/server";
+
+export const revalidate = 300; // seconds: 5 minutes
 
 export async function GET() {
   const API_KEY = process.env.PAYTRIE_API_KEY!;
   if (!API_KEY) {
-    console.error("[PayTrie] Missing PAYTRIE_API_KEY");
-    return NextResponse.json(
-      { error: "Missing PAYTRIE_API_KEY" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Missing API key" }, { status: 500 });
   }
 
-  const QUOTES_URL = "https://mod.paytrie.com/quotes";
-
   try {
-    const res = await fetch(QUOTES_URL, {
+    // Next’s fetch with built‑in ISR caching
+    const res = await fetch("https://mod.paytrie.com/quotes", {
       headers: { "x-api-key": API_KEY },
+      // this tells Next.js to cache the result for 300s
+      next: { revalidate: 300 },
     });
+
+    const text = await res.text();
     if (!res.ok) {
-      const txt = await res.text();
-      console.error(`[PayTrie] ${QUOTES_URL} → HTTP ${res.status}: ${txt}`);
-      return NextResponse.json(
-        { error: `HTTP ${res.status}: ${txt}` },
-        { status: res.status }
-      );
+      console.error("[PayTrie] Quotes error", res.status, text);
+      return NextResponse.json({ error: text }, { status: res.status });
     }
-    const data = await res.json();
+
+    const data = JSON.parse(text);
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error(
-      "[PayTrie] Network error fetching quotes from",
-      QUOTES_URL,
-      err
-    );
-    return NextResponse.json(
-      { error: `Network error: ${err.message}` },
-      { status: 502 }
-    );
+    console.error("[PayTrie] Network error", err);
+    return NextResponse.json({ error: "Network error" }, { status: 502 });
   }
 }
