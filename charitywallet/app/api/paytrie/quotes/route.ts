@@ -1,39 +1,40 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const API_KEY = process.env.PAYTRIE_API_KEY;
+  const API_KEY = process.env.PAYTRIE_API_KEY!;
   if (!API_KEY) {
-    console.error("Missing PAYTRIE_API_KEY");
+    console.error("[PayTrie] Missing PAYTRIE_API_KEY");
     return NextResponse.json(
-      { error: "Server misconfiguration: missing API key." },
+      { error: "Missing PAYTRIE_API_KEY" },
       { status: 500 }
     );
   }
 
-  try {
-    const res = await fetch("https://api.paytrie.com/quotes", {
-      method: "GET",
-      headers: {
-        "x-api-key": API_KEY,
-      },
-    });
+  const QUOTES_URL = "https://mod.paytrie.com/quotes";
 
-    const data = await res.json();
+  try {
+    const res = await fetch(QUOTES_URL, {
+      headers: { "x-api-key": API_KEY },
+    });
     if (!res.ok) {
-      // Normalize any error payload
+      const txt = await res.text();
+      console.error(`[PayTrie] ${QUOTES_URL} → HTTP ${res.status}: ${txt}`);
       return NextResponse.json(
-        { error: data.error ?? "Failed to fetch PayTrie quotes." },
+        { error: `HTTP ${res.status}: ${txt}` },
         { status: res.status }
       );
     }
-
-    // Return the live quotes array/object directly
+    const data = await res.json();
     return NextResponse.json(data);
-  } catch (err) {
-    console.error("Error fetching PayTrie quotes:", err);
+  } catch (err: any) {
+    console.error(
+      "[PayTrie] Network error fetching quotes from",
+      QUOTES_URL,
+      err
+    );
     return NextResponse.json(
-      { error: "Unexpected error fetching quotes." },
-      { status: 500 }
+      { error: `Network error: ${err.message}` },
+      { status: 502 }
     );
   }
 }

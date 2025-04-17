@@ -9,8 +9,8 @@ export interface PayTrieQuote {
   // …plus any other fields returned by PayTrie
 }
 
-export function usePayTrieQuotes() {
-  const [quotes, setQuotes] = useState<PayTrieQuote[] | null>(null);
+export function usePayTrieQuote() {
+  const [quote, setQuote] = useState<PayTrieQuote | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -19,12 +19,13 @@ export function usePayTrieQuotes() {
     fetch("/api/paytrie/quotes")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<PayTrieQuote[]>;
+        // <-- Note: we cast to a single object, not an array
+        return res.json() as Promise<PayTrieQuote>;
       })
-      .then(setQuotes)
+      .then(setQuote)
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);
 
-  return { quotes, isLoading, error };
+  return { quote, isLoading, error };
 }
