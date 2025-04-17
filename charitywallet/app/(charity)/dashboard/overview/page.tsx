@@ -43,8 +43,8 @@ const COIN_IDS: Record<SupportedChain, string> = {
 };
 
 const CONTRACT_ADDRESSES = {
-  polygon: "0x1c8ed2efaed9f2d4f13e8f95973ac8b50a862ef0",
-  ethereum: "0x27fede2dc50c03ef8c90bf1aa9cf69a3d181c9df",
+  polygon: process.env.POL_MAINNET_TRANSACTION_WITH_FEE_CONTRACT_ADDRESS!,
+  ethereum: process.env.ETH_MAINNET_TRANSACTION_WITH_FEE_CONTRACT_ADDRESS!,
 };
 
 export default async function Overview() {
