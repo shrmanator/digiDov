@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { upsertCharity } from "@/app/actions/charities";
 import { useProfiles } from "thirdweb/react";
@@ -32,13 +32,13 @@ export default function CharitySetupModal({
   const router = useRouter();
   const { data: profiles } = useProfiles({ client });
 
-  // Get the default email from the profile (if available)
+  // once profiles load, this becomes their email (or stays "" if none)
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
       : "";
 
-  // Determine whether to display the email field (only if defaultEmail is empty)
+  // only show the input if there's no default
   const showEmailField = defaultEmail === "";
 
   const [open, setOpen] = useState(true);
@@ -56,7 +56,7 @@ export default function CharitySetupModal({
     contact_title: "",
     contact_first_name: "",
     contact_last_name: "",
-    contact_email: defaultEmail,
+    contact_email: "", // start empty, we'll sync if defaultEmail arrives
     contact_phone: "",
     shaduicn: false,
   });
@@ -64,6 +64,16 @@ export default function CharitySetupModal({
   const [charitySlug, setCharitySlug] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // sync defaultEmail into formData once it loads
+  useEffect(() => {
+    if (defaultEmail) {
+      setFormData((prev) => ({
+        ...prev,
+        contact_email: defaultEmail,
+      }));
+    }
+  }, [defaultEmail]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -142,7 +152,7 @@ export default function CharitySetupModal({
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        // Only allow the modal to be opened programmatically.
+        // Only allow programmatic open
         if (isOpen) {
           setOpen(true);
         }
@@ -182,7 +192,7 @@ export default function CharitySetupModal({
             charityName={formData.charity_name}
             charityRegistrationNumber={formData.registration_number}
             charityAddress={formData.registered_address}
-            showEmailField={showEmailField} // Pass the flag here
+            showEmailField={showEmailField}
           />
         )}
 
