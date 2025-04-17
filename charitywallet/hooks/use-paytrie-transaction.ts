@@ -1,55 +1,32 @@
-import { useState } from "react";
+import { TxPayload } from "@/app/types/paytrie-transaction-validation";
+import { useState, useEffect } from "react";
 
-interface PaytrieTransactionData {
-  quoteId: number;
-  gasId: number;
-  email: string;
-  wallet: string;
-  leftSideLabel: string;
-  leftSideValue: number;
-  rightSideLabel: string;
-  ethCost?: string;
-  vendorId?: number;
-  useReferral?: boolean;
+export interface PayTrieResponse {
+  tx: string;
+  fxRate: string /* … */;
 }
 
-interface UsePaytrieTransactionResult {
-  data: any;
-  error: string | null;
-  loading: boolean;
-  callTransaction: (payload: PaytrieTransactionData) => Promise<void>;
-}
+export function usePayTrieTransaction(payload: TxPayload | null) {
+  const [data, setData] = useState<PayTrieResponse | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setLoading] = useState(false);
 
-export function usePaytrieTransaction(): UsePaytrieTransactionResult {
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const callTransaction = async (payload: PaytrieTransactionData) => {
+  useEffect(() => {
+    if (!payload) return;
     setLoading(true);
-    setError(null);
+    fetch("/api/paytrie/transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(setData)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, [payload]);
 
-    try {
-      const res = await fetch("/api/paytrie/transaction", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "An error occurred");
-      }
-      const responseData = await res.json();
-      setData(responseData);
-    } catch (err: any) {
-      setError(err.message || "Unexpected error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { data, error, loading, callTransaction };
+  return { data, error, isLoading };
 }

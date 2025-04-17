@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm, FieldValues } from "react-hook-form";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { PreparedTransaction } from "thirdweb";
-import { sendOtp, verifyOtp } from "@/utils/op-service";
-import { buildPreparedTransaction } from "@/utils/transaction-service";
+import { sendOtp, verifyOtp } from "@/utils/send-or-verify-otp";
+import { buildPreparedTransaction } from "@/utils/build-prepared-transaction";
 
 export function useTransactionFlow(emailForOtp: string) {
   const {
