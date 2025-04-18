@@ -90,12 +90,12 @@ export default function SendingFundsModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Withdraw</Button>
+        <Button>Transfer Funds To Bank</Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Withdraw Funds</DialogTitle>
+          <DialogTitle>Transfer Funds To Bank</DialogTitle>
         </DialogHeader>
 
         <BalanceDisplay balance={balance} />
