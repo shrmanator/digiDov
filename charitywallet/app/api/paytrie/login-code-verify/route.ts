@@ -21,13 +21,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const res = await fetch("https://mod.paytrie.com/loginCodeVerify", {
+    // Build URL with query params
+    const url =
+      `https://mod.paytrie.com/loginCodeVerify` +
+      `?email=${encodeURIComponent(email)}` +
+      `&login_code=${encodeURIComponent(login_code)}`;
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "x-api-key": apiKey,
       },
-      body: JSON.stringify(body),
     });
 
     const text = await res.text();
