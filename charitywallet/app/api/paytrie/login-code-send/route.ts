@@ -2,14 +2,10 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, login_code } = body;
+    const { email } = await req.json();
 
-    if (!email || !login_code) {
-      return NextResponse.json(
-        { error: "Missing email or login_code" },
-        { status: 400 }
-      );
+    if (!email) {
+      return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
 
     const apiKey = process.env.PAYTRIE_API_KEY;
@@ -21,13 +17,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const res = await fetch("https://mod.paytrie.com/loginCodeVerify", {
+    const url = `https://mod.paytrie.com/loginCodeSend?email=${encodeURIComponent(
+      email
+    )}`;
+    const res = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "x-api-key": apiKey,
       },
-      body: JSON.stringify(body),
     });
 
     const text = await res.text();
@@ -39,12 +36,12 @@ export async function POST(req: Request) {
     }
 
     if (!res.ok) {
-      console.error(`[PayTrie] loginCodeVerify failed (${res.status}):`, json);
+      console.error(`[PayTrie] loginCodeSend failed (${res.status}):`, json);
     }
 
     return NextResponse.json(json, { status: res.status });
   } catch (err: any) {
-    console.error("[PayTrie] loginCodeVerify error:", err);
+    console.error("[PayTrie] loginCodeSend error:", err);
     return NextResponse.json(
       { error: "Unexpected server error" },
       { status: 500 }

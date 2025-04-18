@@ -11,7 +11,7 @@ export function usePayTrieTransaction() {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setLoading] = useState(false);
 
-  const execute = useCallback(async (payload: TxPayload) => {
+  const execute = useCallback(async (payload: TxPayload, jwt: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -19,12 +19,12 @@ export function usePayTrieTransaction() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_PAYTRIE_API_KEY!,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYTRIE_JWT!}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, jwt }),
       });
+
       if (!res.ok) throw new Error(await res.text());
+
       const json = (await res.json()) as PayTrieResponse;
       setData(json);
       return json;

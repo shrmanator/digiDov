@@ -18,7 +18,6 @@ import { PreparedTransaction, prepareTransaction, toWei } from "thirdweb";
 import { polygon, sepolia } from "thirdweb/chains";
 import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, BellRing, AlertCircle, CheckCircle } from "lucide-react";
-import { sendOtpAction, verifyOtpAction } from "@/app/actions/otp";
 import OtpModal from "./opt-modal";
 
 interface SendingFundsModalProps {
@@ -33,8 +32,8 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [pendingTx, setPendingTx] = useState<PreparedTransaction | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [methodId, setMethodId] = useState("");
   const [otpError, setOtpError] = useState("");
+  const [jwt, setJwt] = useState<string | null>(null);
 
   const {
     register,
@@ -63,7 +62,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
     fetchBalance();
   }, [charity]);
 
-  // Helper to set amount based on percentage.
   const handleSetPercentage = useCallback(
     (percentage: number) => {
       if (walletBalance === null) return;
@@ -77,13 +75,9 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
     [walletBalance, setValue]
   );
 
-  // Instead of sending the transaction immediately,
-  // store the transaction details and trigger OTP flow.
-
-  const onSubmit = (formData: FieldValues) => {
+  const onSubmit = async (formData: FieldValues) => {
     if (!activeAccount) return;
 
-    // Prepare the transaction.
     const tx = prepareTransaction({
       to: formData.recipientAddress,
       value: toWei(formData.amount),
@@ -91,63 +85,54 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
       client: thirdwebClient,
     });
 
-    // Store the pending transaction.
     setPendingTx(tx);
 
-    // Use the charity's email for OTP.
     const otpEmail = charity.contact_email || "";
     if (!otpEmail) {
       console.error("No email provided for OTP.");
       return;
     }
 
-    // Send OTP.
-    sendOtpAction(otpEmail)
-      .then((response) => {
-        if (response?.email_id) {
-          setMethodId(response.email_id);
-          setIsOtpModalOpen(true);
-        } else if (response?.error_message) {
-          setOtpError(response.error_message);
-        } else {
-          console.error("Failed to send OTP.");
-        }
-      })
-      .catch((err) => {
-        console.error("Error sending OTP:", err);
-        setOtpError("Unable to send OTP, please try again later.");
+    try {
+      const res = await fetch("/api/paytrie/loginCodeSend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: otpEmail }),
       });
+
+      if (!res.ok) throw new Error("Failed to send OTP");
+      setIsOtpModalOpen(true);
+    } catch (err) {
+      console.error("Error sending OTP:", err);
+      setOtpError("Unable to send OTP, please try again later.");
+    }
   };
 
-  // This function is called when the OTP modal returns the OTP code.
-  // It performs a backend OTP verification and, if successful, sends the transaction.
   const handleOtpVerified = async (otp: string) => {
     try {
-      const verification = await verifyOtpAction(methodId, otp);
-      if (verification.status_code !== 200) {
-        const errorResponse = verification.response as {
-          error_message?: string;
-        };
-        const errorMsg =
-          errorResponse.error_message ||
-          "OTP verification failed. Please try again.";
-        // Throw error to be caught in the OTP modal.
-        throw new Error(errorMsg);
+      const res = await fetch("/api/paytrie/loginCodeVerify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: charity.contact_email,
+          login_code: otp,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "OTP verification failed.");
+
+      setJwt(data.token); // JWT can be used for future PayTrie API calls
+      setIsOtpModalOpen(false);
+
+      if (pendingTx) {
+        sendTx(pendingTx, {
+          onSuccess: () => reset(),
+        });
+        setPendingTx(null);
       }
     } catch (error) {
-      // Propagate the error so that the OTP modal can catch it and display it.
       throw error;
-    }
-
-    // OTP verified successfully, so close the modal and process the transaction.
-    setIsOtpModalOpen(false);
-    if (pendingTx) {
-      sendTx(pendingTx, {
-        onSuccess: () => {
-          reset();
-        },
-      });
-      setPendingTx(null);
     }
   };
 
@@ -170,7 +155,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Pinned Banner */}
         <div className="my-2 border-l-2 border-warning bg-muted p-2 rounded">
           <div className="flex items-start gap-2">
             <BellRing size={14} className="text-warning mt-0.5" />
@@ -185,7 +169,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
           </div>
         </div>
 
-        {/* Your Balance */}
         <div className="mb-2">
           <label className="block text-xs text-muted-foreground mb-1">
             Your Balance (ETH)
@@ -196,7 +179,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-          {/* Recipient Address */}
           <div>
             <label className="block text-xs font-medium mb-1">
               Recipient Wallet Address
@@ -220,7 +202,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
             )}
           </div>
 
-          {/* Amount */}
           <div>
             <label className="block text-xs font-medium mb-1">
               Amount to Send (ETH)
@@ -245,29 +226,22 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
               </p>
             )}
 
-            {/* Percentage Buttons */}
             <div className="flex gap-2 mt-2">
-              {[
-                { label: "25%", value: 25 },
-                { label: "50%", value: 50 },
-                { label: "75%", value: 75 },
-                { label: "Max", value: 100 },
-              ].map((btn) => (
+              {["25%", "50%", "75%", "Max"].map((label, idx) => (
                 <Button
-                  key={btn.label}
+                  key={label}
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={() => handleSetPercentage(btn.value)}
+                  onClick={() => handleSetPercentage([25, 50, 75, 100][idx])}
                   className="px-2"
                 >
-                  {btn.label}
+                  {label}
                 </Button>
               ))}
             </div>
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full"
@@ -310,7 +284,6 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
         )}
       </DialogContent>
 
-      {/* OTP Modal for extra security */}
       <OtpModal
         isOpen={isOtpModalOpen}
         onOpenChange={setIsOtpModalOpen}
