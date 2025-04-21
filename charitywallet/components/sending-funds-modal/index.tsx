@@ -9,133 +9,127 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import BalanceDisplay from "./balance-display";
 import QuoteDisplay from "./quote-display";
 import OtpModal from "@/components/opt-modal";
 import { useWalletBalance } from "@/hooks/use-wallet-balance";
 import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
-import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
+import {
+  usePayTrieTransaction,
+  PayTrieTransaction,
+} from "@/hooks/use-paytrie-transaction";
 import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
 
 export default function SendingFundsModal({
   charity,
 }: {
-  charity: { wallet_address: string; contact_email?: string | null };
+  charity: { wallet_address: string; contact_email: string };
 }) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // OTP flow state
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
+  // OTP flow
+  const [isOtpOpen, setIsOtpOpen] = useState(false);
+  const [hasSentOtp, setHasSentOtp] = useState(false);
   const [otpError, setOtpError] = useState("");
 
-  // Transaction state
-  const [pendingPayload, setPendingPayload] = useState<TxPayload | null>(
-    null
-  );
-  const [jwt, setJwt] = useState<string | null>(null);
+  // Pending payload & JWT
+  const [pendingPayload, setPendingPayload] = useState<TxPayload | null>(null);
 
-  // Data hooks
   const balance = useWalletBalance(charity.wallet_address);
-  const { quote, isLoading: quoteLoading, error: quoteError } =
-    usePayTrieQuote();
+  const {
+    quote,
+    isLoading: quoteLoading,
+    error: quoteError,
+  } = usePayTrieQuote();
   const [amount, setAmount] = useState("");
-  const { execute, data, error, isLoading } = usePayTrieTransaction();
 
-  // 1️⃣ When user clicks “Withdraw”, prepare payload and send OTP once
-  const handleSubmit = async (e: FormEvent) => {
+  const { createTransaction, transaction, transactionError, isSubmitting } =
+    usePayTrieTransaction();
+
+  // 1️⃣ Send OTP
+  const handleWithdraw = async (e: FormEvent) => {
     e.preventDefault();
-    if (!quote || isLoading) return;
-
-    // If the OTP modal is already open, do nothing
-    if (otpModalOpen) return;
+    if (!quote || isSubmitting) return;
+    if (isOtpOpen) return;
 
     const payload: TxPayload = {
       quoteId: quote.id,
       gasId: quote.gasId,
-      email: charity.contact_email || "",
+      email: charity.contact_email,
       wallet: charity.wallet_address,
       leftSideLabel: "USDC-POLY",
       leftSideValue: parseFloat(amount),
       rightSideLabel: "CAD",
     };
     setPendingPayload(payload);
+    setOtpError("");
 
-    // Send OTP only on first click
-    if (!otpSent) {
+    if (!hasSentOtp) {
       try {
         const res = await fetch("/api/paytrie/login-code-send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: payload.email }),
         });
-        if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(txt || "Failed to send OTP");
-        }
-        setOtpSent(true);
+        if (!res.ok) throw new Error(await res.text());
+        setHasSentOtp(true);
       } catch (err: any) {
-        console.error("[PayTrie] Error sending OTP:", err);
-        setOtpError("Unable to send OTP — please try again later.");
+        console.error(err);
+        setOtpError("Unable to send OTP. Please try again.");
         return;
       }
     }
 
-    // Open the OTP modal
-    setOtpModalOpen(true);
+    setIsOtpOpen(true);
   };
 
-  // 2️⃣ When OTPModal calls onVerified, verify code & then run transaction
+  // 2️⃣ Verify OTP → PayTrie transaction
   const handleOtpVerified = async (otp: string) => {
-    // Clear any prior errors
     setOtpError("");
+    try {
+      const res = await fetch("/api/paytrie/login-code-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: charity.contact_email,
+          login_code: otp,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.token) {
+        throw new Error(json.error || "Invalid OTP");
+      }
+      setIsOtpOpen(false);
 
-    // Call your verify route
-    const res = await fetch("/api/paytrie/login-code-verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: charity.contact_email,
-        login_code: otp,
-      }),
-    });
-    const result = await res.json();
-    if (!res.ok || !result.token) {
-      throw new Error(result.error || "Invalid OTP");
-    }
+      if (!pendingPayload) throw new Error("Missing transaction details");
+      await createTransaction(pendingPayload, json.token);
 
-    // Got a JWT!
-    setJwt(result.token);
-
-    // Close OTP modal but keep otpSent = true
-    setOtpModalOpen(false);
-
-    // 3️⃣ Execute the PayTrie transaction
-    if (pendingPayload) {
-      await execute(pendingPayload, result.token);
+      // reset for next flow
       setPendingPayload(null);
-
-      // Reset OTP flow so you can do another withdraw later
-      setOtpSent(false);
+      setHasSentOtp(false);
+    } catch (err: any) {
+      console.error(err);
+      setOtpError(err.message);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Transfer Funds To Bank</Button>
+        <Button>Withdraw</Button>
       </DialogTrigger>
 
-      <DialogContent style={{ width: "clamp(320px, 90vw, 480px)" }}>
+      <DialogContent style={{ width: "clamp(320px,90vw,480px)" }}>
         <DialogHeader>
-          <DialogTitle>Transfer Funds To Bank</DialogTitle>
+          <DialogTitle>Withdraw Funds</DialogTitle>
         </DialogHeader>
 
         <BalanceDisplay balance={balance} />
         <QuoteDisplay />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
+        <form onSubmit={handleWithdraw} className="space-y-4">
+          <Input
             type="number"
             step="0.0001"
             min="0"
@@ -143,53 +137,63 @@ export default function SendingFundsModal({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            className="w-full border rounded p-2"
           />
 
           <Button
             type="submit"
+            className="w-full"
             disabled={
-              !quote ||
               !amount ||
               isNaN(Number(amount)) ||
-              isLoading ||
-              !!data ||
-              otpModalOpen      // ← disable while OTP modal is open
+              quoteLoading ||
+              isSubmitting ||
+              Boolean(transaction) ||
+              isOtpOpen
             }
-            className="w-full"
           >
-            {isLoading
+            {isSubmitting
               ? "Processing…"
-              : data
+              : transaction
               ? "Done!"
-              : otpModalOpen
+              : isOtpOpen
               ? "Awaiting OTP…"
               : "Withdraw"}
           </Button>
-
-          {quoteLoading && <p>Loading pricing…</p>}
-          {quoteError && (
-            <p className="text-red-600">{quoteError.message}</p>
-          )}
-          {error && (
-            <p className="text-red-600">Error: {error.message}</p>
-          )}
-          {data && (
-            <div className="p-2 bg-muted border rounded text-sm">
-              <p className="text-success font-medium">Success! 🎉</p>
-              <p className="font-mono mt-1 break-all">{data.tx}</p>
-            </div>
-          )}
-          {otpError && (
-            <p className="text-red-600">OTP Error: {otpError}</p>
-          )}
         </form>
+
+        {quoteLoading && <p>Loading pricing…</p>}
+        {quoteError && <p className="text-red-600">{quoteError.message}</p>}
+        {transactionError && (
+          <p className="text-red-600">{transactionError.message}</p>
+        )}
+        {otpError && <p className="text-red-600">OTP Error: {otpError}</p>}
+
+        {transaction && (
+          <div className="p-2 bg-muted border rounded text-sm space-y-1">
+            <p className="text-success font-medium">Success! 🎉</p>
+            <p>
+              <strong>TX ID:</strong> {transaction.transactionId}
+            </p>
+            <p>
+              <strong>Rate:</strong> {transaction.exchangeRate}
+            </p>
+            <p>
+              <strong>Send:</strong> {transaction.depositAmount} USDC‑POLY
+            </p>
+            <p>
+              <strong>To address:</strong>
+            </p>
+            <pre className="font-mono p-1 bg-muted rounded">
+              {transaction.depositAddress}
+            </pre>
+          </div>
+        )}
       </DialogContent>
 
       <OtpModal
-        isOpen={otpModalOpen}
-        onOpenChange={setOtpModalOpen}
-        email={charity.contact_email || "no email"}
+        isOpen={isOtpOpen}
+        onOpenChange={setIsOtpOpen}
+        email={charity.contact_email}
         onVerified={handleOtpVerified}
       />
     </Dialog>
