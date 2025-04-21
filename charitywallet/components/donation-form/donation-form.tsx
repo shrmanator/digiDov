@@ -55,7 +55,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const nativeSymbol = activeChain?.nativeCurrency?.symbol || "ETH";
   const decimals = activeChain?.nativeCurrency?.decimals || 18;
   // External data using static conversion rate hook
-  const activeChainId = activeChain?.id?.toString() || "";
+  const activeChainId = (activeChain?.id ?? 1).toString(); // fallback to Ethereum chain ID (1 => 0x1)
   const { conversionRate: tokenPrice, error: conversionRateError } =
     useStaticConversionRate(activeChainId, "usd");
 
