@@ -57,8 +57,8 @@ export function useTokenSwap({
   const statusQuery = useBuyWithCryptoStatus(
     txHash
       ? {
-          client, // required
-          transactionHash: txHash, // required
+          client,
+          transactionHash: txHash,
         }
       : undefined
   );
