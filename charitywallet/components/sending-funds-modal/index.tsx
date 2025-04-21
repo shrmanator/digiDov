@@ -15,10 +15,7 @@ import QuoteDisplay from "./quote-display";
 import OtpModal from "@/components/opt-modal";
 import { useWalletBalance } from "@/hooks/use-wallet-balance";
 import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
-import {
-  usePayTrieTransaction,
-  PayTrieTransaction,
-} from "@/hooks/use-paytrie-transaction";
+import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
 import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
 
 export default function SendingFundsModal({
@@ -26,16 +23,18 @@ export default function SendingFundsModal({
 }: {
   charity: { wallet_address: string; contact_email: string };
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // OTP flow
+  // Dialog & OTP state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [hasSentOtp, setHasSentOtp] = useState(false);
   const [otpError, setOtpError] = useState("");
 
-  // Pending payload & JWT
+  // Pending payload & deposit instructions
   const [pendingPayload, setPendingPayload] = useState<TxPayload | null>(null);
+  const [depositAddress, setDepositAddress] = useState<string | null>(null);
+  const [depositAmount, setDepositAmount] = useState<number | null>(null);
 
+  // Data hooks
   const balance = useWalletBalance(charity.wallet_address);
   const {
     quote,
@@ -47,11 +46,15 @@ export default function SendingFundsModal({
   const { createTransaction, transaction, transactionError, isSubmitting } =
     usePayTrieTransaction();
 
-  // 1️⃣ Send OTP
+  // 1️⃣ Send OTP when “Withdraw” is clicked
   const handleWithdraw = async (e: FormEvent) => {
     e.preventDefault();
     if (!quote || isSubmitting) return;
     if (isOtpOpen) return;
+
+    setOtpError("");
+    setDepositAddress(null);
+    setDepositAmount(null);
 
     const payload: TxPayload = {
       quoteId: quote.id,
@@ -63,7 +66,6 @@ export default function SendingFundsModal({
       rightSideLabel: "CAD",
     };
     setPendingPayload(payload);
-    setOtpError("");
 
     if (!hasSentOtp) {
       try {
@@ -75,7 +77,7 @@ export default function SendingFundsModal({
         if (!res.ok) throw new Error(await res.text());
         setHasSentOtp(true);
       } catch (err: any) {
-        console.error(err);
+        console.error("[PayTrie] send OTP error:", err);
         setOtpError("Unable to send OTP. Please try again.");
         return;
       }
@@ -84,11 +86,12 @@ export default function SendingFundsModal({
     setIsOtpOpen(true);
   };
 
-  // 2️⃣ Verify OTP → PayTrie transaction
+  // 2️⃣ Verify OTP → create TX → fetch deposit info
   const handleOtpVerified = async (otp: string) => {
     setOtpError("");
     try {
-      const res = await fetch("/api/paytrie/login-code-verify", {
+      // verify OTP → JWT
+      const verifyRes = await fetch("/api/paytrie/login-code-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,26 +99,46 @@ export default function SendingFundsModal({
           login_code: otp,
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.token) {
-        throw new Error(json.error || "Invalid OTP");
+      const verifyJson = await verifyRes.json();
+      if (!verifyRes.ok || !verifyJson.token) {
+        throw new Error(verifyJson.error || "Invalid OTP");
       }
       setIsOtpOpen(false);
 
+      // create the PayTrie transaction
       if (!pendingPayload) throw new Error("Missing transaction details");
-      await createTransaction(pendingPayload, json.token);
+      const txResult = await createTransaction(
+        pendingPayload,
+        verifyJson.token
+      );
 
-      // reset for next flow
+      // fetch deposit instructions
+      const instrRes = await fetch(
+        `/api/paytrie/get-transaction-by-id?tx_id=${txResult.transactionId}`
+      );
+      if (!instrRes.ok) {
+        throw new Error("Failed to fetch deposit instructions");
+      }
+      const depositData = await instrRes.json();
+      const record = Array.isArray(depositData) ? depositData[0] : depositData;
+
+      if (!record || !record.wallet || record.rightSideValue == null) {
+        throw new Error("Invalid deposit instructions");
+      }
+      setDepositAddress(record.wallet);
+      setDepositAmount(record.rightSideValue);
+
+      // reset OTP flow
       setPendingPayload(null);
       setHasSentOtp(false);
     } catch (err: any) {
-      console.error(err);
+      console.error("[PayTrie] flow error:", err);
       setOtpError(err.message);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button>Withdraw</Button>
       </DialogTrigger>
@@ -148,12 +171,13 @@ export default function SendingFundsModal({
               quoteLoading ||
               isSubmitting ||
               Boolean(transaction) ||
+              Boolean(depositAddress) ||
               isOtpOpen
             }
           >
             {isSubmitting
               ? "Processing…"
-              : transaction
+              : depositAddress
               ? "Done!"
               : isOtpOpen
               ? "Awaiting OTP…"
@@ -166,7 +190,7 @@ export default function SendingFundsModal({
         {transactionError && (
           <p className="text-red-600">{transactionError.message}</p>
         )}
-        {otpError && <p className="text-red-600">OTP Error: {otpError}</p>}
+        {otpError && <p className="text-red-600">{otpError}</p>}
 
         {transaction && (
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
@@ -177,14 +201,19 @@ export default function SendingFundsModal({
             <p>
               <strong>Rate:</strong> {transaction.exchangeRate}
             </p>
+          </div>
+        )}
+
+        {depositAddress && depositAmount != null && (
+          <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p>
-              <strong>Send:</strong> {transaction.depositAmount} USDC‑POLY
+              <strong>Send:</strong> {depositAmount} USDC‑POLY
             </p>
             <p>
               <strong>To address:</strong>
             </p>
             <pre className="font-mono p-1 bg-muted rounded">
-              {transaction.depositAddress}
+              {depositAddress}
             </pre>
           </div>
         )}
