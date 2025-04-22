@@ -1,66 +1,46 @@
+import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
-interface DonationSummaryProps {
-  coverFee: boolean;
-  onCoverFeeChange: () => void;
-  selectedUSD: number | null;
-  customUSD: string;
+interface InlineSummaryProps {
+  totalPaid: number;
   charityReceives: number;
-  feeAmount: number;
   tokenFloat: number;
   nativeSymbol: string;
-  charityName: string;
+  coverFee: boolean;
+  feeAmount: number;
+  onToggleCoverFee: () => void;
 }
 
-export function DonationSummary({
-  coverFee,
-  onCoverFeeChange,
-  selectedUSD,
-  customUSD,
+export const InlineSummary: React.FC<InlineSummaryProps> = ({
+  totalPaid,
   charityReceives,
-  feeAmount,
   tokenFloat,
   nativeSymbol,
-  charityName,
-}: DonationSummaryProps) {
-  const donorAmount =
-    selectedUSD !== null ? selectedUSD : parseFloat(customUSD || "0");
-  const shortName =
-    charityName.length > 20 ? `${charityName.slice(0, 20)}...` : charityName;
-
+  coverFee,
+  feeAmount,
+  onToggleCoverFee,
+}) => {
   return (
-    <div className="p-3 bg-muted/50 rounded-md shadow-sm">
-      <h4 className="text-sm font-semibold mb-2">Donation Summary</h4>
-      <div className="flex items-center gap-2 mb-3">
+    <div className="w-full">
+      <div className="flex items-center gap-2 mb-2">
         <Checkbox
           id="cover-fee"
           checked={coverFee}
-          onCheckedChange={onCoverFeeChange}
+          onCheckedChange={onToggleCoverFee}
         />
         <Label htmlFor="cover-fee" className="text-sm cursor-pointer">
-          Cover 3% fee
+          Cover 3% fee ({coverFee ? "+" : "-"}${feeAmount.toFixed(2)})
         </Label>
       </div>
-      <div className="flex justify-between text-sm mb-1">
-        <span>You pay:</span>
-        <span>${donorAmount.toFixed(2)}</span>
-      </div>
-      <div className="flex justify-between text-sm text-muted-foreground mb-2">
-        <span>Fee:</span>
-        <span>
-          {coverFee ? `$${feeAmount.toFixed(2)}` : `-$${feeAmount.toFixed(2)}`}
+
+      <p className="text-center text-sm mt-3">
+        Donate ${totalPaid.toFixed(2)} USD{" "}
+        <span className="text-muted-foreground">
+          (Charity gets ${charityReceives.toFixed(2)}) • ~
+          {tokenFloat.toFixed(3)} {nativeSymbol}
         </span>
-      </div>
-      <Separator className="my-2" />
-      <div className="flex justify-between text-sm font-medium">
-        <span>{shortName} receives:</span>
-        <span>${charityReceives.toFixed(2)}</span>
-      </div>
-      <div className="text-right text-xs text-muted-foreground mt-1">
-        ~{tokenFloat.toFixed(5)} {nativeSymbol}
-      </div>
+      </p>
     </div>
   );
-}
+};
