@@ -1,8 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import React from "react";
+import { Button }    from "@/components/ui/button";
+import { Label }     from "@/components/ui/label";
+import { Input }     from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Badge }     from "@/components/ui/badge";
 
 interface AmountSelectorProps {
   presetAmounts: number[];
@@ -51,6 +52,7 @@ export function AmountSelector({
           })}
         </div>
       </div>
+
       <div className="flex items-center my-1">
         <Separator className="flex-1" />
         <span className="mx-3 text-xs font-medium text-muted-foreground px-2">
@@ -58,13 +60,16 @@ export function AmountSelector({
         </span>
         <Separator className="flex-1" />
       </div>
+
       <div>
         <Label htmlFor="custom-usd" className="mb-2 block text-sm font-medium">
           Enter your own
         </Label>
         <div className="relative">
           <div className="absolute left-3 inset-y-0 flex items-center pointer-events-none">
-            <span className="text-sm font-medium text-muted-foreground">$</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              $
+            </span>
           </div>
           <Input
             id="custom-usd"
