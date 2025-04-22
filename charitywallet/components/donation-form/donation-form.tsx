@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import Web3 from "web3";
 import { useActiveWalletChain } from "thirdweb/react";
+import { useConversionRate } from "@/hooks/use-current-conversion-rate";
 import { useDonationCalculator } from "@/hooks/use-donation-calculator";
 import { useDonate } from "@/hooks/use-donate";
 import type { charity } from "@prisma/client";
@@ -15,15 +16,13 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-
+import { AmountSelector } from "@/components/donation-form/amount-selector";
+import { DonationLoading } from "@/components/donation-form/donation-loading";
+import { ErrorBanner } from "@/components/donation-form/error-banner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Loader2 } from "lucide-react";
-import { useConversionRate } from "@/hooks/use-current-conversion-rate";
-import { AmountSelector } from "./amount-selector";
-import { DonationLoading } from "./donation-loading";
-import { ErrorBanner } from "./error-banner";
 
 const PRESET_AMOUNTS = [10, 20, 50];
 const FEE_PERCENTAGE = 0.03;
@@ -34,7 +33,9 @@ interface DonationFormProps {
 
 export default function DonationForm({ charity }: DonationFormProps) {
   const chain = useActiveWalletChain();
-  const chainId = chain?.id.toString() ?? "1";
+  const rawId = chain?.id;
+  const chainId = String(rawId ?? 1);
+
   const nativeSymbol = chain?.nativeCurrency?.symbol ?? "ETH";
   const decimals = chain?.nativeCurrency?.decimals ?? 18;
 
@@ -60,7 +61,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCoverFee((f) => !f);
   }, []);
 
-  // Data hooks
+  // Data hook
   const {
     conversionRate: rate,
     isLoading: rateLoading,
@@ -107,7 +108,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
       <CardContent>
         {rateLoading ? (
           <DonationLoading />
-        ) : rateError ? (
+        ) : rateError || rate == null ? (
           <ErrorBanner message="Unable to fetch conversion rate. Please try again later." />
         ) : (
           <>
@@ -117,7 +118,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
               customAmount={customUSD}
               onPresetClick={handlePresetClick}
               onCustomChange={handleCustomChange}
-              tokenPrice={rate ?? 0}
+              tokenPrice={rate}
               nativeSymbol={nativeSymbol}
               tokenFloat={tokenFloat}
             />
