@@ -20,9 +20,8 @@ import { AmountSelector } from "@/components/donation-form/amount-selector";
 import { DonationLoading } from "@/components/donation-form/donation-loading";
 import { ErrorBanner } from "@/components/donation-form/error-banner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { DonationSummary } from "./donation-summary";
 
 const PRESET_AMOUNTS = [10, 20, 50];
 const FEE_PERCENTAGE = 0.03;
@@ -35,11 +34,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const chain = useActiveWalletChain();
   const rawId = chain?.id;
   const chainId = String(rawId ?? 1);
-
   const nativeSymbol = chain?.nativeCurrency?.symbol ?? "ETH";
   const decimals = chain?.nativeCurrency?.decimals ?? 18;
 
-  // UI state
+  // Local UI state
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
   const [coverFee, setCoverFee] = useState(true);
@@ -61,7 +59,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCoverFee((f) => !f);
   }, []);
 
-  // Data hook
+  // Data fetching
   const {
     conversionRate: rate,
     isLoading: rateLoading,
@@ -71,7 +69,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   // Web3 instance
   const web3 = useMemo(() => new Web3(), []);
 
-  // Calculation hook
+  // Donation calculations
   const {
     donationAmountWei,
     tokenFloat,
@@ -88,7 +86,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
     feePercentage: FEE_PERCENTAGE,
   });
 
-  // Donate flow
+  // Donation transaction
   const {
     onDonate,
     isSending,
@@ -123,24 +121,11 @@ export default function DonationForm({ charity }: DonationFormProps) {
               tokenFloat={tokenFloat}
             />
 
-            <div className="flex items-center gap-2 mt-4">
-              <Checkbox
-                checked={coverFee}
-                onCheckedChange={toggleCoverFee}
-                id="cover-fee"
-              />
-              <Label htmlFor="cover-fee" className="text-sm cursor-pointer">
-                Cover 3% fee ({coverFee ? "+" : "-"}${feeAmount.toFixed(2)})
-              </Label>
-            </div>
-
-            <p className="text-center text-sm mt-3">
-              Donate ${totalPaid.toFixed(2)} USD{" "}
-              <span className="text-muted-foreground">
-                (Charity gets ${charityReceives.toFixed(2)}) • ~
-                {tokenFloat.toFixed(3)} {nativeSymbol}
-              </span>
-            </p>
+            <DonationSummary
+              coverFee={coverFee}
+              feeAmount={feeAmount}
+              onToggleCoverFee={toggleCoverFee}
+            />
           </>
         )}
       </CardContent>
