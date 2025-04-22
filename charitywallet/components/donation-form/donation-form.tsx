@@ -70,21 +70,16 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const web3 = useMemo(() => new Web3(), []);
 
   // Donation calculations
-  const {
-    donationAmountWei,
-    tokenFloat,
-    charityReceives,
-    feeAmount,
-    totalPaid,
-  } = useDonationCalculator({
-    tokenPrice: rate,
-    selectedUSD,
-    customUSD,
-    decimals,
-    web3,
-    coverFee,
-    feePercentage: FEE_PERCENTAGE,
-  });
+  const { donationAmountWei, tokenFloat, feeAmount, totalPaid } =
+    useDonationCalculator({
+      tokenPrice: rate,
+      selectedUSD,
+      customUSD,
+      decimals,
+      web3,
+      coverFee,
+      feePercentage: FEE_PERCENTAGE,
+    });
 
   // Donation transaction
   const {
