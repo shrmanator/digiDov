@@ -56,7 +56,7 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
           <p className="text-sm font-medium">
             <span className="relative inline-block overflow-hidden">
               <span className="animate-shimmer bg-gradient-to-l from-transparent via-white/60 to-transparent bg-[length:200%_100%] bg-clip-text text-transparent">
-                Indexing transaction… {secondsLeft}s
+                Transaction indexing… {secondsLeft}s
               </span>
             </span>
           </p>
