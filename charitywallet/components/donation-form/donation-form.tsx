@@ -22,7 +22,6 @@ import { ErrorBanner } from "@/components/donation-form/error-banner";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { DonationSummary } from "@/components/donation-form/donation-summary";
-import { ExplorerLink } from "@/components/donation-form/explorer-link";
 import { DonationSuccess } from "@/components/donation-form/donation-success";
 
 const PRESET_AMOUNTS = [10, 20, 50];
