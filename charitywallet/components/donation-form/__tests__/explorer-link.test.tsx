@@ -1,9 +1,11 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { ExplorerLink } from "@/components/donation-form/explorer-link";
+import { ExplorerLink } from "../explorer-link";
 
 describe("ExplorerLink", () => {
   it("renders nothing when no txHash is provided", () => {
+    console.log(require.resolve("@/utils/get-tx-explorer-link"));
+
     const { container } = render(<ExplorerLink txHash="" />);
     expect(container.firstChild).toBeNull();
   });
