@@ -1,5 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import React from "react";
+import { Skeleton }   from "@/components/ui/skeleton";
+import { Separator }  from "@/components/ui/separator";
 
 export function DonationLoading() {
   return (
@@ -14,9 +15,7 @@ export function DonationLoading() {
       </div>
       <div className="flex items-center">
         <Separator className="flex-1" />
-        <span className="mx-2 text-sm font-medium text-muted-foreground">
-          OR
-        </span>
+        <span className="mx-2 text-sm font-medium text-muted-foreground">OR</span>
         <Separator className="flex-1" />
       </div>
       <div>
