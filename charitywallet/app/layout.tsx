@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,7 +67,6 @@ export default function RootLayout({
           </ThemeProvider>
         </ThirdwebProvider>
         <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
