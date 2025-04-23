@@ -18,8 +18,8 @@ interface DonationSuccessProps {
 }
 
 /**
- * Donation-success card with a live countdown before the explorer link is enabled.
- * Shows an animate-pulse placeholder while Blockscan indexes.
+ * Donation‑success card with live countdown and ChatGPT‑style shimmer.
+ * Requires `shimmer` keyframe in tailwind.config.ts.
  */
 export const DonationSuccess: React.FC<DonationSuccessProps> = ({
   txHash,
@@ -53,9 +53,13 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
             </a>
           </Button>
         ) : (
-          <div className="flex items-center gap-1 animate-pulse text-muted-foreground text-sm">
-            Indexing&nbsp;transaction… {secondsLeft}s
-          </div>
+          <p className="text-sm font-medium">
+            <span className="relative inline-block overflow-hidden">
+              <span className="animate-shimmer bg-gradient-to-l from-transparent via-white/60 to-transparent bg-[length:200%_100%] bg-clip-text text-transparent">
+                Indexing transaction… {secondsLeft}s
+              </span>
+            </span>
+          </p>
         )}
 
         <p className="text-xs text-muted-foreground text-center">

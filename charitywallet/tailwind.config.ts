@@ -10,6 +10,15 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" }, // fully left
+          "100%": { backgroundPosition: "200% 0" }, // move to right
+        },
+      },
+      animation: {
+        shimmer: "shimmer 2.5s linear infinite",
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
