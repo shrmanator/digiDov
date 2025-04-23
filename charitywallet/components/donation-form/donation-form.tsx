@@ -95,7 +95,10 @@ export default function DonationForm({ charity }: DonationFormProps) {
         <CardTitle className="text-2xl font-bold">
           Donate to {charity.charity_name}
         </CardTitle>
-        <CardDescription>Amount will be sent in {nativeSymbol}</CardDescription>
+        <CardDescription>
+          {nativeSymbol} will be sent directly to{" "}
+          {charity.charity_name}
+        </CardDescription>
       </CardHeader>
 
       <CardContent>

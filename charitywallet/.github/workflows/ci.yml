@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the code
+      - uses: actions/checkout@v4
+
+      # 2. Install pnpm & Node.js
+      - name: Setup Node & pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          node-version: 18.x
+          pnpm-version: 8
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 4. Run the Next.js production build
+      - name: Build
+        run: pnpm run build
+
+      # 5. Run your tests
+      - name: Test
+        run: pnpm test
+
+      # 6. (Optional) Lint / type-check
+      - name: Lint
+        run: pnpm run lint
+      - name: Type-check
+        run: pnpm run type-check
