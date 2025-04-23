@@ -103,8 +103,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   if (viewSuccess && txResult?.transactionHash) {
     return (
       <DonationSuccess
-        amountUSD={totalPaid}
-        tokenFloat={tokenFloat}
         txHash={txResult.transactionHash}
         onReset={() => {
           setSelectedUSD(null);
