@@ -2,10 +2,13 @@
   "compilerOptions": {
     // ---- Module / language targets ----
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
-
     // ---- Type-checking behaviour ----
     "strict": true,
     "skipLibCheck": true,
@@ -14,31 +17,39 @@
     "isolatedModules": true,
     "incremental": true,
     "noEmit": true,
-
     // ---- JSX / React ----
     "jsx": "preserve",
-
     // ---- Paths alias (keeps "@/..." working) ----
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
-
     // ---- Plugins (Next.js transformer) ----
     "plugins": [
-      { "name": "next" },
-      { "name": "typescript-plugin-styled-components" }
+      {
+        "name": "next"
+      },
+      {
+        "name": "typescript-plugin-styled-components"
+      }
     ],
-
     // ---- Test typings ----
     "types": [
       "jest", // Jest core matchers
       "@testing-library/jest-dom" // DOM-specific matchers (toHaveAttribute, etc.)
-    ]
+    ],
+    "allowJs": true
   },
-
   // Files the compiler should include
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
   // Ignore node_modules build
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
