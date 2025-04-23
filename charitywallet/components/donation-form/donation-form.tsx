@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import Web3 from "web3";
 import { useActiveWalletChain } from "thirdweb/react";
 import { useConversionRate } from "@/hooks/use-current-conversion-rate";
@@ -20,8 +20,10 @@ import { AmountSelector } from "@/components/donation-form/amount-selector";
 import { DonationLoading } from "@/components/donation-form/donation-loading";
 import { ErrorBanner } from "@/components/donation-form/error-banner";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Loader2 } from "lucide-react";
-import { DonationSummary } from "./donation-summary";
+import { Loader2 } from "lucide-react";
+import { DonationSummary } from "@/components/donation-form/donation-summary";
+import { ExplorerLink } from "@/components/donation-form/explorer-link";
+import { DonationSuccess } from "@/components/donation-form/donation-success";
 
 const PRESET_AMOUNTS = [10, 20, 50];
 const FEE_PERCENTAGE = 0.03;
@@ -41,6 +43,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const [selectedUSD, setSelectedUSD] = useState<number | null>(null);
   const [customUSD, setCustomUSD] = useState("");
   const [coverFee, setCoverFee] = useState(true);
+  const [viewSuccess, setViewSuccess] = useState(false);
 
   const handlePresetClick = useCallback((amt: number) => {
     setSelectedUSD(amt);
@@ -59,14 +62,14 @@ export default function DonationForm({ charity }: DonationFormProps) {
     setCoverFee((f) => !f);
   }, []);
 
-  // Data fetching
+  // Conversion rate
   const {
     conversionRate: rate,
     isLoading: rateLoading,
     isError: rateError,
   } = useConversionRate(chainId, "usd");
 
-  // Web3 instance
+  // Web3 helper
   const web3 = useMemo(() => new Web3(), []);
 
   // Donation calculations
@@ -89,15 +92,39 @@ export default function DonationForm({ charity }: DonationFormProps) {
     error: donateError,
   } = useDonate(donationAmountWei ?? BigInt(0), charity.wallet_address);
 
+  // Watch for a successful transaction
+  useEffect(() => {
+    if (txResult?.transactionHash) {
+      setViewSuccess(true);
+    }
+  }, [txResult]);
+
+  // If in success view, render the success component
+  if (viewSuccess && txResult?.transactionHash) {
+    return (
+      <DonationSuccess
+        amountUSD={totalPaid}
+        tokenFloat={tokenFloat}
+        txHash={txResult.transactionHash}
+        onReset={() => {
+          setSelectedUSD(null);
+          setCustomUSD("");
+          setCoverFee(true);
+          setViewSuccess(false);
+        }}
+      />
+    );
+  }
+
+  // Default: donation form
   return (
-    <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground">
+    <Card className="mx-auto w-full max-w-xl border bg-card text-card-foreground animate-fade-in">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
           Donate to {charity.charity_name}
         </CardTitle>
         <CardDescription>
-          {nativeSymbol} will be sent directly to{" "}
-          {charity.charity_name}
+          {nativeSymbol} will be sent directly to {charity.charity_name}
         </CardDescription>
       </CardHeader>
 
@@ -132,6 +159,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
         {donateError && (
           <ErrorBanner message={`Donation failed: ${donateError.message}`} />
         )}
+
         <Button
           size="lg"
           onClick={onDonate}
@@ -143,10 +171,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
           {isSending ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...
-            </>
-          ) : txResult ? (
-            <>
-              Sent <CheckCircle className="ml-2 h-5 w-5 text-green-600" />
             </>
           ) : (
             `Donate $${totalPaid.toFixed(2)}`
