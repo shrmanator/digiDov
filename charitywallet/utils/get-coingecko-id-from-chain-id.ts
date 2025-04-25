@@ -10,7 +10,7 @@ export const chainIdToCoingeckoId: Record<string, string> = {
  * Retrieves the CoinGecko ID for a given blockchain chain ID.
  *
  * @param chainId - The blockchain chain ID in hexadecimal format (e.g., "0x1" for Ethereum, "0x89" for Polygon).
- * @returns The corresponding CoinGecko ID, or null if not found.
+ * @returns The corresponding CoinGecko ID, or null if not found. Adding for commit
  */
 export function getCoingeckoIdFromChainId(chainId: string): string | null {
   return chainIdToCoingeckoId[chainId] || null;
