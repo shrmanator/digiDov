@@ -2,8 +2,8 @@ import Web3 from "web3";
 
 const web3 = new Web3();
 
-// Hardcoded topic0 hash for DonationForwarded event remains unchanged
-const DONATION_FORWARDED_TOPIC_HASH = web3.utils.keccak256(
+/** topic-0 hash for DonationForwarded(address,address,uint256,uint256,uint256) */
+export const DONATION_FORWARDED_TOPIC_HASH = web3.utils.keccak256(
   "DonationForwarded(address,address,uint256,uint256,uint256)"
 );
 
@@ -18,65 +18,58 @@ export interface DonationEvent {
   chain: number;
 }
 
-export const fetchChainTransactions = async (
-  chain: number,
-  contractAddress: string
-): Promise<any[]> => {
-  const url = `https://insight.thirdweb.com/v1/events/${contractAddress}?chain=${chain}&limit=50`;
+/* ------------------------------------------------------------------ */
+/*  Low-level: fetch ONE paginated slice from Insight                 */
+/* ------------------------------------------------------------------ */
+interface InsightPage {
+  data?: any[]; // might be missing
+  meta: { total_pages?: number };
+}
 
-  const response = await fetch(url, {
-    headers: {
-      "x-client-id": "d98b838c8c5cd1775c46b05d7385b215",
-    },
+export async function fetchChainTransactionsPage(
+  chain: number,
+  contractAddress: string,
+  page: number = 0,
+  limit: number = 25,
+  topic2?: string
+): Promise<InsightPage> {
+  const base = `https://insight.thirdweb.com/v1/events/${contractAddress}`;
+  const params =
+    `?chain=${chain}` +
+    `&limit=${limit}` +
+    `&page=${page}` +
+    (topic2 ? `&filter_topic_2=${topic2.toLowerCase()}` : "") +
+    `&clientId=${process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!}`;
+
+  const res = await fetch(base + params, {
+    headers: { "x-client-id": process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID! },
+    cache: "no-store",
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
+  if (!res.ok) {
     throw new Error(
-      `Error fetching transactions on chain ${chain}: ${response.status} ${response.statusText} - ${errorText}`
+      `Insight ${res.status} ${res.statusText}: ${await res.text()}`
     );
   }
 
-  const json = await response.json();
-  return json.data;
-};
+  // always return a defined data array
+  const json = (await res.json()) as InsightPage;
+  return {
+    data: Array.isArray(json.data) ? json.data : [],
+    meta: json.meta,
+  };
+}
 
-export const fetchDonationsToWallet = async (
-  chain: number,
-  contractAddress: string,
-  walletAddress: string
-): Promise<DonationEvent[]> => {
-  try {
-    const events = await fetchChainTransactions(chain, contractAddress);
-
-    const donations: DonationEvent[] = events
-      .filter(
-        (log: any) =>
-          log.topics[0] === DONATION_FORWARDED_TOPIC_HASH &&
-          ("0x" + log.topics[2].slice(-40)).toLowerCase() ===
-            walletAddress.toLowerCase()
-      )
-      .map((log: any) => {
-        const donation = decodeDonationLog(log);
-        return { ...donation, chain }; // attach the chain info
-      });
-
-    donations.sort((a, b) => a.timestamp.raw - b.timestamp.raw);
-
-    return donations;
-  } catch (error) {
-    console.error("Error fetching donation events:", error);
-    return [];
-  }
-};
-
-export const decodeDonationLog = (log: any): DonationEvent => {
+/* ------------------------------------------------------------------ */
+/*  Decode helpers                                                    */
+/* ------------------------------------------------------------------ */
+function decodeDonationLog(log: any) {
   const donor = "0x" + log.topics[1].slice(-40);
   const charity = "0x" + log.topics[2].slice(-40);
-  const data = log.data.slice(2);
-  const fullAmount = web3.utils.hexToNumberString("0x" + data.slice(0, 64));
-  const netAmount = web3.utils.hexToNumberString("0x" + data.slice(64, 128));
-  const fee = web3.utils.hexToNumberString("0x" + data.slice(128, 192));
+  const d = log.data.slice(2);
+  const fullAmount = web3.utils.hexToNumberString("0x" + d.slice(0, 64));
+  const netAmount = web3.utils.hexToNumberString("0x" + d.slice(64, 128));
+  const fee = web3.utils.hexToNumberString("0x" + d.slice(128, 192));
 
   return {
     donor,
@@ -86,21 +79,73 @@ export const decodeDonationLog = (log: any): DonationEvent => {
     fee,
     transactionHash: log.transaction_hash,
     timestamp: formatTimestamp(log.block_timestamp),
-    chain: 1, // default value; will be overwritten in fetchDonationsToWallet
   };
-};
+}
 
+/**
+ * Safely maps a page of raw logs into DonationEvent[]
+ * (ignores undefined / non-array inputs).
+ */
+function mapLogsToDonations(
+  logs: any[] | undefined,
+  wallet: string,
+  chain: number
+): DonationEvent[] {
+  if (!Array.isArray(logs)) return [];
+  return logs
+    .filter(
+      (log) =>
+        log.topics[0] === DONATION_FORWARDED_TOPIC_HASH &&
+        ("0x" + log.topics[2].slice(-40)).toLowerCase() === wallet.toLowerCase()
+    )
+    .map((log) => ({ ...decodeDonationLog(log), chain }))
+    .sort((a, b) => a.timestamp.raw - b.timestamp.raw);
+}
+
+/* ------------------------------------------------------------------ */
+/*  High-level: fetch ALL pages (server or API route)                 */
+/* ------------------------------------------------------------------ */
+export async function fetchDonationsToWallet(
+  chain: number,
+  contractAddress: string,
+  walletAddress: string,
+  pageSize: number = 25
+): Promise<DonationEvent[]> {
+  const all: DonationEvent[] = [];
+  let page = 0;
+  let totalPages = Infinity;
+
+  while (page < totalPages) {
+    const { data, meta } = await fetchChainTransactionsPage(
+      chain,
+      contractAddress,
+      page,
+      pageSize,
+      walletAddress // server-side filter by topic2
+    );
+
+    all.push(...mapLogsToDonations(data, walletAddress, chain));
+    totalPages = meta.total_pages ?? page + 1;
+    page += 1;
+  }
+
+  return all;
+}
+
+/* ------------------------------------------------------------------ */
 export const formatTimestamp = (
-  timestampSec: string
+  tsSec: string
 ): { formatted: string; raw: number } => {
-  const rawTimestamp = Number(timestampSec) * 1000;
-  const formatted = new Date(rawTimestamp).toLocaleString("en-US", {
-    month: "numeric",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-  return { formatted, raw: rawTimestamp };
+  const raw = Number(tsSec) * 1000;
+  return {
+    raw,
+    formatted: new Date(raw).toLocaleString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  };
 };
