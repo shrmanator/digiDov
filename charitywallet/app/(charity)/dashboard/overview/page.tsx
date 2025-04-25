@@ -143,7 +143,7 @@ export default async function Overview() {
                   value="transactions"
                   className="flex-1 sm:flex-initial"
                 >
-                  Transactions
+                  Donations ({donations.length})
                 </TabsTrigger>
                 <TabsTrigger
                   value="analytics"
@@ -153,13 +153,6 @@ export default async function Overview() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="transactions">
-                <CardHeader className="px-0 pt-0">
-                  <CardTitle>Donation History</CardTitle>
-                  <CardDescription>
-                    You&apos;ve received {donations.length} donation
-                    {donations.length !== 1 ? "s" : ""}
-                  </CardDescription>
-                </CardHeader>
                 {isCharityComplete ? (
                   <div className="h-[calc(98vh-250px)] overflow-auto">
                     <TransactionHistory
