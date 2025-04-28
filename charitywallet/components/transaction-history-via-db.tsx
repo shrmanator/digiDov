@@ -102,7 +102,6 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
   const dateTs = new Date(receipt.donation_date).getTime();
   const relativeTime = getRelativeTime(dateTs);
   const formattedDate = new Date(receipt.donation_date).toLocaleString();
-  console.log("fiat amount", receipt.fiat_amount);
 
   const donorName = receipt.donor
     ? `${receipt.donor.first_name} ${receipt.donor.last_name}`
@@ -116,7 +115,7 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300 w-full">
       <CardHeader className="p-4 pb-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -143,7 +142,7 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="font-bold text-lg">
-            ${receipt.fiat_amount.toFixed(4)}
+            ${receipt.fiat_amount.toFixed(3)}
           </span>
         </div>
         <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground">
@@ -187,14 +186,12 @@ export default function DonationHistory({ receipts }: DonationHistoryProps) {
     );
 
   return (
-    <Card className="border-0 shadow-none bg-transparent">
-      <ScrollArea style={{ height: "70vh" }} className="w-full">
-        <div className="space-y-4 pr-4 p-4">
-          {sortedReceipts.map((receipt) => (
-            <DonationReceiptItem key={receipt.id} receipt={receipt} />
-          ))}
-        </div>
-      </ScrollArea>
-    </Card>
+    <ScrollArea style={{ height: "70vh" }} className="w-full">
+      <div className="space-y-4 pr-4 w-full">
+        {sortedReceipts.map((receipt) => (
+          <DonationReceiptItem key={receipt.id} receipt={receipt} />
+        ))}
+      </div>
+    </ScrollArea>
   );
 }
