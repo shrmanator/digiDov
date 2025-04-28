@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { upsertCharity } from "@/app/actions/charities";
 import { useProfiles } from "thirdweb/react";
@@ -32,13 +32,33 @@ export default function CharitySetupModal({
   const router = useRouter();
   const { data: profiles } = useProfiles({ client });
 
-  // Get the default email from the profile (if available)
   const defaultEmail =
     profiles && profiles.length > 0 && profiles[0]?.details?.email
       ? profiles[0].details.email
       : "";
 
-  // Determine whether to display the email field (only if defaultEmail is empty)
+  const [formData, setFormData] = useState({
+    charity_name: "",
+    registered_address: "",
+    registration_number: "",
+    contact_title: "",
+    contact_first_name: "",
+    contact_last_name: "",
+    contact_email: "",
+    contact_phone: "",
+    shaduicn: false,
+  });
+
+  // Inject defaultEmail into formData once it arrives
+  useEffect(() => {
+    if (defaultEmail) {
+      setFormData((prev) => ({
+        ...prev,
+        contact_email: defaultEmail,
+      }));
+    }
+  }, [defaultEmail]);
+
   const showEmailField = defaultEmail === "";
 
   const [open, setOpen] = useState(true);
@@ -48,18 +68,6 @@ export default function CharitySetupModal({
     | "feeAgreementStep"
     | "donationUrlStep"
   >("charityOrganizationInfoStep");
-
-  const [formData, setFormData] = useState({
-    charity_name: "",
-    registered_address: "",
-    registration_number: "",
-    contact_title: "",
-    contact_first_name: "",
-    contact_last_name: "",
-    contact_email: defaultEmail,
-    contact_phone: "",
-    shaduicn: false,
-  });
 
   const [charitySlug, setCharitySlug] = useState("");
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -122,7 +130,6 @@ export default function CharitySetupModal({
 
   const handleFeeAgree = () => setStep("donationUrlStep");
 
-  // Call router.refresh() when finishing the modal, after it’s closed.
   const handleFinish = () => {
     setOpen(false);
     router.refresh();
@@ -182,7 +189,7 @@ export default function CharitySetupModal({
             charityName={formData.charity_name}
             charityRegistrationNumber={formData.registration_number}
             charityAddress={formData.registered_address}
-            showEmailField={showEmailField} // Pass the flag here
+            showEmailField={showEmailField}
           />
         )}
 
