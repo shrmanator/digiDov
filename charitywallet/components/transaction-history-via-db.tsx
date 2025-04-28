@@ -28,6 +28,7 @@ const CHAIN_MAP: Record<string, { symbol: string; name: string }> = {
 
 interface DonationHistoryProps {
   receipts: DonationReceipt[];
+  donationLink?: string;
 }
 
 function CopyButtonInner({ text }: { text: string }) {
@@ -74,28 +75,29 @@ function getRelativeTime(timestamp: number): string {
   const year = day * 365;
 
   if (diff < minute) return "just now";
-  if (diff < hour) {
-    const m = Math.floor(diff / minute);
-    return `${m} minute${m > 1 ? "s" : ""} ago`;
-  }
-  if (diff < day) {
-    const h = Math.floor(diff / hour);
-    return `${h} hour${h > 1 ? "s" : ""} ago`;
-  }
-  if (diff < week) {
-    const d = Math.floor(diff / day);
-    return `${d} day${d > 1 ? "s" : ""} ago`;
-  }
-  if (diff < month) {
-    const w = Math.floor(diff / week);
-    return `${w} week${w > 1 ? "s" : ""} ago`;
-  }
-  if (diff < year) {
-    const M = Math.floor(diff / month);
-    return `${M} month${M > 1 ? "s" : ""} ago`;
-  }
-  const Y = Math.floor(diff / year);
-  return `${Y} year${Y > 1 ? "s" : ""} ago`;
+  if (diff < hour)
+    return `${Math.floor(diff / minute)} minute${
+      Math.floor(diff / minute) > 1 ? "s" : ""
+    } ago`;
+  if (diff < day)
+    return `${Math.floor(diff / hour)} hour${
+      Math.floor(diff / hour) > 1 ? "s" : ""
+    } ago`;
+  if (diff < week)
+    return `${Math.floor(diff / day)} day${
+      Math.floor(diff / day) > 1 ? "s" : ""
+    } ago`;
+  if (diff < month)
+    return `${Math.floor(diff / week)} week${
+      Math.floor(diff / week) > 1 ? "s" : ""
+    } ago`;
+  if (diff < year)
+    return `${Math.floor(diff / month)} month${
+      Math.floor(diff / month) > 1 ? "s" : ""
+    } ago`;
+  return `${Math.floor(diff / year)} year${
+    Math.floor(diff / year) > 1 ? "s" : ""
+  } ago`;
 }
 
 function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
@@ -108,11 +110,10 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
     : "Anonymous Donor";
   const donorEmail = receipt.donor?.email;
 
-  // Determine blockchain info
-  const chainInfo = (receipt.chainId && CHAIN_MAP[receipt.chainId]) || {
-    symbol: "",
-    name: "Unknown Chain",
-  };
+  const chainInfo =
+    receipt.chainId && CHAIN_MAP[receipt.chainId]
+      ? CHAIN_MAP[receipt.chainId]
+      : { symbol: "", name: "Unknown Chain" };
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300 w-full">
@@ -138,11 +139,10 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
           </Badge>
         </div>
       </CardHeader>
-
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="font-bold text-lg">
-            ${receipt.fiat_amount.toFixed(3)}
+            ${receipt.fiat_amount.toFixed(2)}
           </span>
         </div>
         <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground">
@@ -163,27 +163,66 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
   );
 }
 
-export default function DonationHistory({ receipts }: DonationHistoryProps) {
+export default function DonationHistory({
+  receipts,
+  donationLink,
+}: DonationHistoryProps) {
+  const [linkCopied, setLinkCopied] = React.useState(false);
+  const handleCopyLink = () => {
+    if (!donationLink) return;
+    navigator.clipboard.writeText(donationLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
   if (!receipts.length) {
     return (
       <Card className="w-full">
-        <CardContent className="flex flex-col items-center justify-center p-12">
+        <CardContent className="flex flex-col items-center justify-center p-6 sm:p-12">
           <div className="text-4xl opacity-20 mb-4">💸</div>
-          <p className="text-center text-muted-foreground">
+          <p className="text-center text-muted-foreground mb-4">
             No donation receipts found.
           </p>
+          {donationLink && (
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <p className="text-sm">
+                Place this link where you want to accept donations.
+              </p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={handleCopyLink}
+                      className="w-full max-w-sm flex items-center justify-center border border-border rounded px-4 py-2 cursor-pointer hover:bg-muted/10"
+                    >
+                      <div className="flex-none w-4 h-4 flex items-center justify-center mr-2">
+                        {linkCopied ? (
+                          <span className="text-green-500">✓</span>
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </div>
+                      <span className="font-mono break-all text-sm">
+                        {donationLink}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{linkCopied ? "Link copied!" : "Click to copy link"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
   }
 
-  const sortedReceipts = receipts
-    .slice()
-    .sort(
-      (a, b) =>
-        new Date(b.donation_date).getTime() -
-        new Date(a.donation_date).getTime()
-    );
+  const sortedReceipts = [...receipts].sort(
+    (a, b) =>
+      new Date(b.donation_date).getTime() - new Date(a.donation_date).getTime()
+  );
 
   return (
     <ScrollArea style={{ height: "70vh" }} className="w-full">

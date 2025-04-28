@@ -126,7 +126,10 @@ export default async function Overview() {
               <TabsContent value="transactions">
                 {isCharityComplete ? (
                   <div className="overflow-auto">
-                    <DonationHistory receipts={receipts} />
+                    <DonationHistory
+                      receipts={receipts}
+                      donationLink={donationLink}
+                    />
                   </div>
                 ) : (
                   <div className="text-center">
