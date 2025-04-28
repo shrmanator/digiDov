@@ -24,7 +24,6 @@ import { DonationReceipt } from "@/app/types/receipt";
 const CHAIN_MAP: Record<string, { symbol: string; name: string }> = {
   "0x1": { symbol: "ETH", name: "Ethereum" },
   "0x89": { symbol: "POL", name: "Polygon" },
-  // add other chain IDs here as needed
 };
 
 interface DonationHistoryProps {
@@ -103,6 +102,7 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
   const dateTs = new Date(receipt.donation_date).getTime();
   const relativeTime = getRelativeTime(dateTs);
   const formattedDate = new Date(receipt.donation_date).toLocaleString();
+  console.log("fiat amount", receipt.fiat_amount);
 
   const donorName = receipt.donor
     ? `${receipt.donor.first_name} ${receipt.donor.last_name}`
@@ -114,7 +114,6 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
     symbol: "",
     name: "Unknown Chain",
   };
-  console.log("Chain Info:", receipt.chainId);
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
@@ -144,7 +143,7 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="font-bold text-lg">
-            ${receipt.fiat_amount.toFixed(2)}
+            ${receipt.fiat_amount.toFixed(4)}
           </span>
         </div>
         <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground">
@@ -189,7 +188,7 @@ export default function DonationHistory({ receipts }: DonationHistoryProps) {
 
   return (
     <Card className="border-0 shadow-none bg-transparent">
-      <ScrollArea style={{ height: "74vh" }} className="w-full">
+      <ScrollArea style={{ height: "70vh" }} className="w-full">
         <div className="space-y-4 pr-4 p-4">
           {sortedReceipts.map((receipt) => (
             <DonationReceiptItem key={receipt.id} receipt={receipt} />
