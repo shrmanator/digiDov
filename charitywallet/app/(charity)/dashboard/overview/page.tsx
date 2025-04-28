@@ -99,15 +99,18 @@ export default async function Overview() {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              {/* Top-right price widget stays intact */}
-              <CombinedWalletBalance
-                initialPriceData={initialPriceData}
-                address={charity.wallet_address}
-                client={client}
-                currency="usd"
-              />
-              <SendingFundsModal charity={charity} />
+            <div className="flex flex-col items-end gap-1 mt-10">
+              <div className="mt-1">
+                <CombinedWalletBalance
+                  initialPriceData={initialPriceData}
+                  address={charity.wallet_address}
+                  client={client}
+                  currency="usd"
+                />
+              </div>
+              <div className="mt-1">
+                <SendingFundsModal charity={charity} />
+              </div>
             </div>
           </header>
 
