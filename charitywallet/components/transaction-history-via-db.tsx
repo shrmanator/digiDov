@@ -142,7 +142,7 @@ function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="font-bold text-lg">
-            ${receipt.fiat_amount.toFixed(2)}
+            ${receipt.fiat_amount.toFixed(3)}
           </span>
         </div>
         <div className="flex flex-wrap justify-between items-center text-xs text-muted-foreground">
