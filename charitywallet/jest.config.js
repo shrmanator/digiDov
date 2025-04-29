@@ -8,6 +8,7 @@ const customConfig = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^lucide-react$": "<rootDir>/__mocks__/lucide-react.ts",
   },
   transformIgnorePatterns: ["node_modules/(?!(lucide-react)/)"],
 };
