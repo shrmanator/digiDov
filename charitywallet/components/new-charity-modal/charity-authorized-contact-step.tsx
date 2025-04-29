@@ -1,5 +1,7 @@
 // AuthorizedContactInfoStep.tsx
-import { useState, FormEvent, ChangeEvent } from "react";
+"use client";
+
+import { useState, ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserCheckIcon } from "lucide-react";
@@ -24,8 +26,7 @@ interface AuthorizedContactInfoStepProps {
   errorMessage: string | null;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onPrevious: () => void;
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-  // New prop to decide whether to show the email input.
+  onSubmit: () => void;
   showEmailField: boolean;
 }
 
@@ -50,7 +51,7 @@ export function AuthorizedContactInfoStep({
   onChange,
   onPrevious,
   onSubmit,
-  showEmailField, // now received from parent
+  showEmailField,
 }: AuthorizedContactInfoStepProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -69,13 +70,9 @@ export function AuthorizedContactInfoStep({
     onChange(e);
   };
 
-  const handleModalClose = () => {
-    setShowTermsModal(false);
-  };
-
   return (
     <>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Heading and Description */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -90,6 +87,7 @@ export function AuthorizedContactInfoStep({
           </p>
         </div>
 
+        {/* Contact Fields */}
         <div className="grid gap-4">
           {/* Row 1: Title + First + Last */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -126,7 +124,7 @@ export function AuthorizedContactInfoStep({
             </div>
           </div>
 
-          {/* Conditionally render the Email input based on the showEmailField prop */}
+          {/* Conditionally render the Email input */}
           {showEmailField && (
             <div>
               <Label htmlFor="contact_email">Email</Label>
@@ -199,17 +197,17 @@ export function AuthorizedContactInfoStep({
           <Button type="button" variant="outline" onClick={onPrevious}>
             Back
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="button" onClick={onSubmit} disabled={isLoading}>
             {isLoading ? "Saving..." : "Next"}
           </Button>
         </div>
-      </form>
+      </div>
 
-      {/* Modal for Terms and Services */}
+      {/* Terms and Services Modal */}
       <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
         <DialogContent className="sm:max-w-[425px]">
           <ReceiptingAgreementDialog
-            onClose={handleModalClose}
+            onClose={() => setShowTermsModal(false)}
             charityName={charityName}
             charityRegistrationNumber={charityRegistrationNumber}
             charityAddress={charityAddress}

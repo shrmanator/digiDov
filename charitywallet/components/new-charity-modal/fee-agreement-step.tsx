@@ -1,6 +1,5 @@
 "use client";
 
-import { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DialogHeader,
@@ -15,11 +14,6 @@ interface FeeAgreementStepProps {
 }
 
 export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onAgree();
-  };
-
   return (
     <>
       <DialogHeader>
@@ -29,7 +23,7 @@ export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
         </DialogDescription>
       </DialogHeader>
 
-      <form onSubmit={handleSubmit}>
+      <div className="space-y-4">
         <div className="border border-neutral-700 rounded-md p-4 text-sm flex gap-2 items-start">
           <Info className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <p>
@@ -43,9 +37,11 @@ export function FeeAgreementStep({ onAgree, onBack }: FeeAgreementStepProps) {
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">Agree</Button>
+          <Button type="button" onClick={onAgree}>
+            Agree
+          </Button>
         </div>
-      </form>
+      </div>
     </>
   );
 }

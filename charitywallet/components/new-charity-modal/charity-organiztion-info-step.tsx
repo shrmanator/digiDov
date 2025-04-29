@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
@@ -18,7 +18,7 @@ interface CharityOrganizationInfoStepProps {
   errorMessage: string | null;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddressChange: (address: string) => void;
-  onNext: (e: FormEvent<HTMLFormElement>) => void;
+  onNext: () => void;
 }
 
 // Define the OptionType for GooglePlacesAutocomplete option
@@ -43,14 +43,8 @@ export function CharityOrganizationInfoStep({
     }
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    // Removed auto-capitalization logic
-    onChange(e);
-  };
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onNext(e);
+  const handleNext = () => {
+    onNext();
   };
 
   const handlePlaceSelect = (option: OptionType | null) => {
@@ -66,7 +60,7 @@ export function CharityOrganizationInfoStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-2">
         <Building2Icon className="text-blue-500" />
         <h2 className="text-xl font-semibold">Organization Details</h2>
@@ -82,7 +76,7 @@ export function CharityOrganizationInfoStep({
             id="charity_name"
             name="charity_name"
             value={formData.charity_name}
-            onChange={handleChange}
+            onChange={onChange}
             required
           />
         </div>
@@ -130,11 +124,11 @@ export function CharityOrganizationInfoStep({
         )}
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
+          <Button type="button" onClick={handleNext} disabled={isLoading}>
             {isLoading ? "Saving..." : "Next"}
           </Button>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
