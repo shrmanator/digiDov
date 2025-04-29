@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
@@ -28,6 +27,7 @@ import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { getDonationLink } from "@/utils/get-donation-link";
 import DonationHistory from "@/components/transaction-history-via-db";
+import SendingFundsModal from "@/components/sending-funds-modal";
 
 export const revalidate = 60;
 
@@ -109,7 +109,12 @@ export default async function Overview() {
                 />
               </div>
               <div className="mt-1">
-                <SendingFundsModal charity={charity} />
+                <SendingFundsModal
+                  charity={{
+                    wallet_address: charity.wallet_address,
+                    contact_email: charity.contact_email ?? "no contact email",
+                  }}
+                />
               </div>
             </div>
           </header>

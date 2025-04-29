@@ -18,8 +18,8 @@ interface DonationSuccessProps {
 }
 
 /**
- * Donation‑success card – simplified. Shows explorer link immediately with a
- * note that indexing may take ~30 s.
+ * Donation‑success card with live countdown and ChatGPT‑style shimmer.
+ * Requires `shimmer` keyframe in tailwind.config.ts.
  */
 export const DonationSuccess: React.FC<DonationSuccessProps> = ({
   txHash,
@@ -46,10 +46,10 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
 
       {/* ACTIONS */}
       <CardContent className="flex flex-col items-center space-y-2">
-        {url && (
+        {linkReady ? (
           <Button variant="link" size="sm" asChild>
             <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction (may take up to 30 s to appear)
+              View transaction
             </a>
           </Button>
         ) : (
@@ -63,8 +63,7 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
         )}
 
         <p className="text-xs text-muted-foreground text-center">
-          We’ll email your tax receipt once the transaction is confirmed on the
-          blockchain.
+          We&apos;ll email your tax receipt once the transaction is confirmed.
         </p>
       </CardContent>
 
