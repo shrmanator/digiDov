@@ -146,6 +146,15 @@ function setup(
 }
 
 describe("CharitySetupModal", () => {
+  it("calls useCharitySetup with walletAddress and default email from profile", () => {
+    setup("charityOrganizationInfo");
+    expect(useCharitySetup).toHaveBeenCalledWith("0x123", "profile@email.com");
+  });
+
+  it("passes empty defaultEmail when no profile email", () => {
+    setup("charityOrganizationInfo", {}, "");
+    expect(useCharitySetup).toHaveBeenCalledWith("0x123", "");
+  });
   it("renders the modal dialog", () => {
     setup("charityOrganizationInfo");
     expect(screen.getByTestId("charity-setup-modal")).toBeInTheDocument();
@@ -180,6 +189,14 @@ describe("CharitySetupModal", () => {
     setup("authorizedContactInfo", {}, "");
     const step = screen.getByTestId("contact-info-step");
     expect(step.getAttribute("data-show-email")).toBe("true");
+    expect(screen.getByTestId("contact-email-input")).toBeInTheDocument();
+  });
+
+  it("does not show email field when defaultEmail is provided", () => {
+    setup("authorizedContactInfo", {}, "user@example.com");
+    const step = screen.getByTestId("contact-info-step");
+    expect(step.getAttribute("data-show-email")).toBe("false");
+    expect(screen.queryByTestId("contact-email-input")).toBeNull();
   });
 
   it("calls submitContact on Submit button click", () => {
