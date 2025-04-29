@@ -2,85 +2,79 @@
 
 import stytchClient from "@/lib/stytchClient";
 
-/**
- * Custom error interface to capture expected properties from Stytch errors.
- */
-interface StytchError extends Error {
+/** Minimal shape of a Stytch SDK error */
+export interface StytchError extends Error {
   status_code?: number;
   error_message?: string;
 }
 
-/**
- * Standard response interface for OTP operations.
- */
+/** Response returned by sendOtpAction */
 export interface OtpResponse {
   status_code: number;
   email_id?: string;
   error_message?: string;
 }
 
+/** Response returned by verifyOtpAction */
+export interface OtpVerifyResponse {
+  status_code: number;
+  /**
+   * On success this is Stytch’s auth response; on failure it is the
+   * StytchError we caught.  Kept as `unknown` so callers decide how to use it.
+   */
+  response: unknown;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Server Actions                                                 */
+/* ------------------------------------------------------------------ */
+
 /**
- * Sends an OTP email via Stytch using the loginOrCreate endpoint.
- * @param email - The email address to send the OTP to.
- * @returns A promise resolving to an OTP response.
+ * Sends an OTP email using Stytch’s loginOrCreate flow.
  */
 export async function sendOtpAction(email: string): Promise<OtpResponse> {
   console.info(`Sending OTP to ${email}`);
   try {
-    const response = await stytchClient.otps.email.loginOrCreate({
+    const res = await stytchClient.otps.email.loginOrCreate({
       email,
       expiration_minutes: 2,
     });
-    console.info("OTP sent successfully", response);
+    console.info("OTP sent successfully", res);
     return {
-      status_code: response.status_code,
-      email_id: response.email_id,
+      status_code: res.status_code,
+      email_id: res.email_id,
     };
-  } catch (error: unknown) {
-    const stytchError = error as {
-      status_code?: number;
-      error_message?: string;
-    };
-    const status_code = stytchError.status_code ?? 500;
-    // Use the error message provided by Stytch, if available.
-    const error_message =
-      stytchError.error_message || "Failed to send OTP. Please try again.";
-    console.error("Failed to send OTP", stytchError);
+  } catch (err: unknown) {
+    const e = err as StytchError;
+    console.error("Failed to send OTP", e);
     return {
-      status_code,
-      error_message,
+      status_code: e.status_code ?? 500,
+      error_message: e.error_message ?? "Failed to send OTP. Please try again.",
     };
   }
 }
 
 /**
- * Verifies an OTP using Stytch.
- * @param method_id - The email_id from the OTP response.
- * @param code - The OTP code entered by the user.
- * @returns A promise resolving to an object containing the status code and response.
+ * Verifies an OTP using Stytch’s authenticate flow.
  */
 export async function verifyOtpAction(
   method_id: string,
   code: string
-): Promise<{ status_code: number; response: unknown }> {
+): Promise<OtpVerifyResponse> {
   console.info(`Verifying OTP for method_id: ${method_id}`);
   try {
-    const response = await stytchClient.otps.authenticate({
-      method_id,
-      code,
-    });
-    console.info("OTP verified successfully", response);
+    const res = await stytchClient.otps.authenticate({ method_id, code });
+    console.info("OTP verified successfully", res);
     return {
-      status_code: response.status_code,
-      response,
+      status_code: res.status_code,
+      response: res,
     };
-  } catch (error: unknown) {
-    const stytchError = error as StytchError;
-    const status_code = stytchError.status_code ?? 500;
-    console.error("OTP verification failed", stytchError);
+  } catch (err: unknown) {
+    const e = err as StytchError;
+    console.error("OTP verification failed", e);
     return {
-      status_code,
-      response: stytchError,
+      status_code: e.status_code ?? 500,
+      response: e,
     };
   }
 }

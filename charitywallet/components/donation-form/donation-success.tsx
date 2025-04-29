@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,15 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
   onReset,
 }) => {
   const url = getTxExplorerLink(txHash);
+  const [secondsLeft, setSecondsLeft] = useState(15);
+
+  useEffect(() => {
+    if (secondsLeft === 0) return;
+    const id = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearInterval(id);
+  }, [secondsLeft]);
+
+  const linkReady = secondsLeft === 0;
 
   return (
     <Card className="mx-auto w-full max-w-sm animate-fade-in">
@@ -43,7 +52,16 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
               View transaction (may take up to 30 s to appear)
             </a>
           </Button>
+        ) : (
+          <p className="text-sm font-medium">
+            <span className="relative inline-block overflow-hidden">
+              <span className="animate-shimmer bg-gradient-to-l from-transparent via-white/60 to-transparent bg-[length:200%_100%] bg-clip-text text-transparent">
+                Transaction indexing… {secondsLeft}s
+              </span>
+            </span>
+          </p>
         )}
+
         <p className="text-xs text-muted-foreground text-center">
           We’ll email your tax receipt once the transaction is confirmed on the
           blockchain.
