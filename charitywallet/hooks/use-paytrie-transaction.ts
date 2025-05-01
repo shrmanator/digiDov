@@ -27,9 +27,28 @@ export function usePayTrieTransaction() {
         });
         if (!response.ok) throw new Error(await response.text());
 
-        const result = (await response.json()) as PayTrieTransaction;
-        setTransaction(result);
-        return result;
+        // parse whatever shape PayTrie actually gives us
+        const data = await response.json();
+        console.log("[PayTrie] raw tx response:", data);
+
+        const tx: PayTrieTransaction = {
+          transactionId: data.transactionId ?? data.tx_id ?? "<missing_tx_id>",
+          exchangeRate:
+            (data.exchangeRate as string) ??
+            (data.exchange_rate as string) ??
+            "<missing_rate>",
+          depositAddress:
+            (data.depositAddress as string) ??
+            (data.deposit_address as string) ??
+            "",
+          depositAmount:
+            (data.depositAmount as number) ??
+            (data.deposit_amount as number) ??
+            0,
+        };
+
+        setTransaction(tx);
+        return tx;
       } catch (e: any) {
         setTransactionError(e);
         throw e;

@@ -71,6 +71,9 @@ importers:
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@15.1.6(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      '@vercel/speed-insights':
+        specifier: ^1.2.0
+        version: 1.2.0(next@15.1.6(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -2288,6 +2291,29 @@ packages:
     peerDependenciesMeta:
       '@remix-run/react':
         optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+
+  '@vercel/speed-insights@1.2.0':
+    resolution: {integrity: sha512-y9GVzrUJ2xmgtQlzFP2KhVRoCglwfRQgjyfY607aU0hh0Un6d0OUyrJkjuAlsV18qR4zfoFPs/BiIj9YDS6Wzw==}
+    peerDependencies:
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
       '@sveltejs/kit':
         optional: true
       next:
@@ -8430,6 +8456,11 @@ snapshots:
       next: 15.1.6(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
 
+  '@vercel/speed-insights@1.2.0(next@15.1.6(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+    optionalDependencies:
+      next: 15.1.6(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+
   '@vitest/browser@3.1.2(bufferutil@4.0.9)(playwright@1.52.0)(utf-8-validate@5.0.10)(vite@6.3.2(@types/node@20.17.17)(jiti@1.21.7)(terser@5.39.0)(yaml@2.7.0))(vitest@3.1.2)':
     dependencies:
       '@testing-library/dom': 10.4.0
@@ -8864,7 +8895,7 @@ snapshots:
 
   abab@2.0.6: {}
 
-  abitype@0.7.1(typescript@5.7.3)(zod@3.24.2):
+  abitype@0.7.1(typescript@5.7.3)(zod@3.24.3):
     dependencies:
       typescript: 5.7.3
     optionalDependencies:
@@ -8873,7 +8904,7 @@ snapshots:
   abitype@1.0.8(typescript@5.7.3)(zod@3.24.3):
     optionalDependencies:
       typescript: 5.7.3
-      zod: 3.24.2
+      zod: 3.24.3
 
   acorn-globals@7.0.1:
     dependencies:

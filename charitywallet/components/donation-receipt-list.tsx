@@ -225,7 +225,11 @@ export default function DonationReceiptsList({
                           className="h-8 px-2"
                           onClick={(e) => {
                             e.stopPropagation();
-                            downloadReceipt(receipt.id);
+                            // open the real-download URL in a new tab
+                            window.open(
+                              `/api/receipts/${receipt.id}/download`,
+                              "_blank"
+                            );
                           }}
                         >
                           <Download className="h-4 w-4" />
