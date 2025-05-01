@@ -4,10 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, Mail, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DonationReceipt } from "@/app/types/receipt";
-import {
-  getDonationReceiptPdf,
-  getDonationReceiptsForCharity,
-} from "@/app/actions/receipts";
+import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 
 interface DonationReceiptsListProps {
   walletAddress: string;
