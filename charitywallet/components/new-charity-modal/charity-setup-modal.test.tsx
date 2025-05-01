@@ -9,27 +9,37 @@ jest.mock("@/hooks/use-charity-setup", () => ({
 }));
 jest.mock("next/navigation", () => ({ useRouter: jest.fn() }));
 
-// Mock Dialog components to expose data-testid
-jest.mock("@/components/ui/dialog", () => {
-  const React = require("react");
-  return {
-    Dialog: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    DialogContent: ({ children, ...props }: any) => (
-      <div {...props}>{children}</div>
-    ),
-  };
-});
-
-import React from "react";
+import React, { ComponentProps } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import CharitySetupModal from "./charity-setup-modal";
 import { useProfiles } from "thirdweb/react";
 import { useCharitySetup } from "@/hooks/use-charity-setup";
 import { useRouter } from "next/navigation";
 
+import { CharityOrganizationInfoStep as OriginalOrgInfoStep } from "./charity-organiztion-info-step";
+import { AuthorizedContactInfoStep as OriginalAuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { FeeAgreementStep as OriginalFeeAgreementStep } from "./fee-agreement-step";
+import { DonationUrlStep as OriginalDonationUrlStep } from "./donation-url-step";
+
+// Mock Dialog components to expose data-testid
+jest.mock("@/components/ui/dialog", () => ({
+  __esModule: true,
+  Dialog: (props: React.ComponentProps<"div">) => (
+    <div {...props}>{props.children}</div>
+  ),
+  DialogContent: (props: React.ComponentProps<"div">) => (
+    <div {...props}>{props.children}</div>
+  ),
+}));
+
 // Mock child components with interactive elements
 jest.mock("./charity-organiztion-info-step", () => ({
-  CharityOrganizationInfoStep: ({ onNext, onChange, formData }: any) => (
+  __esModule: true,
+  CharityOrganizationInfoStep: ({
+    onNext,
+    onChange,
+    formData,
+  }: ComponentProps<typeof OriginalOrgInfoStep>) => (
     <div data-testid="org-info-step">
       <button data-testid="org-info-next" onClick={onNext}>
         Next
@@ -49,12 +59,13 @@ jest.mock("./charity-organiztion-info-step", () => ({
 }));
 
 jest.mock("./charity-authorized-contact-step", () => ({
+  __esModule: true,
   AuthorizedContactInfoStep: ({
     onSubmit,
     onChange,
     showEmailField,
     formData,
-  }: any) => (
+  }: ComponentProps<typeof OriginalAuthorizedContactInfoStep>) => (
     <div data-testid="contact-info-step" data-show-email={showEmailField}>
       {showEmailField && (
         <input
@@ -74,7 +85,10 @@ jest.mock("./charity-authorized-contact-step", () => ({
 }));
 
 jest.mock("./fee-agreement-step", () => ({
-  FeeAgreementStep: ({ onAgree }: any) => (
+  __esModule: true,
+  FeeAgreementStep: ({
+    onAgree,
+  }: ComponentProps<typeof OriginalFeeAgreementStep>) => (
     <div data-testid="fee-agreement-step">
       <button data-testid="fee-agree" onClick={onAgree}>
         Agree
@@ -84,7 +98,10 @@ jest.mock("./fee-agreement-step", () => ({
 }));
 
 jest.mock("./donation-url-step", () => ({
-  DonationUrlStep: ({ onFinish }: any) => (
+  __esModule: true,
+  DonationUrlStep: ({
+    onFinish,
+  }: ComponentProps<typeof OriginalDonationUrlStep>) => (
     <div data-testid="donation-url-step">
       <button data-testid="donation-finish" onClick={onFinish}>
         Finish

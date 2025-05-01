@@ -59,14 +59,6 @@ export default function DonationReceiptsList({
     setGroupedReceipts(groups);
   }
 
-  const downloadReceipt = async (receiptId: string) => {
-    const pdfBase64 = await getDonationReceiptPdf(receiptId);
-    const link = document.createElement("a");
-    link.href = `data:application/pdf;base64,${pdfBase64}`;
-    link.download = `receipt-${receiptId}.pdf`;
-    link.click();
-  };
-
   const toggleDateExpansion = (dateKey: string) => {
     setExpandedDates((prev) => ({
       ...prev,
