@@ -1,11 +1,25 @@
+
 import { NextResponse } from "next/server";
 import { getDonationReceiptPdf } from "@/app/actions/receipts";
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
-  // resolve the dynamic route params
+export async function GET(
+  _request: Request,
+  {
+    params,
+    searchParams: _searchParams,
+  }: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<Record<string, string | string[]>>;
+  }
+) {
+  // silence TS6133 for unused parameters
+  void _request;
+  void _searchParams;
+
+  // Next.js 15+ makes `params` a Promise so we await it :contentReference[oaicite:0]{index=0}
   const { id } = await params;
 
-  // fetch the base64 PDF
+  // fetch and decode the Base64 PDF
   const pdfBase64 = await getDonationReceiptPdf(id);
   const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
