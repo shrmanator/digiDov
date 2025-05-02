@@ -25,8 +25,8 @@ const tsukimiRounded = Tsukimi_Rounded({
 });
 
 export const metadata: Metadata = {
-  title: "digiDov Wallet",
-  description: "The simplest and best way to accept crypto donations.",
+  title: "digiDov | Lightweight Nonprofit Crypto",
+  description: "The simplest, best way to accept crypto donations.",
   icons: {
     icon: "/favicon-32x32.png",
     shortcut: "/favicon-16x16.png",
