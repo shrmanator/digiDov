@@ -1,21 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDonationReceiptPdf } from "@/app/actions/receipts";
 
-export async function GET(
-  _request: Request,
-  {
-    params,
-  }: {
-    params: { id: string };
-    // we include this in the type, but do NOT destructure it,
-    // so there’s no unused-variable complaint for searchParams
-    searchParams: Record<string, string | string[]>;
-  }
-) {
-  // mark `_request` as used to silence TS6133:
-  void _request;
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
+  // resolve the dynamic route params
+  const { id } = await params;
 
-  const { id } = params;
+  // fetch the base64 PDF
   const pdfBase64 = await getDonationReceiptPdf(id);
   const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
