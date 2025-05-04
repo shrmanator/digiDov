@@ -15,6 +15,7 @@ import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 import {
   notifyCharityOfDonation,
   notifyDonorOfDonation,
+  notifyDonorManual,
 } from "@/app/actions/email";
 
 const web3 = new Web3();
@@ -140,14 +141,25 @@ export async function POST(request: Request) {
       )
     );
 
-    const donorEmailResult = await notifyDonorOfDonation({
-      ...receipt,
-      charity: charityRecord,
-      donor: donorRecord,
-    });
-
-    if (!donorEmailResult.success) {
-      console.warn("Receipt created but email failed:", donorEmailResult.error);
+    let donorEmailResult;
+    if (charityRecord.charity_sends_receipt) {
+      const manualResult = await notifyDonorManual({
+        ...receipt,
+        charity: charityRecord,
+        donor: donorRecord,
+      });
+      if (!manualResult.success) {
+        console.warn("Manual donor email failed:", manualResult.error);
+      }
+    } else {
+      donorEmailResult = await notifyDonorOfDonation({
+        ...receipt,
+        charity: charityRecord,
+        donor: donorRecord,
+      });
+      if (!donorEmailResult.success) {
+        console.warn("Receipt created but email failed:", donorEmailResult.error);
+      }
     }
     console.log(`Donor email sent successfully to ${donorRecord.email}`);
 
@@ -157,7 +169,7 @@ export async function POST(request: Request) {
       charity: charityRecord,
     });
     if (!charityEmailResult.success) {
-      console.warn("Charity email failed:", donorEmailResult.error);
+      console.warn("Charity email failed:", charityEmailResult.error);
     }
     console.log(
       `Charity email sent successfully to ${charityRecord.contact_email}`
