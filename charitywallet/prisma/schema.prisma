@@ -24,6 +24,7 @@ model charity {
     contact_last_name             String?
     contact_email                 String?
     contact_mobile_phone          String?
+    manual_receipt                Boolean            @default(false)
     registered_office_address     String?
     date_of_birth                 String? // Eg. 1990-01-01
     city                          String?

@@ -145,3 +145,37 @@ export async function notifyCharityOfDonation(
     return { success: false, error: "Failed to notify charity of donation" };
   }
 }
+
+// 🔧 Manual donor notification (no PDF attachment)
+export async function notifyDonorManual(
+  receipt: donation_receipt & { donor?: donor; charity?: charity }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const donorEmail = receipt.donor?.email || "";
+    const donorName =
+      `${receipt.donor?.first_name || ""} ${receipt.donor?.last_name || ""}`.trim() ||
+      "Donor";
+    const charityName = receipt.charity?.charity_name || "the charity you supported";
+    const charitySlug = receipt.charity?.slug || "";
+    const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
+
+    const emailParams = new EmailParams()
+      .setFrom(new Sender("contact@digidov.com", "digiDov Receipts"))
+      .setTo([new Recipient(donorEmail, donorName)])
+      .setSubject("Thank You for Your Donation")
+      .setHtml(
+        `<p>Dear ${donorName},</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by the charity.</p>
+         <p>You can view your donation details here: <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a></p>
+         <p>Warm regards,</p>
+         <p>digiDov</p>`
+      );
+
+    await mailerSend.email.send(emailParams);
+    console.log(`✅ Manual receipt notification sent to ${donorEmail}`);
+    return { success: true };
+  } catch (err) {
+    console.error("❌ Failed to send manual donation notification", err);
+    return { success: false, error: "Failed to send manual donation notification" };
+  }
+}

@@ -16,6 +16,7 @@ export interface CharityInput {
   contact_phone?: string | null;
   wallet_address: string;
   is_profile_complete?: boolean;
+  manual_receipt?: boolean;
 }
 
 // Helper function to generate a unique slug based on charity_name
@@ -66,6 +67,9 @@ export async function upsertCharity(data: CharityInput) {
       ...(typeof data.is_profile_complete !== "undefined"
         ? { is_profile_complete: data.is_profile_complete }
         : {}),
+      ...(typeof data.manual_receipt !== "undefined"
+        ? { manual_receipt: data.manual_receipt }
+        : {}),
       ...(slug ? { slug } : {}),
     },
     create: {
@@ -78,6 +82,7 @@ export async function upsertCharity(data: CharityInput) {
       contact_mobile_phone: data.contact_phone ?? null,
       wallet_address: walletAddress,
       is_profile_complete: data.is_profile_complete ?? false,
+      manual_receipt: data.manual_receipt ?? false,
       slug: slug ?? null,
     },
   });
