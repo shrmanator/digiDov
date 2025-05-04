@@ -35,8 +35,61 @@ export async function sendContactEmailAction(formData: FormData) {
   }
 }
 
+// ✅ Notify charity of donation (no attachment)
+export async function notifyCharityOfDonation(
+  receipt: donation_receipt & {
+    donor?: donor;
+    charity?: charity;
+  }
+) {
+  try {
+    const donorName =
+      `${receipt.donor?.first_name || ""} ${
+        receipt.donor?.last_name || ""
+      }`.trim() || "Anonymous Donor";
+    const donorEmail = receipt.donor?.email || "Unknown email";
+    const amount = `$${receipt.fiat_amount?.toFixed(2) || "0.00"} CAD`;
+    const charityName = receipt.charity?.charity_name || "Your Charity";
+    const charityEmail = receipt.charity?.contact_email;
+    const transactionHash = receipt.transaction_hash || "";
+    const txLink = transactionHash
+      ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
+      : "N/A";
+
+    if (!charityEmail) {
+      console.warn(`❌ Charity email not provided for ${charityName}`);
+      return { success: false, error: "Charity email not found." };
+    }
+
+    const emailParams = new EmailParams()
+      .setFrom(new Sender("contact@digidov.com", "digiDov Alerts"))
+      .setTo([new Recipient(charityEmail, charityName)])
+      .setSubject("New Donation Received")
+      .setHtml(
+        `<p>Hello ${charityName},</p>
+         <p>You’ve just received a new donation:</p>
+         <ul>
+           <li><strong>Donor:</strong> ${donorName}</li>
+           <li><strong>Email:</strong> ${donorEmail}</li>
+           <li><strong>Amount:</strong> ${amount}</li>
+           <li><strong>Transaction hash:</strong> ${txLink}</li>
+         </ul>
+         <p>You can view this donation and its official receipt in your dashboard:</p>
+         <p><a href="https://www.digidov.com/dashboard/audits">Go to dashboard</a></p>
+         <p>– digiDov</p>`
+      );
+
+    await mailerSend.email.send(emailParams);
+    console.log(`📧 Charity notification sent to ${charityEmail}`);
+    return { success: true };
+  } catch (err) {
+    console.error("❌ Failed to notify charity", err);
+    return { success: false, error: "Failed to notify charity of donation" };
+  }
+}
+
 // ✅ Donor receipt email with attachment
-export async function notifyDonorOfDonation(
+export async function notifyDonorWithReceipt(
   receipt: donation_receipt & {
     donor?: donor;
     charity?: charity;
@@ -93,69 +146,18 @@ export async function notifyDonorOfDonation(
   }
 }
 
-// ✅ Notify charity of donation (no attachment)
-export async function notifyCharityOfDonation(
-  receipt: donation_receipt & {
-    donor?: donor;
-    charity?: charity;
-  }
-) {
-  try {
-    const donorName =
-      `${receipt.donor?.first_name || ""} ${
-        receipt.donor?.last_name || ""
-      }`.trim() || "Anonymous Donor";
-    const donorEmail = receipt.donor?.email || "Unknown email";
-    const amount = `$${receipt.fiat_amount?.toFixed(2) || "0.00"} CAD`;
-    const charityName = receipt.charity?.charity_name || "Your Charity";
-    const charityEmail = receipt.charity?.contact_email;
-    const transactionHash = receipt.transaction_hash || "";
-    const txLink = transactionHash
-      ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
-      : "N/A";
-
-    if (!charityEmail) {
-      console.warn(`❌ Charity email not provided for ${charityName}`);
-      return { success: false, error: "Charity email not found." };
-    }
-
-    const emailParams = new EmailParams()
-      .setFrom(new Sender("contact@digidov.com", "digiDov Alerts"))
-      .setTo([new Recipient(charityEmail, charityName)])
-      .setSubject("New Donation Received")
-      .setHtml(
-        `<p>Hello ${charityName},</p>
-         <p>You’ve just received a new donation:</p>
-         <ul>
-           <li><strong>Donor:</strong> ${donorName}</li>
-           <li><strong>Email:</strong> ${donorEmail}</li>
-           <li><strong>Amount:</strong> ${amount}</li>
-           <li><strong>Transaction hash:</strong> ${txLink}</li>
-         </ul>
-         <p>You can view this donation and its official receipt in your dashboard:</p>
-         <p><a href="https://www.digidov.com/dashboard/audits">Go to dashboard</a></p>
-         <p>– digiDov</p>`
-      );
-
-    await mailerSend.email.send(emailParams);
-    console.log(`📧 Charity notification sent to ${charityEmail}`);
-    return { success: true };
-  } catch (err) {
-    console.error("❌ Failed to notify charity", err);
-    return { success: false, error: "Failed to notify charity of donation" };
-  }
-}
-
 // 🔧 Manual donor notification (no PDF attachment)
-export async function notifyDonorManual(
+export async function notifyDonorWithoutReceipt(
   receipt: donation_receipt & { donor?: donor; charity?: charity }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const donorEmail = receipt.donor?.email || "";
     const donorName =
-      `${receipt.donor?.first_name || ""} ${receipt.donor?.last_name || ""}`.trim() ||
-      "Donor";
-    const charityName = receipt.charity?.charity_name || "the charity you supported";
+      `${receipt.donor?.first_name || ""} ${
+        receipt.donor?.last_name || ""
+      }`.trim() || "Donor";
+    const charityName =
+      receipt.charity?.charity_name || "the charity you supported";
     const charitySlug = receipt.charity?.slug || "";
     const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
 
@@ -176,6 +178,9 @@ export async function notifyDonorManual(
     return { success: true };
   } catch (err) {
     console.error("❌ Failed to send manual donation notification", err);
-    return { success: false, error: "Failed to send manual donation notification" };
+    return {
+      success: false,
+      error: "Failed to send manual donation notification",
+    };
   }
 }
