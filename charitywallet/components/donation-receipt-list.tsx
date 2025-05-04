@@ -4,10 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, Mail, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DonationReceipt } from "@/app/types/receipt";
-import {
-  getDonationReceiptPdf,
-  getDonationReceiptsForCharity,
-} from "@/app/actions/receipts";
+import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 
 interface DonationReceiptsListProps {
   walletAddress: string;
@@ -58,14 +55,6 @@ export default function DonationReceiptsList({
     });
     setGroupedReceipts(groups);
   }
-
-  const downloadReceipt = async (receiptId: string) => {
-    const pdfBase64 = await getDonationReceiptPdf(receiptId);
-    const link = document.createElement("a");
-    link.href = `data:application/pdf;base64,${pdfBase64}`;
-    link.download = `receipt-${receiptId}.pdf`;
-    link.click();
-  };
 
   const toggleDateExpansion = (dateKey: string) => {
     setExpandedDates((prev) => ({

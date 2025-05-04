@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ChangeEvent, FormEvent } from "react";
+import React, { ChangeEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
