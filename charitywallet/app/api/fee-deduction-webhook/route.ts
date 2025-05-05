@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import {
   createDonationReceipt,
   getNextReceiptNumber,
@@ -65,25 +66,43 @@ export async function POST(request: Request) {
       where: { wallet_address: event.charity.toLowerCase() },
     });
     if (!donor || !charity) throw new Error("Donor or charity not found");
-
-    // 6. Mint receipt & save
-    const receiptNumber = await getNextReceiptNumber("CRA");
-    const receipt = await createDonationReceipt({
-      donor_id: donor.id,
-      charity_id: charity.id,
-      receipt_number: receiptNumber,
-      donation_date: donationDate,
-      fiat_amount: fiat,
-      crypto_amount_wei: BigInt(event.fullAmount),
-      chainId,
-      transaction_hash: event.transactionHash,
-      jurisdiction: "CRA",
-      jurisdiction_details: {
-        blockNumber: block.number,
-        netAmount: netFiat,
-        fee: feeFiat,
-      },
-    });
+    console.log("Donor and charity found.", charity);
+    // 6. Mint receipt & save, but ignore duplicates
+    let receipt;
+    try {
+      const receiptNumber = await getNextReceiptNumber("CRA");
+      receipt = await createDonationReceipt({
+        donor_id: donor.id,
+        charity_id: charity.id,
+        receipt_number: receiptNumber,
+        donation_date: donationDate,
+        fiat_amount: fiat,
+        crypto_amount_wei: BigInt(event.fullAmount),
+        chainId,
+        transaction_hash: event.transactionHash,
+        jurisdiction: "CRA",
+        jurisdiction_details: {
+          blockNumber: block.number,
+          netAmount: netFiat,
+          fee: feeFiat,
+        },
+      });
+    } catch (e: unknown) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2002" &&
+        (e.meta?.target as string[]).includes("transaction_hash")
+      ) {
+        console.warn(
+          `Duplicate receipt exists for tx ${event.transactionHash}, ignoring.`
+        );
+        return NextResponse.json(
+          { message: "Duplicate event ignored" },
+          { status: 200 }
+        );
+      }
+      throw e;
+    }
 
     // 7. Generate PDF only if charity wants us to send PDF receipts
     if (!charity.charity_sends_receipt) {
@@ -105,55 +124,46 @@ export async function POST(request: Request) {
       },
     };
 
-    // 8–9. Notify donor and charity in one conditional
+    // 8–9. Notify donor and charity
     if (charity.charity_sends_receipt) {
-      // Charity handles their own receipts:
-      // • Donor: minimal notification (no PDF)
-      // • Charity: CSV report
+      console.log(
+        `Charity ${charity.charity_name} sends receipts, notifying donor and charity.`
+      );
       const donorRes = await notifyDonorWithoutReceipt({
         ...receipt,
         donor,
         charity,
       });
-      if (!donorRes.success) {
+      if (!donorRes.success)
         throw new Error(`Donor notification failed: ${donorRes.error}`);
-      }
 
       const csvRes = await notifyCharityWithCsv(
         [donationDto],
         charity.contact_email!,
         charity.charity_name!
       );
-      if (!csvRes.success) {
+      if (!csvRes.success)
         throw new Error(`Charity CSV notification failed: ${csvRes.error}`);
-      }
-
-      console.log(
-        `✅ Donor notified minimally and CSV emailed to charity at ${charity.contact_email}`
-      );
     } else {
-      // We send PDF receipts to both donor and charity
+      console.log(
+        `Charity ${charity.charity_name} does not send receipts, notifying donor with PDF.`
+      );
+
       const donorRes = await notifyDonorWithReceipt({
         ...receipt,
         donor,
         charity,
       });
-      if (!donorRes.success) {
+      if (!donorRes.success)
         throw new Error(`Donor PDF notification failed: ${donorRes.error}`);
-      }
 
       const pdfRes = await notifyCharityAboutDonation({
         ...receipt,
         donor,
         charity,
       });
-      if (!pdfRes.success) {
+      if (!pdfRes.success)
         throw new Error(`Charity PDF notification failed: ${pdfRes.error}`);
-      }
-
-      console.log(
-        `✅ PDF receipts emailed to donor and charity at ${charity.contact_email}`
-      );
     }
 
     // 10. Respond success
@@ -162,18 +172,18 @@ export async function POST(request: Request) {
         message: "Webhook processed successfully",
         receipt: {
           ...receipt,
-          crypto_amount_wei: receipt.crypto_amount_wei
-            ? receipt.crypto_amount_wei.toString()
-            : "0",
+          crypto_amount_wei: receipt.crypto_amount_wei?.toString() ?? "0",
         },
       },
       { status: 200 }
     );
   } catch (err: unknown) {
-    console.error("Webhook error:", err);
-    const errorMessage = err instanceof Error ? err.message : String(err);
+    const errorInfo =
+      err instanceof Error ? err.stack ?? err.message : String(err);
+    console.error("Webhook error:", errorInfo);
+
     return NextResponse.json(
-      { message: "Failed processing webhook", error: errorMessage },
+      { message: "Failed processing webhook", error: errorInfo },
       { status: 500 }
     );
   }
