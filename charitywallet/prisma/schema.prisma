@@ -22,8 +22,8 @@ model charity {
     contact_title                 String? // e.g., "Dr.", "Mr.", etc.
     contact_first_name            String?
     contact_last_name             String?
-    contact_email                 String?
-    contact_mobile_phone          String?
+    contact_email                 String?                 @unique
+    contact_mobile_phone          String?                 @unique
     charity_sends_receipt         Boolean                 @default(false) // True if the charity will send the tax receipt themselves.
     registered_office_address     String?
     date_of_birth                 String? // Eg. 1990-01-01
