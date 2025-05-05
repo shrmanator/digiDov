@@ -1,3 +1,5 @@
+// charity-setup-modal.test.tsx
+
 // Pre-mock external modules before imports
 jest.mock("thirdweb/react", () => ({
   __esModule: true,
@@ -112,6 +114,7 @@ jest.mock("./donation-url-step", () => ({
 
 const mockSetForm = jest.fn();
 const mockNextOrgInfo = jest.fn();
+const mockNextReceiptPref = jest.fn();
 const mockSubmitContact = jest.fn();
 const mockAgreeFee = jest.fn();
 const mockFinish = jest.fn();
@@ -128,6 +131,7 @@ const baseForm = {
   contact_email: "john@doe.com",
   contact_phone: "123456789",
   shaduicn: false,
+  charity_sends_receipt: false,
 };
 
 beforeEach(() => {
@@ -151,7 +155,8 @@ function setup(
     isLoading: false,
     error: "",
     nextOrgInfo: mockNextOrgInfo,
-    submitContact: mockSubmitContact,
+    nextReceiptPref: mockNextReceiptPref,
+    submitAuthorizedContact: mockSubmitContact,
     agreeFee: mockAgreeFee,
     finish: mockFinish,
     back: mockBack,
@@ -172,6 +177,7 @@ describe("CharitySetupModal", () => {
     setup("charityOrganizationInfo", {}, "");
     expect(useCharitySetup).toHaveBeenCalledWith("0x123", "");
   });
+
   it("renders the modal dialog", () => {
     setup("charityOrganizationInfo");
     expect(screen.getByTestId("charity-setup-modal")).toBeInTheDocument();
@@ -204,19 +210,19 @@ describe("CharitySetupModal", () => {
 
   it("shows email field in AuthorizedContactInfoStep if no default email", () => {
     setup("authorizedContactInfo", {}, "");
-    const step = screen.getByTestId("contact-info-step");
-    expect(step.getAttribute("data-show-email")).toBe("true");
+    const stepEl = screen.getByTestId("contact-info-step");
+    expect(stepEl.getAttribute("data-show-email")).toBe("true");
     expect(screen.getByTestId("contact-email-input")).toBeInTheDocument();
   });
 
   it("does not show email field when defaultEmail is provided", () => {
     setup("authorizedContactInfo", {}, "user@example.com");
-    const step = screen.getByTestId("contact-info-step");
-    expect(step.getAttribute("data-show-email")).toBe("false");
+    const stepEl = screen.getByTestId("contact-info-step");
+    expect(stepEl.getAttribute("data-show-email")).toBe("false");
     expect(screen.queryByTestId("contact-email-input")).toBeNull();
   });
 
-  it("calls submitContact on Submit button click", () => {
+  it("calls submitAuthorizedContact on Submit button click", () => {
     setup("authorizedContactInfo");
     fireEvent.click(screen.getByTestId("contact-submit"));
     expect(mockSubmitContact).toHaveBeenCalled();
@@ -243,5 +249,42 @@ describe("CharitySetupModal", () => {
     fireEvent.click(screen.getByTestId("donation-finish"));
     expect(mockFinish).toHaveBeenCalled();
     expect(mockRefresh).toHaveBeenCalled();
+  });
+});
+
+describe("ReceiptPreferenceStep loading state", () => {
+  beforeEach(() => {
+    // simulate loading on receiptPreference step
+    (useCharitySetup as jest.Mock).mockReturnValue({
+      step: "receiptPreference",
+      form: { ...baseForm, charity_sends_receipt: false },
+      setForm: mockSetForm,
+      charitySlug: "charity-slug",
+      isLoading: true,
+      error: "",
+      nextOrgInfo: mockNextOrgInfo,
+      nextReceiptPref: mockNextReceiptPref,
+      submitAuthorizedContact: mockSubmitContact,
+      agreeFee: mockAgreeFee,
+      finish: mockFinish,
+      back: mockBack,
+    });
+    (useProfiles as jest.Mock).mockReturnValue({
+      data: [{ details: { email: "profile@email.com" } }],
+    });
+    render(<CharitySetupModal walletAddress="0x123" />);
+  });
+
+  it("disables Next and Back buttons when loading", () => {
+    const nextBtn = screen.getByRole("button", { name: "" });
+    const backBtn = screen.getByRole("button", { name: /back/i });
+    expect(nextBtn).toBeDisabled();
+    expect(backBtn).toBeDisabled();
+  });
+
+  it("shows spinner instead of text in Next button when loading", () => {
+    const nextBtn = screen.getByRole("button", { name: "" });
+    // Check that an SVG is present (the Loader2 icon)
+    expect(nextBtn.querySelector("svg")).toBeInTheDocument();
   });
 });
