@@ -38,7 +38,7 @@ export async function sendContactEmailAction(formData: FormData) {
 }
 
 // ✅ Notify charity of donation (no attachment)
-export async function notifyCharityOfDonation(
+export async function notifyCharityAboutDonation(
   receipt: donation_receipt & {
     donor?: donor;
     charity?: charity;
