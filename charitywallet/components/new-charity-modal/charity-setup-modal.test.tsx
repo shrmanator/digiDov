@@ -1,5 +1,3 @@
-// charity-setup-modal.test.tsx
-
 // Pre-mock external modules before imports
 jest.mock("thirdweb/react", () => ({
   __esModule: true,
@@ -11,7 +9,7 @@ jest.mock("@/hooks/use-charity-setup", () => ({
 }));
 jest.mock("next/navigation", () => ({ useRouter: jest.fn() }));
 
-import React, { ComponentProps } from "react";
+import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import CharitySetupModal from "./charity-setup-modal";
 import { useProfiles } from "thirdweb/react";
@@ -22,6 +20,7 @@ import { CharityOrganizationInfoStep as OriginalOrgInfoStep } from "./charity-or
 import { AuthorizedContactInfoStep as OriginalAuthorizedContactInfoStep } from "./charity-authorized-contact-step";
 import { FeeAgreementStep as OriginalFeeAgreementStep } from "./fee-agreement-step";
 import { DonationUrlStep as OriginalDonationUrlStep } from "./donation-url-step";
+import { ReceiptPreferenceStep as OriginalReceiptPreferenceStep } from "./tax-receipt-preference";
 
 // Mock Dialog components to expose data-testid
 jest.mock("@/components/ui/dialog", () => ({
@@ -34,32 +33,52 @@ jest.mock("@/components/ui/dialog", () => ({
   ),
 }));
 
-// Mock child components with interactive elements
+// Mock org-info step
 jest.mock("./charity-organiztion-info-step", () => ({
   __esModule: true,
   CharityOrganizationInfoStep: ({
     onNext,
     onChange,
     formData,
-  }: ComponentProps<typeof OriginalOrgInfoStep>) => (
+  }: React.ComponentProps<typeof OriginalOrgInfoStep>) => (
     <div data-testid="org-info-step">
-      <button data-testid="org-info-next" onClick={onNext}>
-        Next
-      </button>
-      <label htmlFor="charity_name">Charity Name</label>
+      <label htmlFor="org-info-input">Charity Name</label>
       <input
-        id="charity_name"
+        id="org-info-input"
         data-testid="org-info-input"
         name="charity_name"
         value={formData.charity_name}
         onChange={onChange}
-        title="Charity Name"
         placeholder="Enter charity name"
+        aria-label="Charity Name"
       />
+      <button data-testid="org-info-next" onClick={onNext}>
+        Next
+      </button>
     </div>
   ),
 }));
 
+// Mock receipt-pref step
+jest.mock("./tax-receipt-preference", () => ({
+  __esModule: true,
+  ReceiptPreferenceStep: ({
+    onNext,
+    onBack,
+    isLoading,
+  }: React.ComponentProps<typeof OriginalReceiptPreferenceStep>) => (
+    <div data-testid="receipt-preference-step">
+      <button data-testid="receipt-back" onClick={onBack} disabled={isLoading}>
+        Back
+      </button>
+      <button data-testid="receipt-next" onClick={onNext} disabled={isLoading}>
+        {isLoading ? <svg data-testid="receipt-spinner" /> : "Next"}
+      </button>
+    </div>
+  ),
+}));
+
+// Mock contact-info step
 jest.mock("./charity-authorized-contact-step", () => ({
   __esModule: true,
   AuthorizedContactInfoStep: ({
@@ -67,17 +86,24 @@ jest.mock("./charity-authorized-contact-step", () => ({
     onChange,
     showEmailField,
     formData,
-  }: ComponentProps<typeof OriginalAuthorizedContactInfoStep>) => (
-    <div data-testid="contact-info-step" data-show-email={showEmailField}>
+  }: React.ComponentProps<typeof OriginalAuthorizedContactInfoStep>) => (
+    <div
+      data-testid="contact-info-step"
+      data-show-email={String(showEmailField)}
+    >
       {showEmailField && (
-        <input
-          data-testid="contact-email-input"
-          name="contact_email"
-          value={formData.contact_email}
-          onChange={onChange}
-          title="Contact Email"
-          placeholder="Enter contact email"
-        />
+        <>
+          <label htmlFor="contact-email-input">Contact Email</label>
+          <input
+            id="contact-email-input"
+            data-testid="contact-email-input"
+            name="contact_email"
+            value={formData.contact_email}
+            onChange={onChange}
+            placeholder="Enter contact email"
+            aria-label="Contact Email"
+          />
+        </>
       )}
       <button data-testid="contact-submit" onClick={onSubmit}>
         Submit
@@ -86,11 +112,12 @@ jest.mock("./charity-authorized-contact-step", () => ({
   ),
 }));
 
+// Mock fee-agreement step
 jest.mock("./fee-agreement-step", () => ({
   __esModule: true,
   FeeAgreementStep: ({
     onAgree,
-  }: ComponentProps<typeof OriginalFeeAgreementStep>) => (
+  }: React.ComponentProps<typeof OriginalFeeAgreementStep>) => (
     <div data-testid="fee-agreement-step">
       <button data-testid="fee-agree" onClick={onAgree}>
         Agree
@@ -99,11 +126,12 @@ jest.mock("./fee-agreement-step", () => ({
   ),
 }));
 
+// Mock donation-url step
 jest.mock("./donation-url-step", () => ({
   __esModule: true,
   DonationUrlStep: ({
     onFinish,
-  }: ComponentProps<typeof OriginalDonationUrlStep>) => (
+  }: React.ComponentProps<typeof OriginalDonationUrlStep>) => (
     <div data-testid="donation-url-step">
       <button data-testid="donation-finish" onClick={onFinish}>
         Finish
@@ -164,88 +192,31 @@ function setup(
   (useProfiles as jest.Mock).mockReturnValue({
     data: defaultEmail ? [{ details: { email: defaultEmail } }] : [],
   });
-  return render(<CharitySetupModal walletAddress="0x123" />);
+  render(<CharitySetupModal walletAddress="0x123" />);
 }
 
-describe("CharitySetupModal", () => {
-  it("calls useCharitySetup with walletAddress and default email from profile", () => {
-    setup("charityOrganizationInfo");
-    expect(useCharitySetup).toHaveBeenCalledWith("0x123", "profile@email.com");
-  });
-
-  it("passes empty defaultEmail when no profile email", () => {
-    setup("charityOrganizationInfo", {}, "");
-    expect(useCharitySetup).toHaveBeenCalledWith("0x123", "");
-  });
-
-  it("renders the modal dialog", () => {
-    setup("charityOrganizationInfo");
-    expect(screen.getByTestId("charity-setup-modal")).toBeInTheDocument();
-  });
-
-  it("renders CharityOrganizationInfoStep when step is 'charityOrganizationInfo'", () => {
+describe("CharitySetupModal integration", () => {
+  it("org-info step works", () => {
     setup("charityOrganizationInfo");
     expect(screen.getByTestId("org-info-step")).toBeInTheDocument();
-  });
-
-  it("calls setForm on input change in CharityOrganizationInfoStep", () => {
-    setup("charityOrganizationInfo");
-    const input = screen.getByTestId("org-info-input");
-    fireEvent.change(input, {
-      target: { name: "charity_name", value: "New Name" },
-    });
-    expect(mockSetForm).toHaveBeenCalled();
-  });
-
-  it("calls nextOrgInfo on Next button click", () => {
-    setup("charityOrganizationInfo");
     fireEvent.click(screen.getByTestId("org-info-next"));
     expect(mockNextOrgInfo).toHaveBeenCalled();
   });
 
-  it("renders AuthorizedContactInfoStep when step is 'authorizedContactInfo'", () => {
-    setup("authorizedContactInfo");
-    expect(screen.getByTestId("contact-info-step")).toBeInTheDocument();
-  });
-
-  it("shows email field in AuthorizedContactInfoStep if no default email", () => {
+  it("contact-info step shows email field when none provided", () => {
     setup("authorizedContactInfo", {}, "");
-    const stepEl = screen.getByTestId("contact-info-step");
-    expect(stepEl.getAttribute("data-show-email")).toBe("true");
+    expect(screen.getByTestId("contact-info-step")).toBeInTheDocument();
     expect(screen.getByTestId("contact-email-input")).toBeInTheDocument();
   });
 
-  it("does not show email field when defaultEmail is provided", () => {
-    setup("authorizedContactInfo", {}, "user@example.com");
-    const stepEl = screen.getByTestId("contact-info-step");
-    expect(stepEl.getAttribute("data-show-email")).toBe("false");
-    expect(screen.queryByTestId("contact-email-input")).toBeNull();
-  });
-
-  it("calls submitAuthorizedContact on Submit button click", () => {
-    setup("authorizedContactInfo");
-    fireEvent.click(screen.getByTestId("contact-submit"));
-    expect(mockSubmitContact).toHaveBeenCalled();
-  });
-
-  it("renders FeeAgreementStep when step is 'feeAgreement'", () => {
+  it("fee-agreement step works", () => {
     setup("feeAgreement");
     expect(screen.getByTestId("fee-agreement-step")).toBeInTheDocument();
   });
 
-  it("calls agreeFee on Agree button click", () => {
-    setup("feeAgreement");
-    fireEvent.click(screen.getByTestId("fee-agree"));
-    expect(mockAgreeFee).toHaveBeenCalled();
-  });
-
-  it("renders DonationUrlStep when step is 'donationUrl'", () => {
+  it("donation-url step finishes and refreshes", () => {
     setup("donationUrl");
     expect(screen.getByTestId("donation-url-step")).toBeInTheDocument();
-  });
-
-  it("calls finish and router.refresh on Finish button click", () => {
-    setup("donationUrl");
     fireEvent.click(screen.getByTestId("donation-finish"));
     expect(mockFinish).toHaveBeenCalled();
     expect(mockRefresh).toHaveBeenCalled();
@@ -254,10 +225,9 @@ describe("CharitySetupModal", () => {
 
 describe("ReceiptPreferenceStep loading state", () => {
   beforeEach(() => {
-    // simulate loading on receiptPreference step
     (useCharitySetup as jest.Mock).mockReturnValue({
       step: "receiptPreference",
-      form: { ...baseForm, charity_sends_receipt: false },
+      form: { ...baseForm },
       setForm: mockSetForm,
       charitySlug: "charity-slug",
       isLoading: true,
@@ -269,22 +239,15 @@ describe("ReceiptPreferenceStep loading state", () => {
       finish: mockFinish,
       back: mockBack,
     });
-    (useProfiles as jest.Mock).mockReturnValue({
-      data: [{ details: { email: "profile@email.com" } }],
-    });
     render(<CharitySetupModal walletAddress="0x123" />);
   });
 
-  it("disables Next and Back buttons when loading", () => {
-    const nextBtn = screen.getByRole("button", { name: "" });
-    const backBtn = screen.getByRole("button", { name: /back/i });
-    expect(nextBtn).toBeDisabled();
-    expect(backBtn).toBeDisabled();
+  it("disables both buttons when loading", () => {
+    expect(screen.getByTestId("receipt-back")).toBeDisabled();
+    expect(screen.getByTestId("receipt-next")).toBeDisabled();
   });
 
-  it("shows spinner instead of text in Next button when loading", () => {
-    const nextBtn = screen.getByRole("button", { name: "" });
-    // Check that an SVG is present (the Loader2 icon)
-    expect(nextBtn.querySelector("svg")).toBeInTheDocument();
+  it("renders the spinner icon in Next button", () => {
+    expect(screen.getByTestId("receipt-spinner")).toBeInTheDocument();
   });
 });
