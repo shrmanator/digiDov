@@ -77,6 +77,7 @@ export default function CharitySetupModal({
             }
             onNext={nextReceiptPref}
             onBack={back}
+            isLoading={isLoading}
           />
         )}
 

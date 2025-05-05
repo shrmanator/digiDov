@@ -4,19 +4,14 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export interface ReceiptPreferenceStepProps {
-  /**
-   * If true, the charity wants the CSV emailed to them (manual import).
-   * If false, digiDov will email receipts directly to donors.
-   */
   charity_sends_receipt: boolean;
-  /** Called when the user toggles between modes */
   onChange: (value: boolean) => void;
-  /** Proceed to the next step */
   onNext: () => void;
-  /** Go back to the previous step */
   onBack: () => void;
+  isLoading: boolean;
 }
 
 export function ReceiptPreferenceStep({
@@ -24,11 +19,8 @@ export function ReceiptPreferenceStep({
   onChange,
   onNext,
   onBack,
+  isLoading,
 }: ReceiptPreferenceStepProps) {
-  /**
-   * Handle switch toggle: checked represents "Email receipts to donors"
-   * so we invert it to match charity_sends_receipt flag.
-   */
   const handleToggle = (checked: boolean) => {
     onChange(!checked);
   };
@@ -52,7 +44,6 @@ export function ReceiptPreferenceStep({
         <span className="font-medium">Yes</span>
       </div>
 
-      {/* Helper text beneath toggle */}
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
           {!charity_sends_receipt
@@ -62,10 +53,12 @@ export function ReceiptPreferenceStep({
       </div>
 
       <div className="flex justify-between pt-4">
-        <Button variant="secondary" onClick={onBack}>
+        <Button variant="secondary" onClick={onBack} disabled={isLoading}>
           Back
         </Button>
-        <Button onClick={onNext}>Next</Button>
+        <Button onClick={onNext} disabled={isLoading}>
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Next"}
+        </Button>
       </div>
     </div>
   );
