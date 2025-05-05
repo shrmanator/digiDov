@@ -1,4 +1,3 @@
-// hooks/use-charity-setup.ts
 import { useState, useEffect } from "react";
 import { upsertCharity } from "@/app/actions/charities";
 
@@ -40,7 +39,6 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Prefill contact_email with defaultEmail
   useEffect(() => {
     if (defaultEmail) {
       setForm((f) => ({ ...f, contact_email: defaultEmail }));
@@ -57,19 +55,41 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setStep("receiptPreference");
   };
 
-  // Step 2: Receipt Preference → Conditional next
-  const nextReceiptPref = () => {
+  // Step 2: Receipt Preference → Fee Agreement or Authorized Contact Info
+  const nextReceiptPref = async () => {
     setError(null);
-    if (!form.charity_sends_receipt) {
-      // Auto-send selected: go to Authorized Contact Info
-      setStep("authorizedContactInfo");
+
+    if (form.charity_sends_receipt) {
+      // Manual import: persist then Fee Agreement
+      setIsLoading(true);
+      try {
+        const updated = await upsertCharity({
+          wallet_address: walletAddress,
+          charity_name: form.charity_name,
+          registered_address: form.registered_address,
+          registration_number: form.registration_number,
+          contact_title: form.contact_title,
+          contact_first_name: form.contact_first_name,
+          contact_last_name: form.contact_last_name,
+          contact_email: form.contact_email,
+          contact_phone: form.contact_phone,
+          charity_sends_receipt: form.charity_sends_receipt,
+          is_profile_complete: true,
+        });
+        setCharitySlug(updated.slug || "");
+        setStep("feeAgreement");
+      } catch {
+        setError("Error saving profile. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      // Manual selected: skip to Fee Agreement
-      setStep("feeAgreement");
+      // digiDov sends receipts: collect contact info next
+      setStep("authorizedContactInfo");
     }
   };
 
-  // Step 3: Save contact info & complete profile → Fee Agreement
+  // Step 3: Save contact info → Fee Agreement
   const submitAuthorizedContact = async () => {
     setIsLoading(true);
     setError(null);
@@ -112,7 +132,6 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
         setStep("receiptPreference");
         break;
       case "feeAgreement":
-        // If manual import (charity_sends_receipt=true), go back to preference; else auto-send go back to contact info
         setStep(
           form.charity_sends_receipt
             ? "receiptPreference"

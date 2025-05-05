@@ -8,9 +8,9 @@ import { DonationUrlStep } from "./donation-url-step";
 import { FeeAgreementStep } from "./fee-agreement-step";
 import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { ReceiptPreferenceStep } from "./tax-receipt-preference";
 import { useRouter } from "next/navigation";
 import { useCharitySetup } from "@/hooks/use-charity-setup";
-import { ReceiptPreferenceStep } from "./tax-receipt-preference";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -31,8 +31,8 @@ export default function CharitySetupModal({
     isLoading,
     error,
     nextOrgInfo,
-    submitContact,
     nextReceiptPref,
+    submitAuthorizedContact,
     agreeFee,
     finish,
     back,
@@ -40,16 +40,16 @@ export default function CharitySetupModal({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    if (type === "checkbox") {
-      setForm((f) => ({ ...f, [name]: checked }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
+    setForm((f) => ({
+      ...f,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   return (
     <Dialog open onOpenChange={() => {}} data-testid="charity-setup-modal">
       <DialogContent className="[&>button]:hidden sm:max-w-xl">
+        {/* Step 1: Org Info */}
         {step === "charityOrganizationInfo" && (
           <CharityOrganizationInfoStep
             formData={{
@@ -68,6 +68,19 @@ export default function CharitySetupModal({
           />
         )}
 
+        {/* Step 2: Receipt Preference */}
+        {step === "receiptPreference" && (
+          <ReceiptPreferenceStep
+            charity_sends_receipt={form.charity_sends_receipt}
+            onChange={(val) =>
+              setForm((f) => ({ ...f, charity_sends_receipt: val }))
+            }
+            onNext={nextReceiptPref}
+            onBack={back}
+          />
+        )}
+
+        {/* Step 3: Contact Info (if digiDov sends receipts) */}
         {step === "authorizedContactInfo" && (
           <AuthorizedContactInfoStep
             formData={{
@@ -82,7 +95,7 @@ export default function CharitySetupModal({
             errorMessage={error}
             onChange={handleChange}
             onPrevious={back}
-            onSubmit={submitContact}
+            onSubmit={submitAuthorizedContact}
             charityName={form.charity_name}
             charityRegistrationNumber={form.registration_number}
             charityAddress={form.registered_address}
@@ -91,17 +104,7 @@ export default function CharitySetupModal({
           />
         )}
 
-        {step === "receiptPreference" && (
-          <ReceiptPreferenceStep
-            charity_sends_receipt={form.charity_sends_receipt}
-            onChange={(val) =>
-              setForm((f) => ({ ...f, charity_sends_receipt: val }))
-            }
-            onNext={nextReceiptPref}
-            onBack={back}
-          />
-        )}
-
+        {/* Step 4: Fee Agreement */}
         {step === "feeAgreement" && (
           <FeeAgreementStep
             onAgree={agreeFee}
@@ -110,6 +113,7 @@ export default function CharitySetupModal({
           />
         )}
 
+        {/* Step 5: Donation URL */}
         {step === "donationUrl" && (
           <DonationUrlStep
             charitySlug={charitySlug}
