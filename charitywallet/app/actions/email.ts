@@ -9,6 +9,8 @@ import {
 } from "mailersend";
 import { charity, donation_receipt, donor } from "@prisma/client";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
+import { DonationReceipt } from "../types/receipt";
+import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
@@ -182,5 +184,44 @@ export async function notifyDonorWithoutReceipt(
       success: false,
       error: "Failed to send manual donation notification",
     };
+  }
+}
+
+/**
+ * Email a CSV of DonationReceipts to the charity
+ */
+export async function notifyCharityWithCsv(
+  receipts: DonationReceipt[],
+  charityEmail: string,
+  charityName?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const csv = receiptsToCsv(receipts);
+    const base64Csv = Buffer.from(csv).toString("base64");
+
+    const emailParams = new EmailParams()
+      .setFrom(new Sender("contact@digidov.com", "digiDov Notifications"))
+      .setTo([new Recipient(charityEmail, charityName || "")])
+      .setSubject("Your Donation Report as CSV")
+      .setHtml(
+        `<p>Hello ${charityName || "Charity"},</p>
+         <p>Please find attached a CSV report of your donation receipts.</p>
+         <p>Thank you for partnering with us!</p>`
+      )
+      .setAttachments([
+        new Attachment(
+          base64Csv,
+          "charity-donations.csv",
+          "attachment",
+          "text/csv"
+        ),
+      ]);
+
+    await mailerSend.email.send(emailParams);
+    console.log(`✅ CSV emailed to charity at ${charityEmail}`);
+    return { success: true };
+  } catch (err) {
+    console.error("❌ Failed to send charity CSV email", err);
+    return { success: false, error: "Failed to send charity CSV email" };
   }
 }
