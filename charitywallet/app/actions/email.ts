@@ -169,7 +169,7 @@ export async function notifyDonorWithoutReceipt(
       .setSubject("Thank You for Your Donation")
       .setHtml(
         `<p>Dear ${donorName},</p>
-         <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by the charity.</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by ${charityName}.</p>
          <p>You can view your donation details here: <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a></p>
          <p>Warm regards,</p>
          <p>digiDov</p>`
@@ -202,11 +202,11 @@ export async function notifyCharityWithCsv(
     const emailParams = new EmailParams()
       .setFrom(new Sender("contact@digidov.com", "digiDov Notifications"))
       .setTo([new Recipient(charityEmail, charityName || "")])
-      .setSubject("Your Donation Report as CSV")
+      .setSubject(`You received a donation from ${receipts[0].donor?.email}`)
       .setHtml(
         `<p>Hello ${charityName || "Charity"},</p>
-         <p>Please find attached a CSV report of your donation receipts.</p>
-         <p>Thank you for partnering with us!</p>`
+         <p>Please find attached a CSV containing the donation details.</p>
+         <p>Thank you, digiDov.</p>`
       )
       .setAttachments([
         new Attachment(
