@@ -10,6 +10,7 @@ import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
 import { useRouter } from "next/navigation";
 import { useCharitySetup } from "@/hooks/use-charity-setup";
+import { ReceiptPreferenceStep } from "./tax-receipt-preference";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -31,14 +32,19 @@ export default function CharitySetupModal({
     error,
     nextOrgInfo,
     submitContact,
+    nextReceiptPref,
     agreeFee,
     finish,
     back,
   } = useCharitySetup(walletAddress, defaultEmail);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      setForm((f) => ({ ...f, [name]: checked }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
   };
 
   return (
@@ -61,6 +67,7 @@ export default function CharitySetupModal({
             data-testid="org-info-step"
           />
         )}
+
         {step === "authorizedContactInfo" && (
           <AuthorizedContactInfoStep
             formData={{
@@ -83,6 +90,18 @@ export default function CharitySetupModal({
             data-testid="contact-info-step"
           />
         )}
+
+        {step === "receiptPreference" && (
+          <ReceiptPreferenceStep
+            charity_sends_receipt={form.charity_sends_receipt}
+            onChange={(val) =>
+              setForm((f) => ({ ...f, charity_sends_receipt: val }))
+            }
+            onNext={nextReceiptPref}
+            onBack={back}
+          />
+        )}
+
         {step === "feeAgreement" && (
           <FeeAgreementStep
             onAgree={agreeFee}
@@ -90,6 +109,7 @@ export default function CharitySetupModal({
             data-testid="fee-agreement-step"
           />
         )}
+
         {step === "donationUrl" && (
           <DonationUrlStep
             charitySlug={charitySlug}

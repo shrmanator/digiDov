@@ -1,8 +1,11 @@
+// app/(dashboard)/charity-setup/ReceiptPreferenceStep.tsx
 "use client";
-import React from "react";
-import { Switch } from "@/components/ui/switch"; // UI switch or similar component
 
-interface Props {
+import React from "react";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+
+export interface ReceiptPreferenceStepProps {
   charity_sends_receipt: boolean;
   onChange: (value: boolean) => void;
   onNext: () => void;
@@ -14,36 +17,46 @@ export function ReceiptPreferenceStep({
   onChange,
   onNext,
   onBack,
-}: Props) {
+}: ReceiptPreferenceStepProps) {
+  const [touched, setTouched] = React.useState(false);
+
+  const handleToggle = (checked: boolean) => {
+    setTouched(true);
+    // Switch is 'checked' when digiDov sends receipts, invert to match charity_sends_receipt
+    onChange(!checked);
+  };
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Receipt Preferences</h2>
-      <p className="text-sm text-gray-500">
-        You can change this later under Settings → Receipt Preferences.
+    <div className="max-w-md mx-auto space-y-6">
+      <h2 className="text-lg font-medium">Tax Receipt Delivery</h2>
+      <p className="text-sm text-muted-foreground">
+        Would you like digiDov to automatically send tax receipts to your donors
+        on your behalf?
       </p>
+
       <div className="flex items-center space-x-3">
-        <Switch checked={charity_sends_receipt} onCheckedChange={onChange} />
-        <span>
-          {charity_sends_receipt
-            ? "Our organization will send receipts manually"
-            : "digiDov will generate and send the tax receipt"}
-        </span>
+        <span className="font-medium">No</span>
+        <Switch
+          checked={!charity_sends_receipt}
+          onCheckedChange={handleToggle}
+          aria-label="Toggle automatic receipt sending"
+        />
+        <span className="font-medium">Yes</span>
       </div>
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-4 py-2 bg-gray-200 rounded"
-        >
+
+      <p className="text-xs text-muted-foreground">
+        {charity_sends_receipt
+          ? "You’ll receive a CSV of donations to import into your CRM."
+          : "Receipts will be emailed to donors automatically."}
+      </p>
+
+      <div className="flex justify-between pt-4">
+        <Button variant="secondary" onClick={onBack}>
           Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
+        </Button>
+        <Button onClick={onNext} disabled={!touched}>
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

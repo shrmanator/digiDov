@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { upsertCharity } from "@/app/actions/charities";
 
 export type Step =
-  | 'charityOrganizationInfo'
-  | 'authorizedContactInfo'
-  | 'feeAgreement'
-  | 'donationUrl';
+  | "charityOrganizationInfo"
+  | "authorizedContactInfo"
+  | "receiptPreference"
+  | "feeAgreement"
+  | "donationUrl";
 
 export interface FormData {
   charity_name: string;
@@ -16,43 +17,42 @@ export interface FormData {
   contact_last_name: string;
   contact_email: string;
   contact_phone: string;
+  charity_sends_receipt: boolean;
   shaduicn: boolean;
 }
 
-export function useCharitySetup(
-  walletAddress: string,
-  defaultEmail: string
-) {
-  const [step, setStep] = useState<Step>('charityOrganizationInfo');
+export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
+  const [step, setStep] = useState<Step>("charityOrganizationInfo");
   const [form, setForm] = useState<FormData>({
-    charity_name: '',
-    registered_address: '',
-    registration_number: '',
-    contact_title: '',
-    contact_first_name: '',
-    contact_last_name: '',
-    contact_email: '',
-    contact_phone: '',
+    charity_name: "",
+    registered_address: "",
+    registration_number: "",
+    contact_title: "",
+    contact_first_name: "",
+    contact_last_name: "",
+    contact_email: defaultEmail || "",
+    contact_phone: "",
+    charity_sends_receipt: false,
     shaduicn: false,
   });
-  const [charitySlug, setCharitySlug] = useState<string>('');
+  const [charitySlug, setCharitySlug] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // inject default email
+  // Prefill default email if available
   useEffect(() => {
     if (defaultEmail) {
-      setForm(f => ({ ...f, contact_email: defaultEmail }));
+      setForm((prev) => ({ ...prev, contact_email: defaultEmail }));
     }
   }, [defaultEmail]);
 
   const nextOrgInfo = () => {
     setError(null);
     if (form.registration_number.length < 9) {
-      setError('Ensure a valid registration number.');
+      setError("Ensure a valid registration number.");
       return;
     }
-    setStep('authorizedContactInfo');
+    setStep("authorizedContactInfo");
   };
 
   const submitContact = async () => {
@@ -69,26 +69,27 @@ export function useCharitySetup(
         contact_last_name: form.contact_last_name,
         contact_email: form.contact_email,
         contact_phone: form.contact_phone,
+        charity_sends_receipt: form.charity_sends_receipt,
         is_profile_complete: true,
       });
-      setCharitySlug(updated.slug || '');
-      setStep('feeAgreement');
+      setCharitySlug(updated.slug || "");
+      setStep("receiptPreference");
     } catch (e) {
-      setError('Error saving profile. Please try again.');
+      setError("Error saving profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const agreeFee = () => setStep('donationUrl');
-  const finish = () => {
-    // handled externally by modal
-  };
+  const nextReceiptPref = () => setStep("feeAgreement");
+  const agreeFee = () => setStep("donationUrl");
+  const finish = () => {};
 
   const back = () => {
-    if (step === 'authorizedContactInfo') setStep('charityOrganizationInfo');
-    else if (step === 'feeAgreement') setStep('authorizedContactInfo');
-    else if (step === 'donationUrl') setStep('feeAgreement');
+    if (step === "authorizedContactInfo") setStep("charityOrganizationInfo");
+    else if (step === "receiptPreference") setStep("authorizedContactInfo");
+    else if (step === "feeAgreement") setStep("receiptPreference");
+    else if (step === "donationUrl") setStep("feeAgreement");
   };
 
   return {
@@ -100,6 +101,7 @@ export function useCharitySetup(
     error,
     nextOrgInfo,
     submitContact,
+    nextReceiptPref,
     agreeFee,
     finish,
     back,
