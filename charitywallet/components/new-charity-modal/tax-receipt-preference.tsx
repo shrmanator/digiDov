@@ -4,6 +4,7 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { FileText, Mail } from "lucide-react";
 
 export interface ReceiptPreferenceStepProps {
   charity_sends_receipt: boolean;
@@ -34,14 +35,21 @@ export function ReceiptPreferenceStep({
         on your behalf?
       </p>
 
-      <div className="flex items-center space-x-3">
-        <span className="font-medium">No</span>
+      <div className="flex items-center justify-center space-x-6">
+        <div className="flex items-center space-x-1">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">Manual Import</span>
+        </div>
         <Switch
           checked={!charity_sends_receipt}
           onCheckedChange={handleToggle}
           aria-label="Toggle automatic receipt sending"
+          className="mx-4"
         />
-        <span className="font-medium">Yes</span>
+        <div className="flex items-center space-x-1">
+          <Mail className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">Auto-Send</span>
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground">

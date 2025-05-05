@@ -1,10 +1,11 @@
+// hooks/use-charity-setup.ts
 import { useState, useEffect } from "react";
 import { upsertCharity } from "@/app/actions/charities";
 
 export type Step =
   | "charityOrganizationInfo"
-  | "authorizedContactInfo"
   | "receiptPreference"
+  | "authorizedContactInfo"
   | "feeAgreement"
   | "donationUrl";
 
@@ -17,8 +18,8 @@ export interface FormData {
   contact_last_name: string;
   contact_email: string;
   contact_phone: string;
-  charity_sends_receipt: boolean;
   shaduicn: boolean;
+  charity_sends_receipt: boolean;
 }
 
 export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
@@ -32,30 +33,44 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     contact_last_name: "",
     contact_email: defaultEmail || "",
     contact_phone: "",
-    charity_sends_receipt: false,
     shaduicn: false,
+    charity_sends_receipt: false,
   });
   const [charitySlug, setCharitySlug] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Prefill default email if available
+  // Prefill contact_email with defaultEmail
   useEffect(() => {
     if (defaultEmail) {
-      setForm((prev) => ({ ...prev, contact_email: defaultEmail }));
+      setForm((f) => ({ ...f, contact_email: defaultEmail }));
     }
   }, [defaultEmail]);
 
+  // Step 1: Org Info → Receipt Preference
   const nextOrgInfo = () => {
     setError(null);
-    if (form.registration_number.length < 9) {
+    if (form.registration_number.trim().length < 9) {
       setError("Ensure a valid registration number.");
       return;
     }
-    setStep("authorizedContactInfo");
+    setStep("receiptPreference");
   };
 
-  const submitContact = async () => {
+  // Step 2: Receipt Preference → Conditional next
+  const nextReceiptPref = () => {
+    setError(null);
+    if (!form.charity_sends_receipt) {
+      // Auto-send selected: go to Authorized Contact Info
+      setStep("authorizedContactInfo");
+    } else {
+      // Manual selected: skip to Fee Agreement
+      setStep("feeAgreement");
+    }
+  };
+
+  // Step 3: Save contact info & complete profile → Fee Agreement
+  const submitAuthorizedContact = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -73,23 +88,41 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
         is_profile_complete: true,
       });
       setCharitySlug(updated.slug || "");
-      setStep("receiptPreference");
-    } catch (e) {
-      setError("Error saving profile. Please try again.");
+      setStep("feeAgreement");
+    } catch {
+      setError("Error saving contact info. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const nextReceiptPref = () => setStep("feeAgreement");
+  // Step 4: Fee Agreement → Donation URL
   const agreeFee = () => setStep("donationUrl");
+
+  // Finalize
   const finish = () => {};
 
+  // Back navigation
   const back = () => {
-    if (step === "authorizedContactInfo") setStep("charityOrganizationInfo");
-    else if (step === "receiptPreference") setStep("authorizedContactInfo");
-    else if (step === "feeAgreement") setStep("receiptPreference");
-    else if (step === "donationUrl") setStep("feeAgreement");
+    switch (step) {
+      case "receiptPreference":
+        setStep("charityOrganizationInfo");
+        break;
+      case "authorizedContactInfo":
+        setStep("receiptPreference");
+        break;
+      case "feeAgreement":
+        // If manual import (charity_sends_receipt=true), go back to preference; else auto-send go back to contact info
+        setStep(
+          form.charity_sends_receipt
+            ? "receiptPreference"
+            : "authorizedContactInfo"
+        );
+        break;
+      case "donationUrl":
+        setStep("feeAgreement");
+        break;
+    }
   };
 
   return {
@@ -100,8 +133,8 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     isLoading,
     error,
     nextOrgInfo,
-    submitContact,
     nextReceiptPref,
+    submitAuthorizedContact,
     agreeFee,
     finish,
     back,
