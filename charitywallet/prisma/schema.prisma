@@ -6,6 +6,7 @@ datasource db {
 
 generator client {
     provider = "prisma-client-js"
+    output   = "../node_modules/.prisma/client"
 }
 
 // Donation receipt jurisdictions
@@ -24,15 +25,15 @@ model charity {
     contact_last_name             String?
     contact_email                 String?                 @unique
     contact_mobile_phone          String?                 @unique
-    charity_sends_receipt         Boolean                 @default(false) // True if the charity will send the tax receipt themselves.
+    charity_sends_receipt         Boolean                 @default(false)
     registered_office_address     String?
     date_of_birth                 String? // Eg. 1990-01-01
     city                          String?
     state                         String?
     postCode                      String?
     countryCode                   String? // Eg. Canada, United States Of America
-    wallet_address                String                  @unique // Wallet address for receiving donations
-    transak_stream_wallet_address String?                 @unique // Wallet address for off-ramping
+    wallet_address                String                  @unique
+    transak_stream_wallet_address String?                 @unique
     is_profile_complete           Boolean                 @default(false)
     slug                          String?                 @unique
     created_at                    DateTime                @default(now())
@@ -74,9 +75,9 @@ model donation_receipt {
     receipt_number       String       @unique
     donation_date        DateTime
     fiat_amount          Float
-    crypto_amount_wei    BigInt? // Made optional since supabase giving migration error
+    crypto_amount_wei    BigInt? // Optional
     transaction_hash     String       @unique
-    chainId              String? // Made optional since supabase giving migration error
+    chainId              String? // Optional
     jurisdiction         Jurisdiction @default(CRA)
     jurisdiction_details Json?
     charity_id           String?

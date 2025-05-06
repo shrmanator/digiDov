@@ -106,7 +106,6 @@ export function TaxReceiptDrawer({
     }
   }
 
-  // If the user is not connected, show a sign in button
   if (!walletAddress) {
     return (
       <Drawer open={open} onOpenChange={onClose}>
@@ -126,7 +125,6 @@ export function TaxReceiptDrawer({
     );
   }
 
-  // Group receipts by date if not loading and receipts exist
   const groupedReceipts =
     !loading && receipts.length > 0 ? groupReceiptsByDate(receipts) : {};
 
@@ -167,31 +165,41 @@ export function TaxReceiptDrawer({
 
                       return (
                         <li key={receipt.id} className="p-3 border rounded-lg">
-                          <div className="text-sm font-medium">
-                            {receipt.charity?.charity_name ?? "Unknown Charity"}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Receipt #{receipt.receipt_number} •{" "}
-                            {new Date(
-                              receipt.donation_date
-                            ).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs">
-                            Amount: ${receipt.fiat_amount.toFixed(2)}
-                          </div>
-
                           {canDownload ? (
-                            <button
-                              type="button"
-                              className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
-                              onClick={() => downloadReceipt(receipt.id)}
-                            >
-                              <Download size={14} /> Download PDF
-                            </button>
+                            <>
+                              <div className="text-sm font-medium">
+                                {receipt.charity?.charity_name ??
+                                  "Unknown Charity"}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Receipt #{receipt.receipt_number} •{" "}
+                                {new Date(
+                                  receipt.donation_date
+                                ).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs">
+                                Amount: ${receipt.fiat_amount.toFixed(2)}
+                              </div>
+                              <button
+                                type="button"
+                                className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
+                                onClick={() => downloadReceipt(receipt.id)}
+                              >
+                                <Download size={14} /> Download PDF
+                              </button>
+                            </>
                           ) : (
-                            <div className="mt-2 text-sm italic text-gray-500">
-                              This charity sends their own receipts.
-                            </div>
+                            <>
+                              <div className="text-xs">
+                                Date:{" "}
+                                {new Date(
+                                  receipt.donation_date
+                                ).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs">
+                                Amount: ${receipt.fiat_amount.toFixed(2)}
+                              </div>
+                            </>
                           )}
                         </li>
                       );
