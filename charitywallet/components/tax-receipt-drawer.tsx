@@ -75,9 +75,7 @@ export function TaxReceiptDrawer({
   const fetchReceipts = useCallback(async () => {
     setLoading(true);
     try {
-      // Pass walletAddress to getDonationReceipts
       const data = await getDonationReceiptsForDonor(walletAddress);
-      // Sort receipts by donation_date descending (most recent first)
       const sortedReceipts = data.sort(
         (a, b) =>
           new Date(b.donation_date).getTime() -
@@ -142,7 +140,7 @@ export function TaxReceiptDrawer({
               View and download your tax receipts.
             </DrawerDescription>
           </DrawerHeader>
-          {/* Wrap the list in a scrollable container */}
+
           <div className="p-4 pb-0 max-h-[300px] overflow-y-auto">
             {loading ? (
               <ul className="space-y-4">
@@ -159,37 +157,51 @@ export function TaxReceiptDrawer({
             ) : receipts.length === 0 ? (
               <p>No receipts found.</p>
             ) : (
-              // Render grouped receipts with date headers
               Object.keys(groupedReceipts).map((dateLabel) => (
                 <div key={dateLabel} className="mb-4">
                   <h3 className="text-sm font-bold mb-2">{dateLabel}</h3>
                   <ul className="space-y-4">
-                    {groupedReceipts[dateLabel].map((receipt) => (
-                      <li key={receipt.id} className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium">
-                          {receipt.charity?.charity_name ?? "Unknown Charity"}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Receipt #{receipt.receipt_number} •{" "}
-                          {new Date(receipt.donation_date).toLocaleDateString()}
-                        </div>
-                        <div className="text-xs">
-                          Amount: ${receipt.fiat_amount.toFixed(2)}
-                        </div>
-                        <button
-                          type="button"
-                          className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
-                          onClick={() => downloadReceipt(receipt.id)}
-                        >
-                          <Download size={14} /> Download PDF
-                        </button>
-                      </li>
-                    ))}
+                    {groupedReceipts[dateLabel].map((receipt) => {
+                      const canDownload =
+                        receipt.charity?.charity_sends_receipt === false;
+
+                      return (
+                        <li key={receipt.id} className="p-3 border rounded-lg">
+                          <div className="text-sm font-medium">
+                            {receipt.charity?.charity_name ?? "Unknown Charity"}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Receipt #{receipt.receipt_number} •{" "}
+                            {new Date(
+                              receipt.donation_date
+                            ).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs">
+                            Amount: ${receipt.fiat_amount.toFixed(2)}
+                          </div>
+
+                          {canDownload ? (
+                            <button
+                              type="button"
+                              className="mt-2 flex items-center gap-1 text-blue-600 text-sm"
+                              onClick={() => downloadReceipt(receipt.id)}
+                            >
+                              <Download size={14} /> Download PDF
+                            </button>
+                          ) : (
+                            <div className="mt-2 text-sm italic text-gray-500">
+                              This charity sends their own receipts.
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))
             )}
           </div>
+
           <DrawerFooter>
             <DrawerClose asChild>
               <button

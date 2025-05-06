@@ -172,7 +172,7 @@ export async function notifyDonorWithoutReceipt(
          <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by ${charityName}.</p>
          <p>You can view your donation details here: <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a></p>
          <p>Warm regards,</p>
-         <p>digiDov</p>`
+         <p>digiDov x ${charityName}</p>`
       );
 
     await mailerSend.email.send(emailParams);
