@@ -13,7 +13,8 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
 
   const headers = [
     "Donation Date",
-    "digiDov Donation ID",
+    // "Receipt Number",  // removed per request
+    "Donation ID",
     "Charity Name",
     "Donor Name",
     "Donor Email",
@@ -47,7 +48,7 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
 
     const cells = [
       r.donation_date,
-      r.receipt_number,
+      // r.receipt_number, // removed per request
       r.id,
       r.charity_name ?? r.charity?.charity_name ?? "",
       donorName,
