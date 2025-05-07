@@ -197,20 +197,19 @@ export async function notifyCharityWithCsv(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const csv = receiptsToCsv(receipts);
-    const base64Csv = Buffer.from(csv).toString("base64");
-
+    const base64 = Buffer.from(csv).toString("base64");
     const emailParams = new EmailParams()
       .setFrom(new Sender("contact@digidov.com", "digiDov Notifications"))
-      .setTo([new Recipient(charityEmail, charityName || "")])
+      .setTo([new Recipient(charityEmail, charityName ?? "")])
       .setSubject(`You received a donation from ${receipts[0].donor?.email}`)
       .setHtml(
-        `<p>Hello ${charityName || "Charity"},</p>
+        `<p>Hello ${charityName ?? "Charity"},</p>
          <p>Please find attached a CSV containing the donation details.</p>
          <p>Thank you, digiDov.</p>`
       )
       .setAttachments([
         new Attachment(
-          base64Csv,
+          base64,
           "charity-donations.csv",
           "attachment",
           "text/csv"
@@ -220,8 +219,21 @@ export async function notifyCharityWithCsv(
     await mailerSend.email.send(emailParams);
     console.log(`✅ CSV emailed to charity at ${charityEmail}`);
     return { success: true };
-  } catch (err) {
-    console.error("❌ Failed to send charity CSV email", err);
-    return { success: false, error: "Failed to send charity CSV email" };
+  } catch (err: unknown) {
+    // Log the raw error for diagnostics
+    console.error("MailerSend error:", err);
+
+    // Safely extract a message
+    let msg: string;
+    if (err instanceof Error) {
+      msg = err.message;
+    } else {
+      msg = typeof err === "string" ? err : "Unknown error";
+    }
+
+    return {
+      success: false,
+      error: `Failed to send charity CSV email: ${msg}`,
+    };
   }
 }
