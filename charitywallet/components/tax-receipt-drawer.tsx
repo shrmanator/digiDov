@@ -165,12 +165,13 @@ export function TaxReceiptDrawer({
 
                       return (
                         <li key={receipt.id} className="p-3 border rounded-lg">
+                          {/* always show charity name */}
+                          <div className="text-sm font-medium">
+                            {receipt.charity_name ?? "Unknown Charity"}
+                          </div>
+
                           {canDownload ? (
                             <>
-                              <div className="text-sm font-medium">
-                                {receipt.charity?.charity_name ??
-                                  "Unknown Charity"}
-                              </div>
                               <div className="text-xs text-gray-500">
                                 Receipt #{receipt.receipt_number} •{" "}
                                 {new Date(
@@ -179,6 +180,9 @@ export function TaxReceiptDrawer({
                               </div>
                               <div className="text-xs">
                                 Amount: ${receipt.fiat_amount.toFixed(2)}
+                              </div>
+                              <div className="text-xs">
+                                Network: {receipt.chain ?? "Unknown"}
                               </div>
                               <button
                                 type="button"
@@ -198,6 +202,9 @@ export function TaxReceiptDrawer({
                               </div>
                               <div className="text-xs">
                                 Amount: ${receipt.fiat_amount.toFixed(2)}
+                              </div>
+                              <div className="text-xs">
+                                Network: {receipt.chain ?? "Unknown"}
                               </div>
                             </>
                           )}

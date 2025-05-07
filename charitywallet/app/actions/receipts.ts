@@ -8,7 +8,8 @@ import { getChainName } from "../types/chains";
 
 /**
  * Retrieves all donation receipts for a charity,
- * including its `charity_sends_receipt` flag and human-readable chain.
+ * including its `charity_sends_receipt` flag,
+ * human-readable chain, and top-level charity_name.
  */
 export async function getDonationReceiptsForCharity(
   walletAddress: string
@@ -44,14 +45,15 @@ export async function getDonationReceiptsForCharity(
     charity: r.charity ?? null,
     donor: r.donor ?? null,
     chain: getChainName(r.chainId),
+    charity_name: r.charity?.charity_name ?? null,
   }));
 }
 
 /**
  * Retrieves all donation receipts for a donor,
- * including each charity’s `charity_sends_receipt` flag.
+ * including each charity’s `charity_sends_receipt` flag,
+ * human-readable chain, and top-level charity_name.
  */
-
 export async function getDonationReceiptsForDonor(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
@@ -59,7 +61,12 @@ export async function getDonationReceiptsForDonor(
 
   const receipts = await prisma.donation_receipt.findMany({
     where: {
-      donor: { wallet_address: { equals: normalized, mode: "insensitive" } },
+      donor: {
+        wallet_address: {
+          equals: normalized,
+          mode: "insensitive",
+        },
+      },
     },
     orderBy: { donation_date: "desc" },
     include: {
@@ -86,6 +93,7 @@ export async function getDonationReceiptsForDonor(
     charity: r.charity ?? null,
     donor: r.donor ?? null,
     chain: getChainName(r.chainId),
+    charity_name: r.charity?.charity_name ?? null,
   }));
 }
 
