@@ -4,10 +4,11 @@ import prisma from "@/lib/prisma";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { Prisma, donation_receipt, charity, donor } from "@prisma/client";
 import { DonationReceipt } from "../types/receipt";
+import { getChainName } from "../types/chains";
 
 /**
  * Retrieves all donation receipts for a charity,
- * including its `charity_sends_receipt` flag.
+ * including its `charity_sends_receipt` flag and human-readable chain.
  */
 export async function getDonationReceiptsForCharity(
   walletAddress: string
@@ -37,11 +38,12 @@ export async function getDonationReceiptsForCharity(
     },
   });
 
-  return receipts.map((receipt) => ({
-    ...receipt,
-    donation_date: receipt.donation_date.toISOString(),
-    charity: receipt.charity ?? null,
-    donor: receipt.donor ?? null,
+  return receipts.map((r) => ({
+    ...r,
+    donation_date: r.donation_date.toISOString(),
+    charity: r.charity ?? null,
+    donor: r.donor ?? null,
+    chain: getChainName(r.chainId),
   }));
 }
 
@@ -49,19 +51,15 @@ export async function getDonationReceiptsForCharity(
  * Retrieves all donation receipts for a donor,
  * including each charity’s `charity_sends_receipt` flag.
  */
+
 export async function getDonationReceiptsForDonor(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
-  const normalizedWalletAddress = walletAddress.toLowerCase();
+  const normalized = walletAddress.toLowerCase();
 
   const receipts = await prisma.donation_receipt.findMany({
     where: {
-      donor: {
-        wallet_address: {
-          equals: normalizedWalletAddress,
-          mode: "insensitive",
-        },
-      },
+      donor: { wallet_address: { equals: normalized, mode: "insensitive" } },
     },
     orderBy: { donation_date: "desc" },
     include: {
@@ -82,11 +80,12 @@ export async function getDonationReceiptsForDonor(
     },
   });
 
-  return receipts.map((receipt) => ({
-    ...receipt,
-    donation_date: receipt.donation_date.toISOString(),
-    charity: receipt.charity ?? null,
-    donor: receipt.donor ?? null,
+  return receipts.map((r) => ({
+    ...r,
+    donation_date: r.donation_date.toISOString(),
+    charity: r.charity ?? null,
+    donor: r.donor ?? null,
+    chain: getChainName(r.chainId),
   }));
 }
 
