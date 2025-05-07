@@ -7,94 +7,97 @@ import { DonationReceipt } from "../types/receipt";
 import { getChainName } from "../types/chains";
 
 /**
- * Retrieves all donation receipts for a charity,
- * including its `charity_sends_receipt` flag,
- * human-readable chain, and top-level charity_name.
+ * 1) The shared “include” fragment for Prisma.
+ *    Changes here flow through both queries.
  */
-export async function getDonationReceiptsForCharity(
-  walletAddress: string
-): Promise<DonationReceipt[]> {
-  const receipts = await prisma.donation_receipt.findMany({
-    where: {
-      charity: {
-        wallet_address: walletAddress,
-      },
+const baseInclude: Prisma.donation_receiptInclude = {
+  charity: {
+    select: {
+      charity_name: true,
+      registration_number: true,
+      charity_sends_receipt: true,
     },
-    orderBy: { donation_date: "desc" },
-    include: {
-      charity: {
-        select: {
-          charity_name: true,
-          registration_number: true,
-          charity_sends_receipt: true,
-        },
-      },
-      donor: {
-        select: {
-          first_name: true,
-          last_name: true,
-          email: true,
-        },
-      },
+  },
+  donor: {
+    select: {
+      first_name: true,
+      last_name: true,
+      email: true,
     },
-  });
+  },
+};
 
-  return receipts.map((r) => ({
-    ...r,
+/**
+ * 2) Map a raw Prisma record → our front-end DTO.
+ *    Single Responsibility: only handles conversion.
+ */
+function mapReceipt(
+  r: donation_receipt & {
+    charity: {
+      charity_name: string | null;
+      registration_number: string | null;
+      charity_sends_receipt: boolean;
+    } | null;
+    donor: {
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+    } | null;
+  }
+): DonationReceipt {
+  return {
+    ...r, // id, receipt_number, fiat_amount, transaction_hash, etc.
     donation_date: r.donation_date.toISOString(),
-    charity: r.charity ?? null,
-    donor: r.donor ?? null,
+    charity: r.charity,
+    donor: r.donor,
     chain: getChainName(r.chainId),
     charity_name: r.charity?.charity_name ?? null,
-  }));
+    // transaction_hash is already there via the spread
+  };
 }
 
 /**
- * Retrieves all donation receipts for a donor,
- * including each charity’s `charity_sends_receipt` flag,
- * human-readable chain, and top-level charity_name.
+ * 3) Generic fetch + map pipeline.
+ *    Accepts any Prisma “where” filter.
  */
-export async function getDonationReceiptsForDonor(
+async function fetchReceipts(
+  where: Prisma.donation_receiptWhereInput
+): Promise<DonationReceipt[]> {
+  const records = await prisma.donation_receipt.findMany({
+    where,
+    orderBy: { donation_date: "desc" },
+    include: baseInclude,
+  });
+  return records.map(mapReceipt);
+}
+
+/**
+ * 4a) Public API: receipts for a given donor.
+ */
+export function getDonationReceiptsForDonor(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
-  const normalized = walletAddress.toLowerCase();
-
-  const receipts = await prisma.donation_receipt.findMany({
-    where: {
-      donor: {
-        wallet_address: {
-          equals: normalized,
-          mode: "insensitive",
-        },
-      },
-    },
-    orderBy: { donation_date: "desc" },
-    include: {
-      charity: {
-        select: {
-          charity_name: true,
-          registration_number: true,
-          charity_sends_receipt: true,
-        },
-      },
-      donor: {
-        select: {
-          first_name: true,
-          last_name: true,
-          email: true,
-        },
+  return fetchReceipts({
+    donor: {
+      wallet_address: {
+        equals: walletAddress.toLowerCase(),
+        mode: "insensitive",
       },
     },
   });
+}
 
-  return receipts.map((r) => ({
-    ...r,
-    donation_date: r.donation_date.toISOString(),
-    charity: r.charity ?? null,
-    donor: r.donor ?? null,
-    chain: getChainName(r.chainId),
-    charity_name: r.charity?.charity_name ?? null,
-  }));
+/**
+ * 4b) Public API: receipts for a given charity.
+ */
+export function getDonationReceiptsForCharity(
+  walletAddress: string
+): Promise<DonationReceipt[]> {
+  return fetchReceipts({
+    charity: {
+      wallet_address: walletAddress,
+    },
+  });
 }
 
 /**
