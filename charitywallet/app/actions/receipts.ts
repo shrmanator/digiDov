@@ -74,7 +74,7 @@ async function fetchReceipts(
 /**
  * 4a) Public API: receipts for a given donor.
  */
-export function getDonationReceiptsForDonor(
+export async function getDonationReceiptsForDonor(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
   return fetchReceipts({
@@ -90,7 +90,7 @@ export function getDonationReceiptsForDonor(
 /**
  * 4b) Public API: receipts for a given charity.
  */
-export function getDonationReceiptsForCharity(
+export async function getDonationReceiptsForCharity(
   walletAddress: string
 ): Promise<DonationReceipt[]> {
   return fetchReceipts({
