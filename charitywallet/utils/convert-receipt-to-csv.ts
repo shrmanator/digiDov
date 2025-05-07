@@ -21,9 +21,9 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
     "Transaction Hash",
     "Crypto Amount (wei)",
     "Crypto Amount (units)",
-    "Exchange Rate (CAD per unit)",
+    "Exchange Rate (CAD per unit via CoinGecko)",
     "Gross Amount (CAD)",
-    "Platform Fee (3%)",
+    "Platform Fee (3% CAD)",
     "Net Amount to Charity (CAD)",
   ];
 

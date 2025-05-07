@@ -4,9 +4,9 @@
 export function chainIdToName(chain?: string | null): string {
   switch (chain) {
     case "0x1":
-      return "Ethereum Mainnet";
+      return "Ethereum";
     case "0x89":
-      return "Polygon Mainnet";
+      return "Polygon";
     default:
       return chain ?? "";
   }
