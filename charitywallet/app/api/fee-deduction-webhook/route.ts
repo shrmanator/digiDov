@@ -1,8 +1,8 @@
-// app/api/webhook/route.ts
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+
 import {
   createDonationReceipt,
   getNextReceiptNumber,
@@ -51,14 +51,15 @@ export async function POST(request: Request) {
     if (!raw) throw new Error("No DonationForwarded event");
     const event = enrichDonationEvent(raw, body.txs?.[0]?.hash || "");
 
-    // 4. Compute timestamps & amounts
+    // 4. Compute timestamps & parallel fiat conversions
     const ts = parseInt(block.timestamp, 10);
-    const donationDate = new Date(ts * 1000);
-    const fiat = await convertWeiToFiat(event.fullAmount, ts, "cad", chainId);
-    const netFiat = await convertWeiToFiat(event.netAmount, ts, "cad", chainId);
-    const feeFiat = await convertWeiToFiat(event.fee, ts, "cad", chainId);
+    const [fiat, netFiat, feeFiat] = await Promise.all([
+      convertWeiToFiat(event.fullAmount, ts, "cad", chainId),
+      convertWeiToFiat(event.netAmount, ts, "cad", chainId),
+      convertWeiToFiat(event.fee, ts, "cad", chainId),
+    ]);
 
-    // 5. Load donor & charity from DB
+    // 5. Load full donor & charity from DB for notifications
     const donor = await prisma.donor.findUnique({
       where: { wallet_address: event.donor.toLowerCase() },
     });
@@ -66,8 +67,8 @@ export async function POST(request: Request) {
       where: { wallet_address: event.charity.toLowerCase() },
     });
     if (!donor || !charity) throw new Error("Donor or charity not found");
-    console.log("Donor and charity found.", charity);
-    // 6. Mint receipt & save, but ignore duplicates
+
+    // 6. Mint receipt & save, ignore duplicates
     let receipt;
     try {
       const receiptNumber = await getNextReceiptNumber("CRA");
@@ -75,10 +76,10 @@ export async function POST(request: Request) {
         donor_id: donor.id,
         charity_id: charity.id,
         receipt_number: receiptNumber,
-        donation_date: donationDate,
+        donation_date: new Date(ts * 1000),
         fiat_amount: fiat,
         crypto_amount_wei: BigInt(event.fullAmount),
-        chainId,
+        chainId: String(chainId),
         transaction_hash: event.transactionHash,
         jurisdiction: "CRA",
         jurisdiction_details: {
@@ -104,66 +105,58 @@ export async function POST(request: Request) {
       throw e;
     }
 
-    // 7. Generate PDF only if charity wants us to send PDF receipts
+    // 7. Generate PDF only if charity opts out of their own receipts
     if (!charity.charity_sends_receipt) {
       await generateDonationReceiptPDF(receipt);
     }
 
-    // Build the DonationReceipt DTO for CSV helper
+    // 8. Build the DonationReceipt DTO
     const donationDto: DonationReceipt = {
       ...receipt,
       donation_date: receipt.donation_date.toISOString(),
       charity: {
         charity_name: charity.charity_name,
         registration_number: charity.registration_number,
+        charity_sends_receipt: charity.charity_sends_receipt,
       },
+      charity_name: charity.charity_name,
       donor: {
         first_name: donor.first_name,
         last_name: donor.last_name,
         email: donor.email!,
       },
+      chain: chainId ? String(chainId) : null,
     };
 
-    // 8–9. Notify donor and charity
+    // 9. Notify donor and charity
     if (charity.charity_sends_receipt) {
-      console.log(
-        `Charity ${charity.charity_name} sends receipts, notifying donor and charity.`
-      );
       const donorRes = await notifyDonorWithoutReceipt({
         ...receipt,
         donor,
         charity,
       });
-      if (!donorRes.success)
-        throw new Error(`Donor notification failed: ${donorRes.error}`);
+      if (!donorRes.success) throw new Error(donorRes.error);
 
       const csvRes = await notifyCharityWithCsv(
         [donationDto],
         charity.contact_email!,
         charity.charity_name!
       );
-      if (!csvRes.success)
-        throw new Error(`Charity CSV notification failed: ${csvRes.error}`);
+      if (!csvRes.success) throw new Error(csvRes.error);
     } else {
-      console.log(
-        `Charity ${charity.charity_name} does not send receipts, notifying donor with PDF.`
-      );
-
       const donorRes = await notifyDonorWithReceipt({
         ...receipt,
         donor,
         charity,
       });
-      if (!donorRes.success)
-        throw new Error(`Donor PDF notification failed: ${donorRes.error}`);
+      if (!donorRes.success) throw new Error(donorRes.error);
 
       const pdfRes = await notifyCharityAboutDonation({
         ...receipt,
         donor,
         charity,
       });
-      if (!pdfRes.success)
-        throw new Error(`Charity PDF notification failed: ${pdfRes.error}`);
+      if (!pdfRes.success) throw new Error(pdfRes.error);
     }
 
     // 10. Respond success
@@ -178,12 +171,9 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (err: unknown) {
-    const errorInfo =
-      err instanceof Error ? err.stack ?? err.message : String(err);
-    console.error("Webhook error:", errorInfo);
-
+    console.error("Webhook error:", err);
     return NextResponse.json(
-      { message: "Failed processing webhook", error: errorInfo },
+      { message: "Failed processing webhook", error: (err as Error).message },
       { status: 500 }
     );
   }
