@@ -13,8 +13,7 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
 
   const headers = [
     "Donation Date",
-    // "Receipt Number",  // removed per request
-    "Donation ID",
+    "digiDov Donation ID",
     "Charity Name",
     "Donor Name",
     "Donor Email",
