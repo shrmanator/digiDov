@@ -143,9 +143,7 @@ export function TaxReceiptDrawer({
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
             <DrawerTitle>Donation Tax Receipts</DrawerTitle>
-            <DrawerDescription>
-              View and download your tax receipts.
-            </DrawerDescription>
+            <DrawerDescription>View your tax receipts.</DrawerDescription>
           </DrawerHeader>
 
           <div className="p-4 pb-0 max-h-[300px] overflow-y-auto">
