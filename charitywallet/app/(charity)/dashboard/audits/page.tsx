@@ -1,3 +1,4 @@
+// app/(protected)/dashboard/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -34,21 +35,30 @@ export default async function Dashboard() {
     redirect("/login");
   }
 
-  // 2) Fetch charity from DB
+  // 2) Fetch charity from DB (including the sends_receipt flag)
   const charity = await prisma.charity.findUnique({
     where: { wallet_address: user.walletAddress },
+    select: {
+      id: true,
+      wallet_address: true,
+      contact_email: true,
+      charity_sends_receipt: true,
+    },
   });
   if (!charity) {
     return <p>No charity found.</p>;
   }
 
-  // 3) Fetch price data on the server using the new system
+  // Determine whether to show the Tax Receipts tab
+  const showTaxTab = !charity.charity_sends_receipt;
+
+  // 3) Fetch price data on the server
   const chains: SupportedChain[] = ["ethereum", "polygon"];
   const COIN_IDS: Record<SupportedChain, string> = {
     ethereum: "ethereum",
     polygon: "matic-network",
   };
-  const coinIds = chains.map((chain) => COIN_IDS[chain]).join(",");
+  const coinIds = chains.map((c) => COIN_IDS[c]).join(",");
   const initialPriceData = await fetchPrices(coinIds, "usd");
 
   return (
@@ -95,14 +105,21 @@ export default async function Dashboard() {
           <div className="px-4 py-6">
             <h2 className="text-2xl font-bold mb-6">Audits</h2>
 
-            <Tabs defaultValue="taxReceipts" className="w-full">
+            <Tabs
+              defaultValue={
+                showTaxTab ? "taxReceipts" : "externalWalletTransfers"
+              }
+              className="w-full"
+            >
               <TabsList className="mb-4 w-full sm:w-auto">
-                <TabsTrigger
-                  value="taxReceipts"
-                  className="flex-1 sm:flex-initial"
-                >
-                  Tax Receipts
-                </TabsTrigger>
+                {showTaxTab && (
+                  <TabsTrigger
+                    value="taxReceipts"
+                    className="flex-1 sm:flex-initial"
+                  >
+                    Tax Receipts
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="externalWalletTransfers"
                   className="flex-1 sm:flex-initial"
@@ -111,13 +128,15 @@ export default async function Dashboard() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="taxReceipts">
-                <ScrollArea className="h-[calc(98vh-250px)]">
-                  <DonationReceiptsList
-                    walletAddress={charity.wallet_address}
-                  />
-                </ScrollArea>
-              </TabsContent>
+              {showTaxTab && (
+                <TabsContent value="taxReceipts">
+                  <ScrollArea className="h-[calc(98vh-250px)]">
+                    <DonationReceiptsList
+                      walletAddress={charity.wallet_address}
+                    />
+                  </ScrollArea>
+                </TabsContent>
+              )}
 
               <TabsContent value="externalWalletTransfers">
                 <ScrollArea className="h-[calc(98vh-250px)]">
