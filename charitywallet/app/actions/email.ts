@@ -7,11 +7,7 @@ import {
   Recipient,
   Attachment,
 } from "mailersend";
-import type {
-  charity as PrismaCharity,
-  donation_receipt as PrismaDonationReceipt,
-  donor as PrismaDonor,
-} from "@prisma/client";
+import type { charity, donation_receipt, donor } from "@prisma/client";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { DonationReceipt } from "../types/receipt";
 import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
@@ -43,10 +39,7 @@ export async function sendContactEmailAction(formData: FormData) {
 
 // ✅ Notify charity of donation (no attachment)
 export async function notifyCharityAboutDonation(
-  receipt: PrismaDonationReceipt & {
-    donor?: PrismaDonor;
-    charity?: PrismaCharity;
-  }
+  receipt: donation_receipt & { donor?: donor; charity?: charity }
 ) {
   try {
     const donorName =
@@ -96,10 +89,7 @@ export async function notifyCharityAboutDonation(
 
 // ✅ Donor receipt email with attachment
 export async function notifyDonorWithReceipt(
-  receipt: PrismaDonationReceipt & {
-    donor?: PrismaDonor;
-    charity?: PrismaCharity;
-  }
+  receipt: donation_receipt & { donor?: donor; charity?: charity }
 ) {
   try {
     const pdfBytes = await generateDonationReceiptPDF(receipt);
@@ -117,7 +107,6 @@ export async function notifyDonorWithReceipt(
       ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
     const charitySlug = receipt.charity?.slug || "your-charity";
-    // Shortened link for viewing all receipts
     const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
 
     const emailParams = new EmailParams()
@@ -154,7 +143,7 @@ export async function notifyDonorWithReceipt(
 
 // 🔧 Manual donor notification (no PDF attachment)
 export async function notifyDonorWithoutReceipt(
-  receipt: PrismaDonationReceipt & { donor?: PrismaDonor; charity?: PrismaCharity }
+  receipt: donation_receipt & { donor?: donor; charity?: charity }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const donorEmail = receipt.donor?.email || "";
@@ -224,17 +213,13 @@ export async function notifyCharityWithCsv(
     console.log(`✅ CSV emailed to charity at ${charityEmail}`);
     return { success: true };
   } catch (err: unknown) {
-    // Log the raw error for diagnostics
     console.error("MailerSend error:", err);
-
-    // Safely extract a message
-    let msg: string;
-    if (err instanceof Error) {
-      msg = err.message;
-    } else {
-      msg = typeof err === "string" ? err : "Unknown error";
-    }
-
+    const msg =
+      err instanceof Error
+        ? err.message
+        : typeof err === "string"
+        ? err
+        : "Unknown error";
     return {
       success: false,
       error: `Failed to send charity CSV email: ${msg}`,
