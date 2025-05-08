@@ -16,35 +16,38 @@ enum Jurisdiction {
     // Add additional jurisdictions as needed
 }
 
-model charity {
-    id                            String                  @id @default(uuid())
+model Charity {
+    id                            String   @id @default(uuid())
     charity_name                  String?
     registration_number           String?
     contact_title                 String? // e.g., "Dr.", "Mr.", etc.
     contact_first_name            String?
     contact_last_name             String?
-    contact_email                 String?                 @unique
-    contact_mobile_phone          String?                 @unique
-    charity_sends_receipt         Boolean                 @default(false)
+    contact_email                 String?  @unique
+    contact_mobile_phone          String?  @unique
+    charity_sends_receipt         Boolean  @default(false)
     registered_office_address     String?
     date_of_birth                 String? // Eg. 1990-01-01
     city                          String?
     state                         String?
     postCode                      String?
-    countryCode                   String? // Eg. Canada, United States Of America
-    wallet_address                String                  @unique
-    transak_stream_wallet_address String?                 @unique
-    is_profile_complete           Boolean                 @default(false)
-    slug                          String?                 @unique
-    created_at                    DateTime                @default(now())
-    donation_receipts             donation_receipt[]
-    charity_fund_transfer         charity_fund_transfer[]
+    countryCode                   String?
+    wallet_address                String   @unique
+    transak_stream_wallet_address String?  @unique
+    is_profile_complete           Boolean  @default(false)
+    slug                          String?  @unique
+    created_at                    DateTime @default(now())
+
+    donation_receipts     DonationReceipt[]
+    charity_fund_transfer CharityFundTransfer[]
+
+    @@map("charity")
 }
 
-model charity_fund_transfer {
+model CharityFundTransfer {
     id                 String   @id @default(uuid())
     charity_id         String
-    charity            charity  @relation(fields: [charity_id], references: [id])
+    charity            Charity  @relation(fields: [charity_id], references: [id])
     amount_wei         BigInt // Amount in Wei
     fiat_equivalent    Float? // Optional: Fiat value at the time of transfer
     fiat_currency      String? // Optional: Fiat currency code (e.g., USD, CAD)
@@ -54,23 +57,27 @@ model charity_fund_transfer {
     gas_fee_wei        BigInt? // Optional: Gas fee for transaction
     transfer_reason    String? // Optional: Description of transfer
     created_at         DateTime @default(now())
+
+    @@map("charity_fund_transfer")
 }
 
-model donor {
-    id                  String             @id @default(uuid())
+model Donor {
+    id                  String            @id @default(uuid())
     title               String? // New field: e.g., "Dr.", "Ms.", etc.
-    wallet_address      String             @unique
-    email               String?            @unique
+    wallet_address      String            @unique
+    email               String?           @unique
     first_name          String?
     last_name           String?
     address             String?
-    donation_receipts   donation_receipt[]
-    is_profile_complete Boolean            @default(false)
-    created_at          DateTime           @default(now())
-    updated_at          DateTime           @updatedAt
+    donation_receipts   DonationReceipt[]
+    is_profile_complete Boolean           @default(false)
+    created_at          DateTime          @default(now())
+    updated_at          DateTime          @updatedAt
+
+    @@map("donor")
 }
 
-model donation_receipt {
+model DonationReceipt {
     id                   String       @id @default(uuid())
     receipt_number       String       @unique
     donation_date        DateTime
@@ -81,14 +88,18 @@ model donation_receipt {
     jurisdiction         Jurisdiction @default(CRA)
     jurisdiction_details Json?
     charity_id           String?
-    charity              charity?     @relation(fields: [charity_id], references: [id])
+    charity              Charity?     @relation(fields: [charity_id], references: [id])
     donor_id             String?
-    donor                donor?       @relation(fields: [donor_id], references: [id])
+    donor                Donor?       @relation(fields: [donor_id], references: [id])
     created_at           DateTime     @default(now())
     updated_at           DateTime     @updatedAt
+
+    @@map("donation_receipt")
 }
 
-model donation_receipt_counter {
+model DonationReceiptCounter {
     jurisdiction Jurisdiction @id
     counter      Int          @default(0)
+
+    @@map("donation_receipt_counter")
 }
