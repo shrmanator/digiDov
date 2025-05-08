@@ -1,31 +1,21 @@
-// types/receipt.ts
-
-// Import Prisma models directly (PascalCase)
-import type { DonationReceipt, Charity, Donor } from "@prisma/client";
+import { charity, donation_receipt, donor } from "@prisma/client";
 
 /**
- * Front-end receipt DTO
- * - Drops Prisma relation fields
- * - Converts dates to ISO strings
- * - Adds human-readable and flattened properties
+ * Front-end DonationReceipt shape:
+ * - Drop Prisma’s Date/Relation fields
+ * - Add ISO date string, human-readable chain, top-level charity_name
  */
-export type ReceiptDTO = Omit<
-  DonationReceipt,
+export type DonationReceipt = Omit<
+  donation_receipt,
   "donation_date" | "charity" | "donor"
 > & {
-  /** ISO-formatted donation date */
-  donation_date: string;
-  /** Picked charity info */
+  donation_date: string; // ISO string
   charity: Pick<
-    Charity,
+    charity,
     "charity_name" | "registration_number" | "charity_sends_receipt"
   > | null;
-  /** Top-level charity name for UI */
-  charity_name: string | null;
-  /** Picked donor info */
-  donor: Pick<Donor, "first_name" | "last_name" | "email"> | null;
-  /** Human-readable chain name */
-  chain: string | null;
-  /** Transaction hash for UI display */
-  transaction_hash: string;
+  charity_name: string | null; // top-level name
+  donor: Pick<donor, "first_name" | "last_name" | "email"> | null;
+  chain: string | null; // human-readable chain
+  transaction_hash: string; // for UI copy/truncate
 };

@@ -15,13 +15,13 @@ import {
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 
-import type { DonationReceipt } from "@/app/types/receipt";
 import {
   notifyDonorWithoutReceipt,
   notifyCharityWithCsv,
   notifyDonorWithReceipt,
   notifyCharityAboutDonation,
 } from "@/app/actions/email";
+import { DonationReceipt } from "@/app/types/receipt";
 
 const web3 = new Web3();
 
