@@ -7,7 +7,11 @@ import {
   Recipient,
   Attachment,
 } from "mailersend";
-import { charity, donation_receipt, donor } from "@prisma/client";
+import type {
+  charity as PrismaCharity,
+  donation_receipt as PrismaDonationReceipt,
+  donor as PrismaDonor,
+} from "@prisma/client";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { DonationReceipt } from "../types/receipt";
 import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
@@ -15,7 +19,6 @@ import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
 });
-
 
 // ✅ Contact email action
 export async function sendContactEmailAction(formData: FormData) {
@@ -40,9 +43,9 @@ export async function sendContactEmailAction(formData: FormData) {
 
 // ✅ Notify charity of donation (no attachment)
 export async function notifyCharityAboutDonation(
-  receipt: donation_receipt & {
-    donor?: donor;
-    charity?: charity;
+  receipt: PrismaDonationReceipt & {
+    donor?: PrismaDonor;
+    charity?: PrismaCharity;
   }
 ) {
   try {
@@ -93,9 +96,9 @@ export async function notifyCharityAboutDonation(
 
 // ✅ Donor receipt email with attachment
 export async function notifyDonorWithReceipt(
-  receipt: donation_receipt & {
-    donor?: donor;
-    charity?: charity;
+  receipt: PrismaDonationReceipt & {
+    donor?: PrismaDonor;
+    charity?: PrismaCharity;
   }
 ) {
   try {
@@ -151,7 +154,7 @@ export async function notifyDonorWithReceipt(
 
 // 🔧 Manual donor notification (no PDF attachment)
 export async function notifyDonorWithoutReceipt(
-  receipt: donation_receipt & { donor?: donor; charity?: charity }
+  receipt: PrismaDonationReceipt & { donor?: PrismaDonor; charity?: PrismaCharity }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const donorEmail = receipt.donor?.email || "";
