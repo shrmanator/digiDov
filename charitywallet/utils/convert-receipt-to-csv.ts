@@ -1,10 +1,10 @@
-// app/utils/receiptsToCsv.ts
 import { DonationReceipt } from "@/app/types/receipt";
 import { chainIdToName } from "./chainid-to-name";
 import { weiToEvm } from "./convert-wei-to-evm";
 
 /**
- * Convert DonationReceipt[] to CSV string with full financial breakdown.
+ * Convert DonationReceipt[] to CSV string with full financial breakdown,
+ * including donor_address and donor_wallet_address if present on the row.
  */
 export function receiptsToCsv(receipts: DonationReceipt[]): string {
   if (!receipts.length) {
@@ -17,12 +17,15 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
     "Charity Name",
     "Donor Name",
     "Donor Email",
+    "Donor Address",
+    "Donor Wallet Address",
     "Blockchain",
     "Transaction Hash",
     "Crypto Amount (wei)",
     "Crypto Amount (units)",
     "Exchange Rate (CAD per unit via CoinGecko)",
     "Gross Amount (CAD)",
+    "Fair Market Value (CAD)",
     "Platform Fee (3% CAD)",
     "Net Amount to Charity (CAD)",
   ];
@@ -33,9 +36,7 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
       : "Anonymous";
 
     const gross = r.fiat_amount;
-    // calculate a 3% fee, preserving precision for small amounts
     const feeRaw = gross * 0.03;
-    // if fee is less than 1 cent, show up to 8 decimal places; otherwise 2 decimal places
     const fee = Number(feeRaw < 0.01 ? feeRaw.toFixed(8) : feeRaw.toFixed(2));
     const net = Number((gross - fee).toFixed(2));
 
@@ -45,22 +46,26 @@ export function receiptsToCsv(receipts: DonationReceipt[]): string {
     const exchangeRate =
       cryptoUnits > 0 ? (gross / cryptoUnits).toFixed(2) : "N/A";
 
+    // injected fields (fall back to empty string)
+    const plainAddr = (r as any).donor_address ?? "";
+    const walletAddr = (r as any).donor_wallet_address ?? "";
+
     const cells = [
       r.donation_date,
-      // r.receipt_number, // removed per request
       r.id,
       r.charity_name ?? r.charity?.charity_name ?? "",
       donorName,
       r.donor?.email ?? "",
+      plainAddr, // Donor Address
+      walletAddr, // Donor Wallet Address
       blockchain,
       r.transaction_hash,
       cryptoWei.toString(),
       cryptoUnits.toString(),
       exchangeRate,
-      gross.toFixed(2),
-      // format fee: use 8 decimals if <0.01, else 2 decimals
+      gross.toFixed(2), // Gross Amount (CAD)
+      gross.toFixed(2), // Fair Market Value (CAD)
       feeRaw < 0.01 ? fee.toFixed(8) : fee.toFixed(2),
-      // format net similarly
       net < 0.01 ? net.toFixed(8) : net.toFixed(2),
     ];
 

@@ -137,8 +137,15 @@ export async function POST(request: Request) {
       });
       if (!donorRes.success) throw new Error(donorRes.error);
 
+      // ——— extend the row with wallet addresses ———
+      const csvRow = {
+        ...donationDto,
+        donor_wallet_address: donor.wallet_address,
+        donor_address: donor.address,
+      };
+
       const csvRes = await notifyCharityWithCsv(
-        [donationDto],
+        [csvRow],
         charity.contact_email!,
         charity.charity_name!
       );
