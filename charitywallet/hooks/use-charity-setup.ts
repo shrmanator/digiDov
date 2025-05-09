@@ -60,31 +60,30 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setError(null);
 
     if (form.charity_sends_receipt) {
-      // Manual import: persist then Fee Agreement
+      console.log("charity_sends_receipt", form.charity_sends_receipt);
+      // Persist the receipt preference via your new API route
       setIsLoading(true);
       try {
-        const updated = await upsertCharity({
-          wallet_address: walletAddress,
-          charity_name: form.charity_name,
-          registered_address: form.registered_address,
-          registration_number: form.registration_number,
-          contact_title: form.contact_title,
-          contact_first_name: form.contact_first_name,
-          contact_last_name: form.contact_last_name,
-          contact_email: form.contact_email,
-          contact_phone: form.contact_phone,
-          charity_sends_receipt: form.charity_sends_receipt,
-          is_profile_complete: true,
+        const res = await fetch("/api/charity-dashboard/overview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            charity_sends_receipt: form.charity_sends_receipt,
+          }),
         });
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        const updated = await res.json();
         setCharitySlug(updated.slug || "");
         setStep("feeAgreement");
       } catch {
-        setError("Error saving profile. Please try again.");
+        setError("Error saving preference. Please try again.");
       } finally {
         setIsLoading(false);
       }
     } else {
-      // digiDov sends receipts: collect contact info next
+      // digiDov sends receipts: go to contact info
       setStep("authorizedContactInfo");
     }
   };
