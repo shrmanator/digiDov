@@ -1,4 +1,5 @@
-// app/actions/email.ts
+"use server";
+
 import {
   MailerSend,
   EmailParams,
@@ -7,15 +8,9 @@ import {
   Attachment,
 } from "mailersend";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
+import { DonationReceipt } from "../types/receipt";
 import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
-
-// Front-end receipt DTO
-import type {
-  Charity as PrismaCharity,
-  Donor as PrismaDonor,
-  DonationReceipt as PrismaDonationReceipt,
-} from "@prisma/client";
-import type { DonationReceipt } from "../types/receipt";
+import { donation_receipt, donor, charity } from "@prisma/client";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
@@ -36,18 +31,17 @@ export async function sendContactEmailAction(formData: FormData) {
   try {
     await mailerSend.email.send(emailParams);
     return { success: true };
-  } catch (error: unknown) {
-    console.error("Failed to send contact email", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { success: false, error: message };
+  } catch (err) {
+    console.error("Failed to send contact email", err);
+    return { success: false, error: "Failed to send contact email" };
   }
 }
 
 // ✅ Notify charity of donation (no attachment)
 export async function notifyCharityAboutDonation(
-  receipt: PrismaDonationReceipt & {
-    donor?: PrismaDonor;
-    charity?: PrismaCharity;
+  receipt: donation_receipt & {
+    donor?: donor;
+    charity?: charity;
   }
 ) {
   try {
@@ -56,10 +50,10 @@ export async function notifyCharityAboutDonation(
         receipt.donor?.last_name || ""
       }`.trim() || "Anonymous Donor";
     const donorEmail = receipt.donor?.email || "Unknown email";
-    const amount = `$${receipt.fiat_amount.toFixed(2)} CAD`;
+    const amount = `$${receipt.fiat_amount?.toFixed(2) || "0.00"} CAD`;
     const charityName = receipt.charity?.charity_name || "Your Charity";
     const charityEmail = receipt.charity?.contact_email;
-    const transactionHash = receipt.transaction_hash;
+    const transactionHash = receipt.transaction_hash || "";
     const txLink = transactionHash
       ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
@@ -90,24 +84,22 @@ export async function notifyCharityAboutDonation(
     await mailerSend.email.send(emailParams);
     console.log(`📧 Charity notification sent to ${charityEmail}`);
     return { success: true };
-  } catch (error: unknown) {
-    console.error("❌ Failed to notify charity", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { success: false, error: message };
+  } catch (err) {
+    console.error("❌ Failed to notify charity", err);
+    return { success: false, error: "Failed to notify charity of donation" };
   }
 }
 
 // ✅ Donor receipt email with attachment
 export async function notifyDonorWithReceipt(
-  receipt: PrismaDonationReceipt & {
-    donor?: PrismaDonor;
-    charity?: PrismaCharity;
+  receipt: donation_receipt & {
+    donor?: donor;
+    charity?: charity;
   }
 ) {
   try {
     const pdfBytes = await generateDonationReceiptPDF(receipt);
     const base64PDF = Buffer.from(pdfBytes).toString("base64");
-
     const donorEmail = receipt.donor?.email || "";
     const donorName =
       `${receipt.donor?.first_name || ""} ${
@@ -115,12 +107,13 @@ export async function notifyDonorWithReceipt(
       }`.trim() || "Donor";
     const charityName =
       receipt.charity?.charity_name || "your supported charity";
-    const receiptNumber = receipt.receipt_number;
-    const transactionHash = receipt.transaction_hash;
+    const receiptNumber = receipt.receipt_number || "unknown";
+    const transactionHash = receipt.transaction_hash || "";
     const txLink = transactionHash
       ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
     const charitySlug = receipt.charity?.slug || "your-charity";
+    // Shortened link for viewing all receipts
     const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
 
     const emailParams = new EmailParams()
@@ -149,19 +142,15 @@ export async function notifyDonorWithReceipt(
     await mailerSend.email.send(emailParams);
     console.log(`✅ Receipt email sent to ${donorEmail}`);
     return { success: true };
-  } catch (error: unknown) {
-    console.error("❌ Failed to send donation receipt", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { success: false, error: message };
+  } catch (err) {
+    console.error("❌ Failed to send donation receipt", err);
+    return { success: false, error: "Failed to send donation receipt" };
   }
 }
 
 // 🔧 Manual donor notification (no PDF attachment)
 export async function notifyDonorWithoutReceipt(
-  receipt: PrismaDonationReceipt & {
-    donor?: PrismaDonor;
-    charity?: PrismaCharity;
-  }
+  receipt: donation_receipt & { donor?: donor; charity?: charity }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const donorEmail = receipt.donor?.email || "";
@@ -180,7 +169,7 @@ export async function notifyDonorWithoutReceipt(
       .setSubject("Thank You for Your Donation")
       .setHtml(
         `<p>Dear ${donorName},</p>
-         <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by ${charityName}</p>
+         <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by ${charityName}.</p>
          <p>You can view your donation details here: <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a></p>
          <p>Warm regards,</p>
          <p>digiDov x ${charityName}</p>`
@@ -189,17 +178,18 @@ export async function notifyDonorWithoutReceipt(
     await mailerSend.email.send(emailParams);
     console.log(`✅ Manual receipt notification sent to ${donorEmail}`);
     return { success: true };
-  } catch (error: unknown) {
-    console.error("❌ Failed to send manual donation notification", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+  } catch (err) {
+    console.error("❌ Failed to send manual donation notification", err);
     return {
       success: false,
-      error: `Failed to send manual donation notification: ${message}`,
+      error: "Failed to send manual donation notification",
     };
   }
 }
 
-// ✅ Email CSV of receipts to charity
+/**
+ * Email a CSV of DonationReceipts to the charity
+ */
 export async function notifyCharityWithCsv(
   receipts: DonationReceipt[],
   charityEmail: string,
@@ -207,19 +197,19 @@ export async function notifyCharityWithCsv(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const csv = receiptsToCsv(receipts);
-    const base64Csv = Buffer.from(csv).toString("base64");
-
+    const base64 = Buffer.from(csv).toString("base64");
     const emailParams = new EmailParams()
       .setFrom(new Sender("contact@digidov.com", "digiDov Notifications"))
       .setTo([new Recipient(charityEmail, charityName ?? "")])
-      .setSubject(`Donation Report: ${charityName ?? "Charity"}`)
+      .setSubject(`You received a donation from ${receipts[0].donor?.email}`)
       .setHtml(
         `<p>Hello ${charityName ?? "Charity"},</p>
-         <p>Please find attached a CSV containing the donation details.</p>`
+         <p>Please find attached a CSV containing the donation details.</p>
+         <p>Thank you, digiDov.</p>`
       )
       .setAttachments([
         new Attachment(
-          base64Csv,
+          base64,
           "charity-donations.csv",
           "attachment",
           "text/csv"
@@ -229,9 +219,21 @@ export async function notifyCharityWithCsv(
     await mailerSend.email.send(emailParams);
     console.log(`✅ CSV emailed to charity at ${charityEmail}`);
     return { success: true };
-  } catch (error: unknown) {
-    console.error("MailerSend CSV error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { success: false, error: `Failed to send CSV email: ${message}` };
+  } catch (err: unknown) {
+    // Log the raw error for diagnostics
+    console.error("MailerSend error:", err);
+
+    // Safely extract a message
+    let msg: string;
+    if (err instanceof Error) {
+      msg = err.message;
+    } else {
+      msg = typeof err === "string" ? err : "Unknown error";
+    }
+
+    return {
+      success: false,
+      error: `Failed to send charity CSV email: ${msg}`,
+    };
   }
 }
