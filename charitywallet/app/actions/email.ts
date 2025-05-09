@@ -1,3 +1,4 @@
+// app/actions/email.ts
 import {
   MailerSend,
   EmailParams,
@@ -10,11 +11,11 @@ import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
 
 // Front-end receipt DTO
 import type {
-  donation_receipt as PrismaDonationReceipt,
-  donor as PrismaDonor,
   charity as PrismaCharity,
+  donor as PrismaDonor,
+  donation_receipt as PrismaDonationReceipt,
 } from "@prisma/client";
-import { DonationReceipt } from "../types/receipt";
+import type { DonationReceipt } from "../types/receipt";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
@@ -60,7 +61,7 @@ export async function notifyCharityAboutDonation(
     const charityEmail = receipt.charity?.contact_email;
     const transactionHash = receipt.transaction_hash;
     const txLink = transactionHash
-      ? `<a href=\"https://www.blockscan.com/tx/${transactionHash}\" target=\"_blank\" rel=\"noopener noreferrer\">${transactionHash}</a>`
+      ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
 
     if (!charityEmail) {
@@ -82,7 +83,7 @@ export async function notifyCharityAboutDonation(
            <li><strong>Transaction hash:</strong> ${txLink}</li>
          </ul>
          <p>You can view this donation and its official receipt in your dashboard:</p>
-         <p><a href=\"https://www.digidov.com/dashboard/audits\">Go to dashboard</a></p>
+         <p><a href="https://www.digidov.com/dashboard/audits">Go to dashboard</a></p>
          <p>– digiDov</p>`
       );
 
@@ -117,7 +118,7 @@ export async function notifyDonorWithReceipt(
     const receiptNumber = receipt.receipt_number;
     const transactionHash = receipt.transaction_hash;
     const txLink = transactionHash
-      ? `<a href=\"https://www.blockscan.com/tx/${transactionHash}\" target=\"_blank\" rel=\"noopener noreferrer\">${transactionHash}</a>`
+      ? `<a href="https://www.blockscan.com/tx/${transactionHash}" target="_blank" rel="noopener noreferrer">${transactionHash}</a>`
       : "N/A";
     const charitySlug = receipt.charity?.slug || "your-charity";
     const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
@@ -130,7 +131,7 @@ export async function notifyDonorWithReceipt(
         `<p>Dear ${donorName},</p>
          <p>Thank you for your donation to <strong>${charityName}</strong>.</p>
          <p>Your receipt is attached below. Alternatively, you can view all your receipts at: 
-           <a href=\"${shortReceiptLink}\" target=\"_blank\" rel=\"noopener noreferrer\">${shortReceiptLink}</a>
+           <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a>
          </p>
          <p><strong>Receipt Number:</strong> ${receiptNumber}</p>
          <p><strong>Transaction hash:</strong> ${txLink}</p>
@@ -180,7 +181,7 @@ export async function notifyDonorWithoutReceipt(
       .setHtml(
         `<p>Dear ${donorName},</p>
          <p>Thank you for your donation to <strong>${charityName}</strong>. Your official tax receipt will be sent to you directly by ${charityName}</p>
-         <p>You can view your donation details here: <a href=\"${shortReceiptLink}\" target=\"_blank\" rel=\"noopener noreferrer\">${shortReceiptLink}</a></p>
+         <p>You can view your donation details here: <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">${shortReceiptLink}</a></p>
          <p>Warm regards,</p>
          <p>digiDov x ${charityName}</p>`
       );
