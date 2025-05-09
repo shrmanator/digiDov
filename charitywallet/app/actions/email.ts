@@ -11,9 +11,9 @@ import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
 
 // Front-end receipt DTO
 import type {
-  charity as PrismaCharity,
-  donor as PrismaDonor,
-  donation_receipt as PrismaDonationReceipt,
+  Charity as PrismaCharity,
+  Donor as PrismaDonor,
+  DonationReceipt as PrismaDonationReceipt,
 } from "@prisma/client";
 import type { DonationReceipt } from "../types/receipt";
 
