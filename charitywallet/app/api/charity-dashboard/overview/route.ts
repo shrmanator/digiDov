@@ -18,13 +18,14 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
     if (typeof data.charity_sends_receipt !== "boolean") {
       return NextResponse.json(
         { error: "`charity_sends_receipt` must be boolean" },
         { status: 422 }
       );
     }
-    console.log("charity_sends_receipt", data.charity_sends_receipt);
+
     // 3) Delegate to your server-action, marking the profile complete
     const updated = await upsertCharity({
       wallet_address: wallet,
@@ -34,10 +35,11 @@ export async function POST(request: Request) {
 
     // 4) Return the full upsert result (including slug, etc.)
     return NextResponse.json(updated);
-  } catch (err: any) {
-    console.error("POST /api/charity-dashboard/overview error:", err);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("POST /api/charity-dashboard/overview error:", message);
     return NextResponse.json(
-      { error: err.message || "Unexpected error" },
+      { error: message || "Unexpected error" },
       { status: 500 }
     );
   }
