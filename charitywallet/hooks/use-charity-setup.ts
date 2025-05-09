@@ -60,30 +60,26 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setError(null);
 
     if (form.charity_sends_receipt) {
-      console.log("charity_sends_receipt", form.charity_sends_receipt);
-      // Persist the receipt preference via your new API route
+      // Persist all charity info via server action
       setIsLoading(true);
       try {
-        const res = await fetch("/api/charity-dashboard/overview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            charity_sends_receipt: form.charity_sends_receipt,
-          }),
+        const updated = await upsertCharity({
+          wallet_address: walletAddress,
+          charity_name: form.charity_name,
+          registered_address: form.registered_address,
+          registration_number: form.registration_number,
+          charity_sends_receipt: form.charity_sends_receipt,
+          is_profile_complete: true,
         });
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-        const updated = await res.json();
         setCharitySlug(updated.slug || "");
         setStep("feeAgreement");
       } catch {
-        setError("Error saving preference. Please try again.");
+        setError("Error saving profile. Please try again.");
       } finally {
         setIsLoading(false);
       }
     } else {
-      // digiDov sends receipts: go to contact info
+      // digiDov sends receipts: collect contact info next
       setStep("authorizedContactInfo");
     }
   };
@@ -118,7 +114,7 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
   // Step 4: Fee Agreement → Donation URL
   const agreeFee = () => setStep("donationUrl");
 
-  // Finalize
+  // Finalize (no-op, just close modal)
   const finish = () => {};
 
   // Back navigation
