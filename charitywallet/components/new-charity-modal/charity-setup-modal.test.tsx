@@ -17,7 +17,7 @@ import { useCharitySetup } from "@/hooks/use-charity-setup";
 import { useRouter } from "next/navigation";
 
 import { CharityOrganizationInfoStep as OriginalOrgInfoStep } from "./charity-organiztion-info-step";
-import { AuthorizedContactInfoStep as OriginalAuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { CharityAuthorizedContactInfoStep as OriginalAuthorizedContactInfoStep } from "./charity-authorized-contact-step";
 import { FeeAgreementStep as OriginalFeeAgreementStep } from "./fee-agreement-step";
 import { DonationUrlStep as OriginalDonationUrlStep } from "./donation-url-step";
 import { ReceiptPreferenceStep as OriginalReceiptPreferenceStep } from "./tax-receipt-preference";

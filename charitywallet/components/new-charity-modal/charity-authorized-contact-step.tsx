@@ -9,15 +9,22 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ReceiptingAgreementDialog } from "./receipting-agreement-modal";
+import { z } from "zod";
+
+// Zod schema for authorized contact fields
+const authContactSchema = z.object({
+  contact_title: z.string().min(1, "Title is required."),
+  contact_first_name: z.string().min(1, "First name is required."),
+  contact_last_name: z.string().min(1, "Last name is required."),
+  contact_phone: z
+    .string()
+    .min(1, "Phone number is required.")
+    .regex(/^\(\d{3}\) \d{3}-\d{4}$/, "Phone number must be in format (123) 456-7890."),
+  shaduicn: z.boolean().refine(val => val === true, "You must authorize to proceed."),
+});
 
 interface CharityAuthorizedContactInfoStepProps {
-  formData: {
-    contact_title: string;
-    contact_first_name: string;
-    contact_last_name: string;
-    contact_phone: string;
-    shaduicn: boolean;
-  };
+  formData: z.infer<typeof authContactSchema>;
   charityName: string;
   charityRegistrationNumber: string;
   charityAddress: string;
@@ -28,6 +35,7 @@ interface CharityAuthorizedContactInfoStepProps {
   onSubmit: () => void;
 }
 
+// Format phone as (123) 456-7890
 function formatPhoneNumber(value: string) {
   const phoneNumber = value.replace(/\D/g, "");
   if (phoneNumber.length <= 3) return phoneNumber;
@@ -50,15 +58,16 @@ export function CharityAuthorizedContactInfoStep({
   onPrevious,
   onSubmit,
 }: CharityAuthorizedContactInfoStepProps) {
+  const [localError, setLocalError] = useState<string | null>(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
-      const syntheticEvent = {
+      onChange({
+        ...e,
         target: { name, value: checked ? "true" : "", type, checked },
-      } as unknown as ChangeEvent<HTMLInputElement>;
-      onChange(syntheticEvent);
+      } as ChangeEvent<HTMLInputElement>);
       return;
     }
     if (name === "contact_phone") {
@@ -67,10 +76,19 @@ export function CharityAuthorizedContactInfoStep({
     onChange(e);
   };
 
+  const handleSubmit = () => {
+    setLocalError(null);
+    const result = authContactSchema.safeParse(formData);
+    if (!result.success) {
+      setLocalError(result.error.errors[0].message);
+      return;
+    }
+    onSubmit();
+  };
+
   return (
     <>
       <div className="space-y-6">
-        {/* Heading */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <UserCheckIcon className="text-green-500" />
@@ -84,7 +102,6 @@ export function CharityAuthorizedContactInfoStep({
           </p>
         </div>
 
-        {/* Contact Fields */}
         <div className="grid gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:max-w-[90px]">
@@ -95,7 +112,6 @@ export function CharityAuthorizedContactInfoStep({
                 value={formData.contact_title}
                 onChange={handleChange}
                 required
-                className="w-full"
               />
             </div>
             <div>
@@ -130,14 +146,9 @@ export function CharityAuthorizedContactInfoStep({
               onChange={handleChange}
               required
             />
-            {errorMessage ===
-              "This phone number is already in use by another charity." && (
-              <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-            )}
           </div>
         </div>
 
-        {/* Authorization Checkbox */}
         <div className="flex items-start gap-2 mt-4">
           <Checkbox
             id="shaduicn"
@@ -151,16 +162,13 @@ export function CharityAuthorizedContactInfoStep({
                   type: "checkbox",
                   checked,
                 },
-              } as unknown as ChangeEvent<HTMLInputElement>)
+              } as ChangeEvent<HTMLInputElement>)
             }
             required
           />
-          <label
-            htmlFor="shaduicn"
-            className="text-sm leading-normal mt-[-3px]"
-          >
+          <label htmlFor="shaduicn" className="text-sm leading-normal mt-[-3px]">
             I authorize digiDov to use my full name as a digital signature on
-            automated donation receipts and agree to{" "}
+            automated donation receipts and agree to{' '}
             <button
               type="button"
               onClick={() => setShowTermsModal(true)}
@@ -171,24 +179,22 @@ export function CharityAuthorizedContactInfoStep({
           </label>
         </div>
 
-        {errorMessage &&
-          errorMessage !==
-            "This phone number is already in use by another charity." && (
-            <p className="text-sm text-red-500 text-center">{errorMessage}</p>
-          )}
+        {(errorMessage || localError) && (
+          <p className="text-sm text-red-500 text-center">
+            {localError || errorMessage}
+          </p>
+        )}
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onPrevious}>
             Back
           </Button>
-          <Button type="button" onClick={onSubmit} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Next"}
+          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? 'Saving...' : 'Next'}
           </Button>
         </div>
       </div>
 
-      {/* Terms Modal */}
       <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
         <DialogContent className="sm:max-w-[425px]">
           <ReceiptingAgreementDialog

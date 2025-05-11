@@ -1,4 +1,3 @@
-// components/CharityOrganizationInfoStep.tsx
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
@@ -8,6 +7,20 @@ import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import googlePlacesStyles from "@/styles/google-place-styles";
 import { Building2Icon } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { z } from "zod";
+
+// Zod schema for form fields
+const orgInfoSchema = z.object({
+  charity_name: z.string().min(1, "Organization name is required."),
+  registration_number: z
+    .string()
+    .min(15, "Registration number must be 15 characters.")
+    .max(15, "Registration number must be 15 characters."),
+  contact_email: z
+    .string()
+    .email("Please enter a valid email address.")
+    .optional(),
+});
 
 interface CharityOrganizationInfoStepProps {
   formData: {
@@ -24,7 +37,6 @@ interface CharityOrganizationInfoStepProps {
   showEmailField: boolean;
 }
 
-// Define the OptionType for GooglePlacesAutocomplete option
 interface OptionType {
   label: string;
   value: google.maps.places.AutocompletePrediction;
@@ -40,6 +52,7 @@ export function CharityOrganizationInfoStep({
   showEmailField,
 }: CharityOrganizationInfoStepProps) {
   const [placeServiceReady, setPlaceServiceReady] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.google?.maps?.places) {
@@ -48,6 +61,21 @@ export function CharityOrganizationInfoStep({
   }, []);
 
   const handleNext = () => {
+    setLocalError(null);
+
+    // Validate schema
+    const parsed = orgInfoSchema.safeParse({
+      charity_name: formData.charity_name,
+      registration_number: formData.registration_number,
+      contact_email: showEmailField ? formData.contact_email : undefined,
+    });
+
+    if (!parsed.success) {
+      // Show the first validation error
+      setLocalError(parsed.error.errors[0].message);
+      return;
+    }
+
     onNext();
   };
 
@@ -57,8 +85,7 @@ export function CharityOrganizationInfoStep({
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ placeId: option.value.place_id }, (results, status) => {
       if (status === "OK" && results && results[0]) {
-        const fullAddress = results[0].formatted_address;
-        onAddressChange(fullAddress);
+        onAddressChange(results[0].formatted_address);
       }
     });
   };
@@ -138,8 +165,10 @@ export function CharityOrganizationInfoStep({
           </div>
         )}
 
-        {errorMessage && (
-          <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+        {(errorMessage || localError) && (
+          <p className="text-sm text-red-500 text-center">
+            {localError || errorMessage}
+          </p>
         )}
 
         <div className="flex justify-end">
