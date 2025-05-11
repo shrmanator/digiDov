@@ -1,4 +1,3 @@
-// components/AuthorizedContactInfoStep.tsx
 "use client";
 
 import { useState, ChangeEvent } from "react";
@@ -19,8 +18,13 @@ const authContactSchema = z.object({
   contact_phone: z
     .string()
     .min(1, "Phone number is required.")
-    .regex(/^\(\d{3}\) \d{3}-\d{4}$/, "Phone number must be in format (123) 456-7890."),
-  shaduicn: z.boolean().refine(val => val === true, "You must authorize to proceed."),
+    .regex(
+      /^\(\d{3}\) \d{3}-\d{4}$/,
+      "Phone number must be in format (123) 456-7890."
+    ),
+  shaduicn: z
+    .boolean()
+    .refine((val) => val === true, "You must authorize to proceed."),
 });
 
 interface CharityAuthorizedContactInfoStepProps {
@@ -166,9 +170,12 @@ export function CharityAuthorizedContactInfoStep({
             }
             required
           />
-          <label htmlFor="shaduicn" className="text-sm leading-normal mt-[-3px]">
+          <label
+            htmlFor="shaduicn"
+            className="text-sm leading-normal mt-[-3px]"
+          >
             I authorize digiDov to use my full name as a digital signature on
-            automated donation receipts and agree to{' '}
+            automated donation receipts and agree to{" "}
             <button
               type="button"
               onClick={() => setShowTermsModal(true)}
@@ -190,7 +197,7 @@ export function CharityAuthorizedContactInfoStep({
             Back
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Next'}
+            {isLoading ? "Saving..." : "Next"}
           </Button>
         </div>
       </div>

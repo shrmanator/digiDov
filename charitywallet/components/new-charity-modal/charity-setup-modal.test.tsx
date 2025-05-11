@@ -78,33 +78,14 @@ jest.mock("./tax-receipt-preference", () => ({
   ),
 }));
 
-// Mock contact-info step
+// Mock contact-info step (no email here anymore)
 jest.mock("./charity-authorized-contact-step", () => ({
   __esModule: true,
-  AuthorizedContactInfoStep: ({
+  CharityAuthorizedContactInfoStep: ({
     onSubmit,
     onChange,
-    showEmailField,
-    formData,
   }: React.ComponentProps<typeof OriginalAuthorizedContactInfoStep>) => (
-    <div
-      data-testid="contact-info-step"
-      data-show-email={String(showEmailField)}
-    >
-      {showEmailField && (
-        <>
-          <label htmlFor="contact-email-input">Contact Email</label>
-          <input
-            id="contact-email-input"
-            data-testid="contact-email-input"
-            name="contact_email"
-            value={formData.contact_email}
-            onChange={onChange}
-            placeholder="Enter contact email"
-            aria-label="Contact Email"
-          />
-        </>
-      )}
+    <div data-testid="contact-info-step">
       <button data-testid="contact-submit" onClick={onSubmit}>
         Submit
       </button>
@@ -164,9 +145,6 @@ const baseForm = {
 
 beforeEach(() => {
   (useRouter as jest.Mock).mockReturnValue({ refresh: mockRefresh });
-  (useProfiles as jest.Mock).mockReturnValue({
-    data: [{ details: { email: "profile@email.com" } }],
-  });
   jest.clearAllMocks();
 });
 
@@ -175,6 +153,9 @@ function setup(
   overrides: Partial<typeof baseForm> = {},
   defaultEmail = "profile@email.com"
 ) {
+  (useProfiles as jest.Mock).mockReturnValue({
+    data: defaultEmail ? [{ details: { email: defaultEmail } }] : [],
+  });
   (useCharitySetup as jest.Mock).mockReturnValue({
     step,
     form: { ...baseForm, ...overrides },
@@ -189,9 +170,6 @@ function setup(
     finish: mockFinish,
     back: mockBack,
   });
-  (useProfiles as jest.Mock).mockReturnValue({
-    data: defaultEmail ? [{ details: { email: defaultEmail } }] : [],
-  });
   render(<CharitySetupModal walletAddress="0x123" />);
 }
 
@@ -203,10 +181,12 @@ describe("CharitySetupModal integration", () => {
     expect(mockNextOrgInfo).toHaveBeenCalled();
   });
 
-  it("contact-info step shows email field when none provided", () => {
-    setup("authorizedContactInfo", {}, "");
+  it("contact-info step works without email", () => {
+    setup("authorizedContactInfo");
     expect(screen.getByTestId("contact-info-step")).toBeInTheDocument();
-    expect(screen.getByTestId("contact-email-input")).toBeInTheDocument();
+    expect(screen.queryByTestId("contact-email-input")).toBeNull();
+    fireEvent.click(screen.getByTestId("contact-submit"));
+    expect(mockSubmitContact).toHaveBeenCalled();
   });
 
   it("fee-agreement step works", () => {
@@ -225,6 +205,7 @@ describe("CharitySetupModal integration", () => {
 
 describe("ReceiptPreferenceStep loading state", () => {
   beforeEach(() => {
+    (useProfiles as jest.Mock).mockReturnValue({ data: [] });
     (useCharitySetup as jest.Mock).mockReturnValue({
       step: "receiptPreference",
       form: { ...baseForm },
