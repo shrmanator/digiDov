@@ -61,7 +61,7 @@ export default function Home() {
 
                 // 2. attach email to login payload
                 const enrichedParams = { ...params, context: { email } };
-                console.log("charityLogin enriched params:", enrichedParams);
+
                 // 3. call server action with enriched payload
                 await charityLogin(enrichedParams);
 
