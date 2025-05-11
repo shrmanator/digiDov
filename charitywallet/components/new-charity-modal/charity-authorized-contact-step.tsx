@@ -1,4 +1,3 @@
-// AuthorizedContactInfoStep.tsx
 "use client";
 
 import { useState, ChangeEvent } from "react";
@@ -151,6 +150,11 @@ export function AuthorizedContactInfoStep({
               onChange={handleChange}
               required
             />
+            {/* Inline phone-specific error */}
+            {errorMessage ===
+              "This phone number is already in use by another charity." && (
+              <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
+            )}
           </div>
         </div>
 
@@ -188,9 +192,12 @@ export function AuthorizedContactInfoStep({
           </label>
         </div>
 
-        {errorMessage && (
-          <p className="text-sm text-red-500 text-center">{errorMessage}</p>
-        )}
+        {/* General error if not phone-related */}
+        {errorMessage &&
+          errorMessage !==
+            "This phone number is already in use by another charity." && (
+            <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+          )}
 
         {/* Navigation Buttons */}
         <div className="flex justify-between">

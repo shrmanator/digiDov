@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedWallet } from "@/lib/jwtAuth";
 import { upsertCharity, CharityInput } from "@/app/actions/charities";
+import { Prisma } from "@prisma/client";
 
 export async function POST(request: Request) {
   try {
-    // 1) authenticate the user
     const wallet = await getAuthenticatedWallet();
-
-    // 2) parse + validate JSON
-    let data: Partial<Pick<CharityInput, "charity_sends_receipt">>;
+    let data: Partial<CharityInput>;
     try {
       data = await request.json();
     } catch {
@@ -25,15 +23,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3) Delegate to your server-action, marking the profile complete
-    const updated = await upsertCharity({
+    const input: CharityInput = {
+      ...data,
       wallet_address: wallet,
-      charity_sends_receipt: data.charity_sends_receipt,
       is_profile_complete: true,
-    });
+    } as CharityInput;
 
-    // 4) Return the full upsert result (including slug, etc.)
-    return NextResponse.json(updated);
+    try {
+      const updated = await upsertCharity(input);
+      if (!updated) {
+        return NextResponse.json({ error: "Upsert failed" }, { status: 500 });
+      }
+      return NextResponse.json({ charity: updated });
+    } catch (err: any) {
+      // Handle unique constraint on phone
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002" &&
+        Array.isArray(err.meta?.target) &&
+        (err.meta.target as string[]).includes("contact_mobile_phone")
+      ) {
+        return NextResponse.json(
+          { error: "This phone number is already in use by another charity." },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("POST /api/charity-dashboard/overview error:", message);

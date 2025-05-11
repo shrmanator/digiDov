@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { upsertCharity } from "@/app/actions/charities";
 
 export type Step =
   | "charityOrganizationInfo"
@@ -45,6 +44,18 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     }
   }, [defaultEmail]);
 
+  // Helper: call the unified API route
+  const upsertViaApi = async (body: Record<string, any>) => {
+    const res = await fetch("/api/charity-dashboard/overview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Server error");
+    return json.charity;
+  };
+
   // Step 1: Org Info → Receipt Preference
   const nextOrgInfo = () => {
     setError(null);
@@ -60,10 +71,9 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setError(null);
 
     if (form.charity_sends_receipt) {
-      // Persist all charity info via server action
       setIsLoading(true);
       try {
-        const updated = await upsertCharity({
+        const charity = await upsertViaApi({
           wallet_address: walletAddress,
           charity_name: form.charity_name,
           registered_address: form.registered_address,
@@ -71,15 +81,14 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
           charity_sends_receipt: form.charity_sends_receipt,
           is_profile_complete: true,
         });
-        setCharitySlug(updated.slug || "");
+        setCharitySlug(charity.slug || "");
         setStep("feeAgreement");
-      } catch {
-        setError("Error saving profile. Please try again.");
+      } catch (e: any) {
+        setError(e.message);
       } finally {
         setIsLoading(false);
       }
     } else {
-      // digiDov sends receipts: collect contact info next
       setStep("authorizedContactInfo");
     }
   };
@@ -89,7 +98,7 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const updated = await upsertCharity({
+      const charity = await upsertViaApi({
         wallet_address: walletAddress,
         charity_name: form.charity_name,
         registered_address: form.registered_address,
@@ -102,10 +111,10 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
         charity_sends_receipt: form.charity_sends_receipt,
         is_profile_complete: true,
       });
-      setCharitySlug(updated.slug || "");
+      setCharitySlug(charity.slug || "");
       setStep("feeAgreement");
-    } catch {
-      setError("Error saving contact info. Please try again.");
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setIsLoading(false);
     }
