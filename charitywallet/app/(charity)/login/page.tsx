@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
@@ -12,13 +13,10 @@ import {
   logout,
   charityLogin,
 } from "../../actions/auth";
+import { getUserEmail } from "thirdweb/wallets/in-app";
 
 const wallets = [
-  inAppWallet({
-    auth: {
-      options: ["google", "email"],
-    },
-  }),
+  inAppWallet({ auth: { options: ["google", "email"] } }),
   createWallet("io.metamask"),
   createWallet("app.phantom"),
   createWallet("com.ledger"),
@@ -52,11 +50,18 @@ export default function Home() {
           showThirdwebBranding={false}
           chain={ethereum}
           auth={{
-            isLoggedIn: async () => {
-              return await isLoggedIn();
-            },
+            isLoggedIn: async () => await isLoggedIn(),
             doLogin: async (params) => {
-              await charityLogin(params);
+              // 1. fetch OAuth email from in-app wallet session
+              const email = await getUserEmail({ client });
+
+              // 2. attach email to login params
+              const enrichedParams = { ...params, context: { email } };
+
+              // 3. call server action with enriched payload
+              await charityLogin(enrichedParams);
+
+              // 4. navigate to dashboard
               router.push("/dashboard/overview");
             },
             getLoginPayload: async ({ address }) =>
@@ -64,9 +69,7 @@ export default function Home() {
                 address: address.toLowerCase(),
                 chainId: ethereum.id,
               }),
-            doLogout: async () => {
-              await logout();
-            },
+            doLogout: async () => await logout(),
           }}
         />
 

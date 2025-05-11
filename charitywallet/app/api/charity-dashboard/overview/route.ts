@@ -1,4 +1,3 @@
-// app/api/charity-dashboard/overview/route.ts
 import { NextResponse } from "next/server";
 import { getAuthenticatedWallet } from "@/lib/jwtAuth";
 import { upsertCharity, CharityInput } from "@/app/actions/charities";

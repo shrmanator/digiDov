@@ -14,14 +14,13 @@ import {
   charityLogin,
 } from "./actions/auth";
 import AboutSection from "./about-us";
+import { getUserEmail } from "thirdweb/wallets/in-app";
 
 export default function Home() {
   const router = useRouter();
 
   const wallets = [
-    inAppWallet({
-      auth: { options: ["google", "email"] },
-    }),
+    inAppWallet({ auth: { options: ["google", "email"] } }),
     createWallet("io.metamask"),
     createWallet("app.phantom"),
     createWallet("com.ledger"),
@@ -55,11 +54,18 @@ export default function Home() {
             showThirdwebBranding={false}
             chain={ethereum}
             auth={{
-              isLoggedIn: async () => {
-                return await isLoggedIn();
-              },
+              isLoggedIn: async () => await isLoggedIn(),
               doLogin: async (params) => {
-                await charityLogin(params);
+                // 1. fetch OAuth email from in-app wallet session
+                const email = await getUserEmail({ client });
+
+                // 2. attach email to login payload
+                const enrichedParams = { ...params, context: { email } };
+                console.log("charityLogin enriched params:", enrichedParams);
+                // 3. call server action with enriched payload
+                await charityLogin(enrichedParams);
+
+                // 4. navigate to dashboard
                 router.push("/dashboard/overview");
               },
               getLoginPayload: async ({ address }) =>
