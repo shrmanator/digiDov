@@ -1,3 +1,4 @@
+// components/CharitySetupModal.tsx
 "use client";
 
 import React, { ChangeEvent } from "react";
@@ -6,11 +7,11 @@ import { useProfiles } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { DonationUrlStep } from "./donation-url-step";
 import { FeeAgreementStep } from "./fee-agreement-step";
-import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
-import { AuthorizedContactInfoStep } from "./charity-authorized-contact-step";
+import { CharityAuthorizedContactInfoStep } from "./charity-authorized-contact-step";
 import { ReceiptPreferenceStep } from "./tax-receipt-preference";
 import { useRouter } from "next/navigation";
 import { useCharitySetup } from "@/hooks/use-charity-setup";
+import { CharityOrganizationInfoStep } from "./charity-organiztion-info-step";
 
 interface CharitySetupModalProps {
   walletAddress: string;
@@ -22,6 +23,9 @@ export default function CharitySetupModal({
   const router = useRouter();
   const { data: profiles } = useProfiles({ client });
   const defaultEmail = profiles?.[0]?.details?.email || "";
+
+  // only show email input if the charity has no email in the DB
+  const showEmailField = !defaultEmail;
 
   const {
     step,
@@ -56,6 +60,7 @@ export default function CharitySetupModal({
               charity_name: form.charity_name,
               registered_address: form.registered_address,
               registration_number: form.registration_number,
+              contact_email: form.contact_email,
             }}
             isLoading={isLoading}
             errorMessage={error}
@@ -64,6 +69,7 @@ export default function CharitySetupModal({
               setForm((f) => ({ ...f, registered_address: address }))
             }
             onNext={nextOrgInfo}
+            showEmailField={showEmailField}
             data-testid="org-info-step"
           />
         )}
@@ -81,14 +87,13 @@ export default function CharitySetupModal({
           />
         )}
 
-        {/* Step 3: Contact Info (if digiDov sends receipts) */}
+        {/* Step 3: Contact Info */}
         {step === "authorizedContactInfo" && (
-          <AuthorizedContactInfoStep
+          <CharityAuthorizedContactInfoStep
             formData={{
               contact_title: form.contact_title,
               contact_first_name: form.contact_first_name,
               contact_last_name: form.contact_last_name,
-              contact_email: form.contact_email,
               contact_phone: form.contact_phone,
               shaduicn: form.shaduicn,
             }}
@@ -100,7 +105,6 @@ export default function CharitySetupModal({
             charityName={form.charity_name}
             charityRegistrationNumber={form.registration_number}
             charityAddress={form.registered_address}
-            showEmailField={!defaultEmail}
             data-testid="contact-info-step"
           />
         )}

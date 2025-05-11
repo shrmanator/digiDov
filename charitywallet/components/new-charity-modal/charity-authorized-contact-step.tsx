@@ -1,3 +1,4 @@
+// components/AuthorizedContactInfoStep.tsx
 "use client";
 
 import { useState, ChangeEvent } from "react";
@@ -9,12 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ReceiptingAgreementDialog } from "./receipting-agreement-modal";
 
-interface AuthorizedContactInfoStepProps {
+interface CharityAuthorizedContactInfoStepProps {
   formData: {
     contact_title: string;
     contact_first_name: string;
     contact_last_name: string;
-    contact_email: string;
     contact_phone: string;
     shaduicn: boolean;
   };
@@ -26,7 +26,6 @@ interface AuthorizedContactInfoStepProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onPrevious: () => void;
   onSubmit: () => void;
-  showEmailField: boolean;
 }
 
 function formatPhoneNumber(value: string) {
@@ -40,7 +39,7 @@ function formatPhoneNumber(value: string) {
   )}-${phoneNumber.slice(6, 10)}`;
 }
 
-export function AuthorizedContactInfoStep({
+export function CharityAuthorizedContactInfoStep({
   formData,
   charityName,
   charityRegistrationNumber,
@@ -50,8 +49,7 @@ export function AuthorizedContactInfoStep({
   onChange,
   onPrevious,
   onSubmit,
-  showEmailField,
-}: AuthorizedContactInfoStepProps) {
+}: CharityAuthorizedContactInfoStepProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +70,7 @@ export function AuthorizedContactInfoStep({
   return (
     <>
       <div className="space-y-6">
-        {/* Heading and Description */}
+        {/* Heading */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <UserCheckIcon className="text-green-500" />
@@ -88,7 +86,6 @@ export function AuthorizedContactInfoStep({
 
         {/* Contact Fields */}
         <div className="grid gap-4">
-          {/* Row 1: Title + First + Last */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:max-w-[90px]">
               <Label htmlFor="contact_title">Title</Label>
@@ -123,23 +120,6 @@ export function AuthorizedContactInfoStep({
             </div>
           </div>
 
-          {/* Conditionally render the Email input */}
-          {showEmailField && (
-            <div>
-              <Label htmlFor="contact_email">Email</Label>
-              <Input
-                id="contact_email"
-                name="contact_email"
-                type="email"
-                placeholder="Enter your email address"
-                value={formData.contact_email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          )}
-
-          {/* Row 2: Phone */}
           <div>
             <Label htmlFor="contact_phone">Phone Number</Label>
             <Input
@@ -150,7 +130,6 @@ export function AuthorizedContactInfoStep({
               onChange={handleChange}
               required
             />
-            {/* Inline phone-specific error */}
             {errorMessage ===
               "This phone number is already in use by another charity." && (
               <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
@@ -158,7 +137,7 @@ export function AuthorizedContactInfoStep({
           </div>
         </div>
 
-        {/* Authorization & Agreement */}
+        {/* Authorization Checkbox */}
         <div className="flex items-start gap-2 mt-4">
           <Checkbox
             id="shaduicn"
@@ -192,7 +171,6 @@ export function AuthorizedContactInfoStep({
           </label>
         </div>
 
-        {/* General error if not phone-related */}
         {errorMessage &&
           errorMessage !==
             "This phone number is already in use by another charity." && (
@@ -210,7 +188,7 @@ export function AuthorizedContactInfoStep({
         </div>
       </div>
 
-      {/* Terms and Services Modal */}
+      {/* Terms Modal */}
       <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
         <DialogContent className="sm:max-w-[425px]">
           <ReceiptingAgreementDialog

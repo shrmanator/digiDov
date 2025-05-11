@@ -1,3 +1,4 @@
+// components/CharityOrganizationInfoStep.tsx
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
@@ -13,12 +14,14 @@ interface CharityOrganizationInfoStepProps {
     charity_name: string;
     registered_address: string;
     registration_number: string;
+    contact_email: string;
   };
   isLoading: boolean;
   errorMessage: string | null;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddressChange: (address: string) => void;
   onNext: () => void;
+  showEmailField: boolean;
 }
 
 // Define the OptionType for GooglePlacesAutocomplete option
@@ -34,6 +37,7 @@ export function CharityOrganizationInfoStep({
   onChange,
   onAddressChange,
   onNext,
+  showEmailField,
 }: CharityOrganizationInfoStepProps) {
   const [placeServiceReady, setPlaceServiceReady] = useState(false);
 
@@ -118,6 +122,21 @@ export function CharityOrganizationInfoStep({
             minLength={15}
           />
         </div>
+
+        {showEmailField && (
+          <div>
+            <Label htmlFor="contact_email">Email</Label>
+            <Input
+              id="contact_email"
+              name="contact_email"
+              type="email"
+              placeholder="Enter your email address"
+              value={formData.contact_email}
+              onChange={onChange}
+              required
+            />
+          </div>
+        )}
 
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>

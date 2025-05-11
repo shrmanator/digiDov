@@ -1,3 +1,4 @@
+// hooks/use-charity-setup.ts
 import { useState, useEffect } from "react";
 
 export type Step =
@@ -56,7 +57,7 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     return json.charity;
   };
 
-  // Step 1: Org Info → Receipt Preference
+  // Step 1 → Receipt Preference
   const nextOrgInfo = () => {
     setError(null);
     if (form.registration_number.trim().length < 9) {
@@ -66,21 +67,26 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     setStep("receiptPreference");
   };
 
-  // Step 2: Receipt Preference → Fee Agreement or Authorized Contact Info
+  // Step 2 → Fee Agreement or Contact Info
   const nextReceiptPref = async () => {
     setError(null);
 
     if (form.charity_sends_receipt) {
       setIsLoading(true);
       try {
-        const charity = await upsertViaApi({
+        // build payload for upsert; always include contact_email if present
+        const payload: Record<string, any> = {
           wallet_address: walletAddress,
           charity_name: form.charity_name,
           registered_address: form.registered_address,
           registration_number: form.registration_number,
           charity_sends_receipt: form.charity_sends_receipt,
           is_profile_complete: true,
-        });
+        };
+        if (form.contact_email) {
+          payload.contact_email = form.contact_email;
+        }
+        const charity = await upsertViaApi(payload);
         setCharitySlug(charity.slug || "");
         setStep("feeAgreement");
       } catch (e: any) {
@@ -93,7 +99,7 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     }
   };
 
-  // Step 3: Save contact info → Fee Agreement
+  // Step 3 → Fee Agreement
   const submitAuthorizedContact = async () => {
     setIsLoading(true);
     setError(null);
@@ -120,13 +126,11 @@ export function useCharitySetup(walletAddress: string, defaultEmail?: string) {
     }
   };
 
-  // Step 4: Fee Agreement → Donation URL
+  // Step 4 → Donation URL
   const agreeFee = () => setStep("donationUrl");
-
-  // Finalize (no-op, just close modal)
   const finish = () => {};
 
-  // Back navigation
+  // Back nav
   const back = () => {
     switch (step) {
       case "receiptPreference":
