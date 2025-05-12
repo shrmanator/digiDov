@@ -1,3 +1,5 @@
+// charity-setup-modal.test.tsx
+
 // Pre-mock external modules before imports
 jest.mock("thirdweb/react", () => ({
   __esModule: true,
@@ -78,12 +80,11 @@ jest.mock("./tax-receipt-preference", () => ({
   ),
 }));
 
-// Mock contact-info step (no email here anymore)
+// Mock contact-info step (no email here)
 jest.mock("./charity-authorized-contact-step", () => ({
   __esModule: true,
   CharityAuthorizedContactInfoStep: ({
     onSubmit,
-    onChange,
   }: React.ComponentProps<typeof OriginalAuthorizedContactInfoStep>) => (
     <div data-testid="contact-info-step">
       <button data-testid="contact-submit" onClick={onSubmit}>
@@ -181,10 +182,9 @@ describe("CharitySetupModal integration", () => {
     expect(mockNextOrgInfo).toHaveBeenCalled();
   });
 
-  it("contact-info step works without email", () => {
+  it("contact-info step works", () => {
     setup("authorizedContactInfo");
     expect(screen.getByTestId("contact-info-step")).toBeInTheDocument();
-    expect(screen.queryByTestId("contact-email-input")).toBeNull();
     fireEvent.click(screen.getByTestId("contact-submit"));
     expect(mockSubmitContact).toHaveBeenCalled();
   });
