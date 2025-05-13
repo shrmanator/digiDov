@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useActiveAccount, PayEmbed, getDefaultToken } from "thirdweb/react";
 import { useAuth } from "@/contexts/auth-context";
-import { useSendWithFee } from "@/hooks/use-send-with-fee";
+import { useDonate } from "@/hooks/use-donate";
 import { POLYGON_USDC_ADDRESS } from "@/constants/blockchain";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "../new-donor-modal/new-donor-modal";
@@ -55,7 +55,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const account = useActiveAccount();
   const wallet = account?.address || "";
 
-  // Profile modal visibility
   const [showProfileModal, setShowProfileModal] = useState(
     donor ? !donor.is_profile_complete : false
   );
@@ -63,81 +62,61 @@ export default function DonationForm({ charity }: DonationFormProps) {
     if (donor) setShowProfileModal(!donor.is_profile_complete);
   }, [donor]);
 
-  // Fund wallet embed visibility
-  const [showFundEmbed, setShowFundEmbed] = useState(false);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowFundEmbed(false);
-    };
-    if (showFundEmbed) {
-      window.addEventListener("keydown", onKey);
-    }
-    return () => window.removeEventListener("keydown", onKey);
-  }, [showFundEmbed]);
-
+  const balance = useUSDCBalance(wallet);
   const [preset, setPreset] = useState<number | null>(null);
   const [custom, setCustom] = useState<string>("");
-  const [coverFee] = useState(true);
+  const [showFundEmbed, setShowFundEmbed] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const balance = useUSDCBalance(wallet);
   const amount = custom ? parseFloat(custom) || 0 : preset || 0;
-  const fee = coverFee
-    ? (amount * FEE_RATE) / (1 - FEE_RATE)
-    : amount * FEE_RATE;
+  const fee = (amount * FEE_RATE) / (1 - FEE_RATE);
   const total = amount + fee;
-  const charityGets = coverFee ? amount : amount - fee;
+  const charityGets = amount;
 
-  const { onClick, status } = useSendWithFee(
+  const { onDonate, isSending, didSucceed, error } = useDonate(
     BigInt(Math.floor(total * 1_000_000)),
     charity.wallet_address
   );
-  const loading = status === "approving" || status === "donating";
+
+  const loading = isSending;
   const isDisabled = amount <= 0 || loading;
+
   const label = loading
-    ? status === "approving"
-      ? "Approving…"
-      : "Sending…"
+    ? "Sending…"
     : showSuccess
     ? "Sent!"
     : `Donate ${total.toFixed(2)} USDC`;
 
   useEffect(() => {
-    if (status === "success") {
+    if (didSucceed) {
       setShowSuccess(true);
-      const t = setTimeout(() => {
-        setShowSuccess(false);
-        setPreset(null);
-        setCustom("");
-      }, 5000);
+      const t = setTimeout(() => setShowSuccess(false), 5000);
       return () => clearTimeout(t);
     }
-  }, [status]);
+  }, [didSucceed]);
 
+  // only trigger PayEmbed portal if wallet connected; otherwise directly donate
   const handleDonate = () => {
+    if (!account) {
+      onDonate();
+      return;
+    }
     if (total > balance) {
       setShowFundEmbed(true);
     } else {
-      onClick();
+      onDonate();
     }
   };
 
-  // Fund Embed portal
-  const embed = showFundEmbed ? (
+  const embedPortal = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={() => setShowFundEmbed(false)}
     >
       <div
-        className="relative bg-background p-6 rounded-2xl shadow-lg"
+        className="bg-background rounded-2xl shadow-lg p-6 max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2"
-          onClick={() => setShowFundEmbed(false)}
-        />
         <PayEmbed
           client={client}
           payOptions={{
@@ -153,22 +132,21 @@ export default function DonationForm({ charity }: DonationFormProps) {
         />
       </div>
     </div>
-  ) : null;
+  );
+
+  if (showFundEmbed && typeof document !== "undefined") {
+    return ReactDOM.createPortal(embedPortal, document.body);
+  }
 
   return (
     <>
-      {embed && typeof document !== "undefined"
-        ? ReactDOM.createPortal(embed, document.body)
-        : embed}
-
       {showProfileModal && (
         <DonorProfileModal
-          open={showProfileModal}
+          open
           onClose={() => setShowProfileModal(false)}
           walletAddress={wallet}
         />
       )}
-
       <Card className="w-full max-w-xl mx-auto">
         <CardHeader className="text-center">
           <CardTitle>Donate to {charity.charity_name}</CardTitle>
@@ -191,7 +169,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
               </Button>
             ))}
           </div>
-
           <div className="mb-4">
             <USDCAmountInput
               value={custom}
@@ -208,7 +185,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
               </p>
             )}
           </div>
-
           {amount > 0 && total <= balance && (
             <div className="space-y-2 p-4 border border-border rounded-md bg-background mb-4">
               <div className="flex justify-between">
@@ -230,7 +206,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
               </div>
             </div>
           )}
-
+          {error && <p className="text-destructive mb-2">{error.message}</p>}
           <Button
             size="lg"
             onClick={handleDonate}
