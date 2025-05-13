@@ -11,10 +11,13 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, PayEmbed, getDefaultToken } from "thirdweb/react";
 import { useAuth } from "@/contexts/auth-context";
 import { useSendWithFee } from "@/hooks/use-send-with-fee";
-import { POLYGON_ERC20_ADDRESS } from "@/constants/blockchain";
+import {
+  POLYGON_USDC_ADDRESS,
+  CUSTOM_CONTRACT_ADDRESS,
+} from "@/constants/blockchain";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "../new-donor-modal/new-donor-modal";
 import { CheckCircle, Loader2 } from "lucide-react";
@@ -33,7 +36,7 @@ function useUSDCBalance(address?: string) {
       try {
         const contract = getContract({
           client,
-          address: POLYGON_ERC20_ADDRESS,
+          address: POLYGON_USDC_ADDRESS,
           chain: polygon,
         });
         const result = await getBalance({ contract, address });
@@ -123,7 +126,13 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   setPreset(n);
                   setCustom("");
                 }}
-                disabled={n > balance}
+                disabled={
+                  n +
+                    (coverFee
+                      ? (n * FEE_RATE) / (1 - FEE_RATE)
+                      : n * FEE_RATE) >
+                  balance
+                }
                 className="w-full"
               >
                 {n} USDC
@@ -142,16 +151,30 @@ export default function DonationForm({ charity }: DonationFormProps) {
               className="w-full"
               placeholder={`Custom (max ${balance.toFixed(2)} USDC)`}
             />
-            {amount > balance && (
-              <p className="text-destructive mt-1">
-                Exceeds available balance.
-              </p>
+            {total > balance && (
+              <>
+                <p className="text-destructive mt-1">
+                  Exceeds available balance.
+                </p>
+                <PayEmbed
+                  client={client}
+                  theme="light"
+                  payOptions={{
+                    mode: "fund_wallet",
+                    metadata: { name: "Fund your wallet with USDC" },
+                    prefillBuy: {
+                      chain: polygon,
+                      amount: amount.toString(),
+                    },
+                  }}
+                />
+              </>
             )}
           </div>
 
           {/* Summary always if amount > 0 */}
           {amount > 0 && (
-            <div className="space-y-2 p-4 border rounded-md bg-background mb-4">
+            <div className="space-y-2 p-4 border border-border rounded-md bg-background mb-4">
               <div className="flex justify-between">
                 <span>Amount:</span>
                 <span>{amount.toFixed(2)} USDC</span>

@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { client } from "@/lib/thirdwebClient";
 import { polygon } from "thirdweb/chains";
 import {
-  POLYGON_ERC20_ADDRESS,
+  POLYGON_USDC_ADDRESS,
   CUSTOM_CONTRACT_ADDRESS,
 } from "@/constants/blockchain";
 
@@ -25,7 +25,7 @@ export function useSendWithFee(
       setStatus("approving");
       const usdc = getContract({
         client,
-        address: POLYGON_ERC20_ADDRESS,
+        address: POLYGON_USDC_ADDRESS,
         chain: polygon,
       });
       const approveCall = prepareContractCall({
@@ -49,7 +49,7 @@ export function useSendWithFee(
       const donateCall = prepareContractCall({
         contract: custom,
         method: "function sendWithFeeToken(uint256,address,address)",
-        params: [donationValue, recipientAddress, POLYGON_ERC20_ADDRESS],
+        params: [donationValue, recipientAddress, POLYGON_USDC_ADDRESS],
       });
       const { transactionHash: dh } = await sendTx(donateCall);
       await waitForReceipt({ client, chain: polygon, transactionHash: dh });
