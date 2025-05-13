@@ -2,32 +2,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useActiveAccount, PayEmbed, getDefaultToken } from "thirdweb/react";
 import { useAuth } from "@/contexts/auth-context";
 import { useSendWithFee } from "@/hooks/use-send-with-fee";
-import {
-  POLYGON_USDC_ADDRESS,
-  CUSTOM_CONTRACT_ADDRESS,
-} from "@/constants/blockchain";
+import { POLYGON_USDC_ADDRESS } from "@/constants/blockchain";
 import { charity } from "@prisma/client";
 import DonorProfileModal from "../new-donor-modal/new-donor-modal";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { USDCAmountInput } from "./usdc-amount-input";
 import { getContract } from "thirdweb";
 import { getBalance } from "thirdweb/extensions/erc20";
 import { client } from "@/lib/thirdwebClient";
 import { polygon } from "thirdweb/chains";
 
-// Hook: fetch USDC on-chain balance
 function useUSDCBalance(address?: string) {
   const [balance, setBalance] = useState<number>(0);
   useEffect(() => {
@@ -60,16 +56,13 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const account = useActiveAccount();
   const wallet = account?.address || "";
 
-  // Form state
   const [preset, setPreset] = useState<number | null>(null);
   const [custom, setCustom] = useState<string>("");
-  const [coverFee, setCoverFee] = useState(true);
+  const [coverFee] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showFundEmbed, setShowFundEmbed] = useState(false);
 
-  // On-chain balance
   const balance = useUSDCBalance(wallet);
-
-  // Compute amounts
   const amount = custom ? parseFloat(custom) || 0 : preset || 0;
   const fee = coverFee
     ? (amount * FEE_RATE) / (1 - FEE_RATE)
@@ -77,7 +70,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const total = amount + fee;
   const charityGets = coverFee ? amount : amount - fee;
 
-  // Transaction logic
   const { onClick, status } = useSendWithFee(
     BigInt(Math.floor(total * 1_000_000)),
     charity.wallet_address
@@ -92,7 +84,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
     ? "Sent!"
     : `Donate ${total.toFixed(2)} USDC`;
 
-  // Reset on success
   useEffect(() => {
     if (status === "success") {
       setShowSuccess(true);
@@ -105,18 +96,60 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [status]);
 
+  const handleDonate = () => {
+    if (total > balance) {
+      setShowFundEmbed(true);
+    } else {
+      onClick();
+    }
+  };
+
+  // Render PayEmbed at the top, using a portal for modal overlay
+  // Full-screen overlay modal for PayEmbed
+  // Full-screen overlay modal for PayEmbed with close icon
+  const embed = showFundEmbed ? (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="relative bg-background p-6 rounded-2xl shadow-lg">
+        {/* Close icon top-right */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2"
+          onClick={() => setShowFundEmbed(false)}
+        ></Button>
+        <PayEmbed
+          client={client}
+          payOptions={{
+            mode: "fund_wallet",
+            buyWithCrypto: false,
+            prefillBuy: {
+              chain: polygon,
+              amount: total.toString(),
+              token: getDefaultToken(polygon, "USDC"),
+            },
+            metadata: { name: "Fund your wallet with USDC" },
+          }}
+        />
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
+      {embed && typeof document !== "undefined"
+        ? ReactDOM.createPortal(embed, document.body)
+        : embed}
+
       {donor && !donor.is_profile_complete && (
         <DonorProfileModal open onClose={() => {}} walletAddress={wallet} />
       )}
+
       <Card className="w-full max-w-xl mx-auto">
         <CardHeader className="text-center">
           <CardTitle>Donate to {charity.charity_name}</CardTitle>
           <CardDescription>Pick or enter an amount</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Preset amounts */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {PRESET_AMOUNTS.map((n) => (
               <Button
@@ -126,13 +159,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
                   setPreset(n);
                   setCustom("");
                 }}
-                disabled={
-                  n +
-                    (coverFee
-                      ? (n * FEE_RATE) / (1 - FEE_RATE)
-                      : n * FEE_RATE) >
-                  balance
-                }
+                disabled={n + fee > balance}
                 className="w-full"
               >
                 {n} USDC
@@ -140,7 +167,6 @@ export default function DonationForm({ charity }: DonationFormProps) {
             ))}
           </div>
 
-          {/* Custom input */}
           <div className="mb-4">
             <USDCAmountInput
               value={custom}
@@ -152,28 +178,13 @@ export default function DonationForm({ charity }: DonationFormProps) {
               placeholder={`Custom (max ${balance.toFixed(2)} USDC)`}
             />
             {total > balance && (
-              <>
-                <p className="text-destructive mt-1">
-                  Exceeds available balance.
-                </p>
-                <PayEmbed
-                  client={client}
-                  theme="light"
-                  payOptions={{
-                    mode: "fund_wallet",
-                    metadata: { name: "Fund your wallet with USDC" },
-                    prefillBuy: {
-                      chain: polygon,
-                      amount: amount.toString(),
-                    },
-                  }}
-                />
-              </>
+              <p className="text-destructive mt-1">
+                Exceeds available balance.
+              </p>
             )}
           </div>
 
-          {/* Summary always if amount > 0 */}
-          {amount > 0 && (
+          {amount > 0 && total <= balance && (
             <div className="space-y-2 p-4 border border-border rounded-md bg-background mb-4">
               <div className="flex justify-between">
                 <span>Amount:</span>
@@ -197,7 +208,7 @@ export default function DonationForm({ charity }: DonationFormProps) {
 
           <Button
             size="lg"
-            onClick={onClick}
+            onClick={handleDonate}
             disabled={isDisabled}
             className="w-full"
           >
