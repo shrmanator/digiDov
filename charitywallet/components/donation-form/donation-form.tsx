@@ -1,4 +1,3 @@
-// donation-form-with-approval.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -56,11 +55,30 @@ export default function DonationForm({ charity }: DonationFormProps) {
   const account = useActiveAccount();
   const wallet = account?.address || "";
 
+  // Profile modal visibility
+  const [showProfileModal, setShowProfileModal] = useState(
+    donor ? !donor.is_profile_complete : false
+  );
+  useEffect(() => {
+    if (donor) setShowProfileModal(!donor.is_profile_complete);
+  }, [donor]);
+
+  // Fund wallet embed visibility
+  const [showFundEmbed, setShowFundEmbed] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowFundEmbed(false);
+    };
+    if (showFundEmbed) {
+      window.addEventListener("keydown", onKey);
+    }
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showFundEmbed]);
+
   const [preset, setPreset] = useState<number | null>(null);
   const [custom, setCustom] = useState<string>("");
   const [coverFee] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showFundEmbed, setShowFundEmbed] = useState(false);
 
   const balance = useUSDCBalance(wallet);
   const amount = custom ? parseFloat(custom) || 0 : preset || 0;
@@ -104,19 +122,22 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   };
 
-  // Render PayEmbed at the top, using a portal for modal overlay
-  // Full-screen overlay modal for PayEmbed
-  // Full-screen overlay modal for PayEmbed with close icon
+  // Fund Embed portal
   const embed = showFundEmbed ? (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative bg-background p-6 rounded-2xl shadow-lg">
-        {/* Close icon top-right */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={() => setShowFundEmbed(false)}
+    >
+      <div
+        className="relative bg-background p-6 rounded-2xl shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
         <Button
           variant="ghost"
           size="icon"
           className="absolute top-2 right-2"
           onClick={() => setShowFundEmbed(false)}
-        ></Button>
+        />
         <PayEmbed
           client={client}
           payOptions={{
@@ -140,8 +161,12 @@ export default function DonationForm({ charity }: DonationFormProps) {
         ? ReactDOM.createPortal(embed, document.body)
         : embed}
 
-      {donor && !donor.is_profile_complete && (
-        <DonorProfileModal open onClose={() => {}} walletAddress={wallet} />
+      {showProfileModal && (
+        <DonorProfileModal
+          open={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          walletAddress={wallet}
+        />
       )}
 
       <Card className="w-full max-w-xl mx-auto">
