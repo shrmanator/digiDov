@@ -22,6 +22,7 @@ import { getContract } from "thirdweb";
 import { getBalance } from "thirdweb/extensions/erc20";
 import { client } from "@/lib/thirdwebClient";
 import { polygon } from "thirdweb/chains";
+import { useLogin } from "@/hooks/use-thirdweb-headless-login";
 
 function useUSDCBalance(address?: string) {
   const [balance, setBalance] = useState<number>(0);
@@ -95,16 +96,18 @@ export default function DonationForm({ charity }: DonationFormProps) {
     }
   }, [didSucceed]);
 
-  // only trigger PayEmbed portal if wallet connected; otherwise directly donate
-  const handleDonate = () => {
+  // only trigger PayEmbed portal if wallet connected; otherwise prompt login or donate
+  const { login } = useLogin();
+  const handleDonate = async () => {
     if (!account) {
-      onDonate();
+      // prompt wallet connect
+      await login();
       return;
     }
     if (total > balance) {
       setShowFundEmbed(true);
     } else {
-      onDonate();
+      await onDonate();
     }
   };
 
