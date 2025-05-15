@@ -280,7 +280,7 @@ export async function generateDonationReceiptPDF(
 
   if (signerTitle && signerFirstName && signerLastName) {
     const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}, ${signerTitle}`;
-    const dateText = `Date: ${formatDateTime(donationDate)}`;
+    const dateText = `Date: ${formatDateTime(issueDate)}`;
 
     y -= 5; // Small space below the line
 
