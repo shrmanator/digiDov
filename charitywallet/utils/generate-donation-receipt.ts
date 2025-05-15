@@ -7,8 +7,8 @@ interface ReceiptData extends donation_receipt {
   donor?: donor | null;
   wallet_address?: string;
   issued_by?: string;
-  contact_first_name?: string; // Added for digital signature
-  contact_last_name?: string; // Added for digital signature
+  contact_first_name?: string;
+  contact_last_name?: string;
 }
 
 /**
@@ -23,7 +23,6 @@ export async function generateDonationReceiptPDF(
   // Extract and prepare data with fallbacks
   const charityName = receipt.charity?.charity_name || "N/A";
   const registrationNumber = receipt.charity?.registration_number || "N/A";
-  // const ein = receipt.charity?.ein || "N/A";
   const charityAddress = receipt.charity?.registered_office_address || "N/A";
   const charityEmail = receipt.charity?.contact_email || "N/A";
   const charityPhone = receipt.charity?.contact_mobile_phone || "N/A";
@@ -53,12 +52,16 @@ export async function generateDonationReceiptPDF(
   const signerFirstName = receipt.charity?.contact_first_name;
   const signerLastName = receipt.charity?.contact_last_name;
 
-  // Date formatting helper
-  const formatDate = (date: Date) =>
-    date.toLocaleDateString("en-US", {
+  // Date and time formatting helper
+  const formatDateTime = (date: Date) =>
+    date.toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
     });
 
   // Create PDF document
@@ -207,8 +210,7 @@ export async function generateDonationReceiptPDF(
 
   drawField("Name", donorName);
   drawField("Address", donorAddress);
-  drawField("Date Donation Received", formatDate(donationDate));
-  drawField("Date Tax Receipt Issued", formatDate(issueDate));
+  drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
 
   y -= lineHeight.small;
 
@@ -219,11 +221,15 @@ export async function generateDonationReceiptPDF(
     color: colors.accent,
   });
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
+  drawField("Date and Time of Donation", formatDateTime(donationDate));
   drawField(
     "Amount Donated for Tax Purposes",
     `${cryptoAmount} ${blockchainInfo.symbol}`
   );
-  drawField("Fair Market Value At Time of Donation", `$${fiatAmount.toFixed(2)} CAD`);
+  drawField(
+    "Fair Market Value At Time of Donation",
+    `$${fiatAmount.toFixed(2)} CAD`
+  );
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
@@ -271,14 +277,12 @@ export async function generateDonationReceiptPDF(
   // Add digital signature
   y -= lineHeight.normal;
 
-  // Add digital signature text
   if (signerTitle && signerFirstName && signerLastName) {
     const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}, ${signerTitle}`;
-    const dateText = `Date: ${donationDate}`;
+    const dateText = `Date: ${formatDateTime(donationDate)}`;
 
     y -= 5; // Small space below the line
 
-    // Draw signature
     page.drawText(signatureText, {
       x: margin,
       y,
@@ -289,7 +293,6 @@ export async function generateDonationReceiptPDF(
 
     y -= lineHeight.small;
 
-    // Draw verification date
     page.drawText(dateText, {
       x: margin,
       y,
@@ -298,7 +301,6 @@ export async function generateDonationReceiptPDF(
       color: colors.secondary,
     });
 
-    // Add authenticity notice
     y -= lineHeight.normal;
     page.drawText(
       "This document has been electronically signed and is legally binding.",
