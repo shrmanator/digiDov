@@ -19,10 +19,10 @@ import { Separator } from "@/components/ui/separator";
 import CombinedWalletBalance, {
   SupportedChain,
 } from "@/components/combine-wallet-balance";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
 import ProfileWithOtp from "@/components/profile-form-with-otp/profile-form-with-otp";
+import SendingFundsModal from "@/components/sending-funds-modal";
 
 export default async function Profile() {
   const user = await getAuthenticatedUser();
@@ -48,10 +48,10 @@ export default async function Profile() {
       <AppSidebar />
       <SidebarInset className="h-screen">
         <div className="flex flex-col h-full">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-[width,height] ease-linear">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between px-4 bg-background/95 backdrop-blur">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
@@ -59,7 +59,7 @@ export default async function Profile() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Profile</BreadcrumbPage>
+                    <BreadcrumbPage>Overview</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -74,7 +74,12 @@ export default async function Profile() {
                 />
               </div>
               <div className="mt-1">
-                <SendingFundsModal charity={charity} />
+                <SendingFundsModal
+                  charity={{
+                    wallet_address: charity.wallet_address,
+                    contact_email: charity.contact_email ?? "no contact email",
+                  }}
+                />
               </div>
             </div>
           </header>

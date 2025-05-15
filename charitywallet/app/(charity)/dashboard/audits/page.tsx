@@ -26,7 +26,7 @@ import CombinedWalletBalance, {
   SupportedChain,
 } from "@/components/combine-wallet-balance";
 import ExternalWalletTransfersList from "@/components/external-fund-transfer-list";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
+import SendingFundsModal from "@/components/sending-funds-modal";
 
 export default async function Dashboard() {
   // 1) Check user
