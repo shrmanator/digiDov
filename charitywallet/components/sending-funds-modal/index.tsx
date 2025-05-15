@@ -1,5 +1,3 @@
-// components/SendingFundsModal.tsx
-
 "use client";
 import { usePayTrieOfframp } from "@/hooks/use-paytrie-offramp";
 import {
@@ -11,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
 import BalanceDisplay from "./balance-display";
 import QuoteDisplay from "./quote-display";
 import OtpModal from "@/components/opt-modal";
@@ -20,37 +19,37 @@ export default function SendingFundsModal({
 }: {
   charity: { wallet_address: string; contact_email: string };
 }) {
+  const balance = useTotalUsdcBalance(charity.wallet_address);
   const {
     amount,
     setAmount,
-    quote,
     quoteLoading,
-    quoteError,
     handleWithdrawClick,
     isOtpOpen,
     setIsOtpOpen,
     otpError,
     handleOtpVerify,
-    depositAddress,
     depositAmount,
     isSendingOnChain,
     chainTxHash,
     transactionId,
-    exchangeRate,
   } = usePayTrieOfframp(charity);
 
+  const DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
+
   return (
-    <Dialog open={Boolean(amount)} onOpenChange={() => {}}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button>Withdraw</Button>
       </DialogTrigger>
+
       <DialogContent style={{ width: "clamp(320px,90vw,480px)" }}>
         <DialogHeader>
           <DialogTitle>Withdraw Funds</DialogTitle>
         </DialogHeader>
 
-        <BalanceDisplay balance={/* fetch via useTotalUsdcBalance */ 0} />
-        <QuoteDisplay quote={quote} />
+        <BalanceDisplay balance={balance} />
+        <QuoteDisplay />
 
         <form
           onSubmit={(e) => {
@@ -84,24 +83,18 @@ export default function SendingFundsModal({
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p className="text-success font-medium">Success! 🎉</p>
             <p>
-              <strong>TX ID:</strong> {transactionId}
-            </p>
-            <p>
-              <strong>Rate:</strong> {exchangeRate}
-            </p>
-            <p>
               <strong>On-chain Tx:</strong> {chainTxHash}
             </p>
           </div>
         )}
 
-        {depositAmount != null && depositAddress && (
+        {depositAmount != null && (
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p>
               <strong>Sent:</strong> {depositAmount} USDC-POLY to
             </p>
             <pre className="font-mono p-1 bg-muted rounded">
-              {depositAddress}
+              {DEPOSIT_ADDRESS}
             </pre>
           </div>
         )}

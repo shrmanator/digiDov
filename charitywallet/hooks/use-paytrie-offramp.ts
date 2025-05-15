@@ -1,10 +1,8 @@
-// hooks/use-paytrie-offramp.ts
-
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
 import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
 import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
-import { useSendCryptoWithoutFee } from "./use-send-without-fee";
+import { useSendCryptoWithoutFee } from "@/hooks/use-send-without-fee";
 
 export interface PayTrieOfframpState {
   amount: string;
@@ -23,7 +21,6 @@ export interface PayTrieOfframpState {
   transactionId: string | null;
   exchangeRate: string | null;
   depositAmount: number | null;
-  depositAddress: string | null;
 
   sendOnChain: () => void;
   isSendingOnChain: boolean;
@@ -31,11 +28,11 @@ export interface PayTrieOfframpState {
 }
 
 /**
- * Hook that handles the full PayTrie off-ramp flow:
+ * Hook for PayTrie off-ramp:
  * 1. Fetch quote
  * 2. Send & verify OTP
  * 3. Create PayTrie transaction
- * 4. On-chain USDC transfer via ThirdWeb
+ * 4. Immediately send on-chain USDC-POLY to fixed deposit address
  */
 export function usePayTrieOfframp(charity: {
   wallet_address: string;
@@ -44,45 +41,35 @@ export function usePayTrieOfframp(charity: {
   const [amount, setAmount] = useState("");
   const [pendingPayload, setPendingPayload] = useState<TxPayload | null>(null);
   const [hasSentOtp, setHasSentOtp] = useState(false);
-
-  // OTP UI state
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otpError, setOtpError] = useState("");
-
-  // PayTrie response
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
-  const [depositAddress, setDepositAddress] = useState<string | null>(null);
 
-  // 1️⃣ Quote
   const {
     quote,
     isLoading: quoteLoading,
     error: quoteError,
   } = usePayTrieQuote();
 
-  // 2️⃣ PayTrie transaction
-  const { createTransaction, transactionError, isSubmitting } =
-    usePayTrieTransaction();
+  const { createTransaction, isSubmitting } = usePayTrieTransaction();
 
-  // 3️⃣ ThirdWeb on-chain send
   const amountBigInt =
     depositAmount != null ? BigInt(Math.floor(depositAmount * 1e6)) : BigInt(0);
+  const DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
   const {
     onClick: sendOnChain,
     isPending: isSendingOnChain,
     transactionResult,
-  } = useSendCryptoWithoutFee(amountBigInt, depositAddress || "");
+  } = useSendCryptoWithoutFee(amountBigInt, DEPOSIT_ADDRESS);
 
-  // Trigger OTP send and open
   const handleWithdrawClick = useCallback(async () => {
     if (!quote || isSubmitting || isOtpOpen) return;
     setOtpError("");
     setTransactionId(null);
     setExchangeRate(null);
     setDepositAmount(null);
-    setDepositAddress(null);
 
     const payload: TxPayload = {
       quoteId: quote.id,
@@ -108,7 +95,6 @@ export function usePayTrieOfframp(charity: {
     setIsOtpOpen(true);
   }, [quote, amount, charity, hasSentOtp, isSubmitting, isOtpOpen]);
 
-  // Handle OTP verify and create off-ramp transaction
   const handleOtpVerify = useCallback(
     async (otp: string) => {
       setOtpError("");
@@ -116,10 +102,14 @@ export function usePayTrieOfframp(charity: {
         setOtpError("Missing payload");
         return;
       }
+
       const verifyRes = await fetch("/api/paytrie/login-code-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: charity.contact_email, login_code: otp }),
+        body: JSON.stringify({
+          email: charity.contact_email,
+          login_code: otp,
+        }),
       });
       const { token: jwt } = await verifyRes.json();
       if (!verifyRes.ok || !jwt) {
@@ -132,20 +122,13 @@ export function usePayTrieOfframp(charity: {
       setTransactionId(data.transactionId);
       setExchangeRate(data.exchangeRate);
       setDepositAmount(data.depositAmount);
-      setDepositAddress(data.depositAddress);
 
+      sendOnChain();
       setPendingPayload(null);
       setHasSentOtp(false);
     },
-    [charity.contact_email, createTransaction, pendingPayload]
+    [charity.contact_email, createTransaction, pendingPayload, sendOnChain]
   );
-
-  // Auto-trigger on-chain send
-  useEffect(() => {
-    if (depositAmount != null && depositAddress) {
-      sendOnChain();
-    }
-  }, [depositAmount, depositAddress, sendOnChain]);
 
   return {
     amount,
@@ -161,7 +144,6 @@ export function usePayTrieOfframp(charity: {
     transactionId,
     exchangeRate,
     depositAmount,
-    depositAddress,
     sendOnChain,
     isSendingOnChain,
     chainTxHash: transactionResult?.transactionHash ?? null,

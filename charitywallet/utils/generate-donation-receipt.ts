@@ -207,8 +207,8 @@ export async function generateDonationReceiptPDF(
 
   drawField("Name", donorName);
   drawField("Address", donorAddress);
-  drawField("Donation Received", formatDate(donationDate));
-  drawField("Tax Receipt Issued on", formatDate(issueDate));
+  drawField("Date Donation Received", formatDate(donationDate));
+  drawField("Date Tax Receipt Issued", formatDate(issueDate));
 
   y -= lineHeight.small;
 
@@ -218,12 +218,12 @@ export async function generateDonationReceiptPDF(
     size: 12,
     color: colors.accent,
   });
-  drawField("Cryptocurrency Donated", blockchainInfo.symbol);
+  drawField("Cryptocurrency Description", blockchainInfo.symbol);
   drawField(
     "Amount Donated for Tax Purposes",
     `${cryptoAmount} ${blockchainInfo.symbol}`
   );
-  drawField("Fair Market Value", `$${fiatAmount.toFixed(2)} CAD`);
+  drawField("Fair Market Value At Time of Donation", `$${fiatAmount.toFixed(2)} CAD`);
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
