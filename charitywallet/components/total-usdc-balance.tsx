@@ -1,7 +1,8 @@
 "use client";
 
-import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
 
 /**
  * TotalUsdcBalance
@@ -16,13 +17,21 @@ export default function TotalUsdcBalance({
 }) {
   const totalUsdc = useTotalUsdcBalance(address);
 
+  // Show a shadcn-ui skeleton while loading
   if (totalUsdc == null) {
-    return <p className="text-sm">Loading total donations…</p>;
+    return (
+      <div className="mb-2 text-sm inline-flex space-x-2 items-center">
+        {/* Skeleton for "Total donations ~" label */}
+        <Skeleton className="h-4 w-32" />
+        {/* Skeleton for amount */}
+        <Skeleton className="h-4 w-24" />
+      </div>
+    );
   }
 
   return (
-    <div className="mb-2 text-sm">
-      <span>Total donations ~ </span>
+    <div className="mb-2 text-sm inline-flex space-x-1 items-center">
+      <span>Total donations ~</span>
       <span className="font-normal">{totalUsdc.toFixed(4)} USD</span>
     </div>
   );
