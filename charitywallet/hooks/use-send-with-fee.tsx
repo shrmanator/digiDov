@@ -34,7 +34,7 @@ export function useSendWithFee(
 
     switch (activeChain.id) {
       case 137: // Polygon main‑net
-        contractAddress = "0x3cEa312d46e6922d368Ff960C232945C2caC5100";
+        contractAddress = "0x337FeC6c583A8e143Dc0660243cF21Db558c980C";
         break;
       case 1: // Ethereum main‑net – (not yet deployed)
       default:
@@ -68,9 +68,8 @@ export function useSendWithFee(
 
     const txRequest = prepareContractCall({
       contract: feeContract,
-      method:
-        "function donateAndSwap(address charity,address platform,uint24) payable",
-      params: [charityAddress, PLATFORM_FEE_ADDRESS, poolFee],
+      method: "function donateAndSwap(address,uint24) payable",
+      params: [charityAddress, poolFee],
       value: donationValue,
     });
 
