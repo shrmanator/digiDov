@@ -43,7 +43,8 @@ export async function generateDonationReceiptPDF(
     cryptoAmount > 0 ? (fiatAmount / cryptoAmount).toFixed(2) : "N/A";
   const txHash = receipt.transaction_hash || "N/A";
   const walletAddress = receipt.donor?.wallet_address || "N/A";
-  const issuedBy = "digiDov Toronto, Ontario, Canada";
+  const issuedBy =
+    "digiDov On Behalf of " + charityName + ", A Registered Canadian Charity";
   const issueDate = receipt.created_at
     ? new Date(receipt.created_at)
     : new Date();
@@ -272,7 +273,7 @@ export async function generateDonationReceiptPDF(
   y -= lineHeight.small;
   drawLine();
 
-  drawField("Issued By", issuedBy);
+  drawField("This Official Receipt Is Issued By", issuedBy);
 
   // Add digital signature
   y -= lineHeight.normal;
