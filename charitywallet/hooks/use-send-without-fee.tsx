@@ -4,7 +4,7 @@ import { useSendTransaction, useActiveWalletChain } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import { toast } from "@/hooks/use-toast";
 
-export function useSendCrypto(amount: bigint, recipientAddress: string) {
+export function useSendCryptoWithoutFee(amount: bigint, recipientAddress: string) {
   const activeChain = useActiveWalletChain();
 
   const {
