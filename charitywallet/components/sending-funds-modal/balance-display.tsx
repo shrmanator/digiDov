@@ -13,7 +13,7 @@ export default function BalanceDisplay({ balance }: Props) {
         htmlFor="balance-display"
         className="block text-xs text-muted-foreground mb-1"
       >
-        Your Balance&nbsp;(ETH)
+        Your Balance&nbsp;(USD)
       </label>
       <div
         id="balance-display"

@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import BalanceDisplay from "./balance-display";
 import QuoteDisplay from "./quote-display";
 import OtpModal from "@/components/opt-modal";
-import { useWalletBalance } from "@/hooks/use-wallet-balance";
 import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
 import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
 import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
+import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
 
 export default function SendingFundsModal({
   charity,
@@ -43,7 +43,7 @@ export default function SendingFundsModal({
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
 
   // Data hooks
-  const balance = useWalletBalance(charity.wallet_address);
+  const balance = useTotalUsdcBalance(charity.wallet_address);
   const {
     quote,
     isLoading: quoteLoading,
