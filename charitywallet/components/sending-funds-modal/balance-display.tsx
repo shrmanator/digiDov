@@ -27,7 +27,7 @@ export default function BalanceDisplay({ balance }: Props) {
           <span className="opacity-50">Loading…</span>
         )}
       </span>
-      <span className="text-sm text-muted-foreground mt-1">
+      {/* <span className="text-sm text-muted-foreground mt-1">
         {error ? (
           "Error loading conversion"
         ) : isLoading ? (
@@ -35,7 +35,7 @@ export default function BalanceDisplay({ balance }: Props) {
         ) : cadValue ? (
           `≈ $${cadValue} CAD`
         ) : null}
-      </span>
+      </span> */}
     </div>
   );
 }

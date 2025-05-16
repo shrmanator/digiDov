@@ -118,7 +118,7 @@ export default function SendingFundsModal({
                 className="space-y-2"
               >
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="amount">Amount (USD)</Label>
+                  <Label htmlFor="amount">Amount To Send</Label>
                   {!isOtpPhase && (
                     <Button
                       type="button"
@@ -132,12 +132,13 @@ export default function SendingFundsModal({
                 </div>
                 <Input
                   id="amount"
-                  type="number"
-                  step="0.000001"
-                  min="0"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  type="text"
+                  placeholder="$0.00"
+                  value={`$${amount}`}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, "");
+                    setAmount(value);
+                  }}
                   required
                   disabled={quoteLoading || isOtpPhase || isSendingOtp}
                 />
