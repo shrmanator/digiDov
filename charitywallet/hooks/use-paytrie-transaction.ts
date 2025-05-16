@@ -4,34 +4,26 @@ import { createPayTrieTransaction } from "@/utils/create-paytrie-transaction";
 import type { PayTrieTransaction } from "@/app/types/paytrie/paytrie-transaction";
 
 /**
- * Custom hook to place PayTrie off-ramp (sell) orders and track their state.
+ * Hook to place PayTrie sell orders and manage loading/error state.
  *
- * This hook wraps createPayTrieTransaction, managing loading and error states
- * and exposing the latest successful transaction.
+ * Wraps `createPayTrieTransaction`, returning:
+ * - `createTransaction`: function to call with payload and JWT
+ * - `transaction`: the latest successful transaction or null
+ * - `transactionError`: error from the last attempt or null
+ * - `isSubmitting`: indicates whether an order is in progress
  *
- * @returns {
- *   createTransaction: (payload: TxPayload, jwt: string) => Promise<PayTrieTransaction>;
- *   transaction: PayTrieTransaction | null;
- *   transactionError: Error | null;
- *   isSubmitting: boolean;
- * }
- *
- * @example
+ * Example:
  * ```tsx
- * function Component() {
- *   const { createTransaction, transaction, isSubmitting, transactionError } = usePayTrieTransaction();
+ * const { createTransaction, transaction, isSubmitting, transactionError } = usePayTrieTransaction();
  *
- *   const onSubmit = async () => {
- *     try {
- *       const tx = await createTransaction(payload, jwt);
- *       console.log("Order placed", tx.transactionId);
- *     } catch (e) {
- *       console.error("Failed to place order", e);
- *     }
- *   };
- *
- *   // render UI
- * }
+ * const onClick = async () => {
+ *   try {
+ *     const tx = await createTransaction(payload, jwt);
+ *     console.log('Order placed', tx.transactionId);
+ *   } catch {
+ *     console.log('Failed to place order');
+ *   }
+ * };
  * ```
  */
 export function usePayTrieTransaction() {
