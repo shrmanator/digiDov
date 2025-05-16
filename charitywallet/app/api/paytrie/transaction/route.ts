@@ -1,4 +1,4 @@
-import { TxSchema } from "@/app/types/paytrie/paytrie-transaction-validation";
+import { PaytrieTxSchema } from "@/app/types/paytrie/paytrie-transaction-validation";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   let validated;
   try {
-    validated = TxSchema.parse(payload);
+    validated = PaytrieTxSchema.parse(payload);
   } catch (e) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }

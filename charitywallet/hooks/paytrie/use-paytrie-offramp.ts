@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
-
-import { useSendCryptoWithoutFee } from "@/hooks/use-send-without-fee";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
 import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
 import { buildPaytrieSellOrderPayload } from "@/utils/paytrie/build-paytrie-transaction-payload";
+import { useSendErc20Token } from "../use-send-erc20-token";
+import { polygon } from "thirdweb/chains";
 
 export function usePayTrieOfframp(
   wallet_address: string,
@@ -22,13 +22,15 @@ export function usePayTrieOfframp(
     isLoading: quoteLoading,
     error: quoteError,
   } = usePayTrieQuote();
-  const { createTransaction, isSubmitting: apiLoading } = usePaytrieSellOrder();
+  const { placeSellOrder, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
-  const amountBigInt =
-    depositAmount != null ? BigInt(Math.floor(depositAmount * 1e6)) : BigInt(0);
-  const DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
   const { onClick: sendOnChain, isPending: isSendingOnChain } =
-    useSendCryptoWithoutFee(amountBigInt, DEPOSIT_ADDRESS);
+    useSendErc20Token(
+      (depositAmount ?? 0).toString(),
+      process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
+      process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
+      polygon
+    );
 
   const initiateWithdraw = useCallback(async () => {
     if (!quote || apiLoading || !amount) return;
@@ -45,7 +47,7 @@ export function usePayTrieOfframp(
         wallet_address,
         contact_email
       );
-      const tx = await createTransaction(payload, token);
+      const tx = await placeSellOrder(payload, token);
       setTransactionId(tx.transactionId);
       setExchangeRate(tx.exchangeRate);
       setDepositAmount(tx.depositAmount);
@@ -57,7 +59,7 @@ export function usePayTrieOfframp(
       wallet_address,
       contact_email,
       verifyOtp,
-      createTransaction,
+      placeSellOrder,
       sendOnChain,
     ]
   );

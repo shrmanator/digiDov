@@ -1,24 +1,24 @@
 import { useState, useCallback } from "react";
 import type { PaytrieTxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
-import { placePaytrieSellOrder } from "@/utils/paytrie/create-paytrie-transaction";
 import type { PayTrieTransaction } from "@/app/types/paytrie/paytrie-transaction";
+import { placePaytrieSellOrder } from "@/utils/paytrie/create-paytrie-transaction";
 
 /**
  * Hook to place PayTrie sell orders and manage loading/error state.
  *
- * Wraps `createPayTrieTransaction`, returning:
- * - `createTransaction`: function to call with payload and JWT
+ * Wraps `placePaytrieSellOrder`, returning:
+ * - `placeSellOrder`: function to call with payload and JWT
  * - `transaction`: the latest successful transaction or null
  * - `transactionError`: error from the last attempt or null
  * - `isSubmitting`: indicates whether an order is in progress
  *
  * Example:
  * ```tsx
- * const { createTransaction, transaction, isSubmitting, transactionError } = usePayTrieTransaction();
+ * const { placeSellOrder, transaction, isSubmitting, transactionError } = usePaytrieSellOrder();
  *
  * const onClick = async () => {
  *   try {
- *     const tx = await createTransaction(payload, jwt);
+ *     const tx = await placeSellOrder(payload, jwt);
  *     console.log('Order placed', tx.transactionId);
  *   } catch {
  *     console.log('Failed to place order');
@@ -33,7 +33,7 @@ export function usePaytrieSellOrder() {
   const [transactionError, setTransactionError] = useState<Error | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createTransaction = useCallback(
+  const placeSellOrder = useCallback(
     async (payload: PaytrieTxPayload, jwt: string) => {
       setIsSubmitting(true);
       setTransactionError(null);
@@ -51,5 +51,5 @@ export function usePaytrieSellOrder() {
     []
   );
 
-  return { createTransaction, transaction, transactionError, isSubmitting };
+  return { placeSellOrder, transaction, transactionError, isSubmitting };
 }

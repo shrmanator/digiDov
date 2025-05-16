@@ -1,4 +1,5 @@
 "use client";
+import React, { useState } from "react";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import {
   Dialog,
@@ -6,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,23 +21,54 @@ export default function SendingFundsModal({
 }: {
   charity: { wallet_address: string; contact_email: string };
 }) {
+  // Ensure required props
+  if (!charity?.wallet_address || !charity?.contact_email) {
+    console.error("SendingFundsModal: missing required 'charity' prop");
+    return null;
+  }
+
+  // Hook orchestration
   const balance = useTotalUsdcBalance(charity.wallet_address);
   const {
     amount,
     setAmount,
+    quote,
     quoteLoading,
-    handleWithdrawClick,
-    isOtpOpen,
-    setIsOtpOpen,
-    otpError,
-    handleOtpVerify,
+    quoteError,
+    initiateWithdraw,
+    confirmOtp,
+    transactionId,
+    exchangeRate,
     depositAmount,
     isSendingOnChain,
-    chainTxHash,
-    transactionId,
-  } = usePayTrieOfframp(charity);
+  } = usePayTrieOfframp(charity.wallet_address, charity.contact_email);
+
+  // OTP modal state
+  const [isOtpOpen, setIsOtpOpen] = useState(false);
+  const [otpError, setOtpError] = useState("");
 
   const DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
+
+  // Send OTP and open modal
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await initiateWithdraw();
+      setIsOtpOpen(true);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  // Verify OTP, place order, and send on-chain
+  const handleOtpVerify = async (code: string) => {
+    try {
+      await confirmOtp(code);
+      setIsOtpOpen(false);
+    } catch (err: any) {
+      setOtpError(err.message);
+    }
+  };
 
   return (
     <Dialog>
@@ -43,21 +76,22 @@ export default function SendingFundsModal({
         <Button>Withdraw</Button>
       </DialogTrigger>
 
-      <DialogContent style={{ width: "clamp(320px,90vw,480px)" }}>
+      <DialogContent
+        style={{ width: "clamp(320px,90vw,480px)" }}
+        aria-describedby="withdraw-dialog-description"
+      >
         <DialogHeader>
           <DialogTitle>Withdraw Funds</DialogTitle>
+          <DialogDescription id="withdraw-dialog-description">
+            Enter an amount of USDC-POLY to off-ramp, then follow the OTP
+            prompt.
+          </DialogDescription>
         </DialogHeader>
 
         <BalanceDisplay balance={balance} />
         <QuoteDisplay />
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleWithdrawClick();
-          }}
-          className="space-y-4"
-        >
+        <form onSubmit={handleWithdraw} className="space-y-4">
           <Input
             type="number"
             step="0.000001"
@@ -77,13 +111,17 @@ export default function SendingFundsModal({
           </Button>
         </form>
 
+        {quoteError && <p className="text-red-600">{quoteError.message}</p>}
         {otpError && <p className="text-red-600">{otpError}</p>}
 
         {transactionId && (
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p className="text-success font-medium">Success! 🎉</p>
             <p>
-              <strong>On-chain Tx:</strong> {chainTxHash}
+              <strong>Order ID:</strong> {transactionId}
+            </p>
+            <p>
+              <strong>Rate:</strong> {exchangeRate}
             </p>
           </div>
         )}
