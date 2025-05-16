@@ -1,4 +1,3 @@
-// components/BalanceDisplay.tsx
 "use client";
 import React from "react";
 
@@ -8,19 +7,15 @@ interface Props {
 
 export default function BalanceDisplay({ balance }: Props) {
   return (
-    <div className="mb-2">
-      <label
-        htmlFor="balance-display"
-        className="block text-xs text-muted-foreground mb-1"
-      >
-        Your Balance&nbsp;(USD)
-      </label>
-      <div
-        id="balance-display"
-        className="bg-muted p-2 rounded font-semibold text-base"
-      >
-        {balance != null ? balance.toFixed(4) : "Loading…"}
-      </div>
+    <div className="flex flex-col">
+      <span className="text-xs text-muted-foreground">Your Balance:</span>
+      <span id="balance-display" className="mt-1 text-lg font-semibold">
+        {balance != null ? (
+          `$${balance.toFixed(4)} USD`
+        ) : (
+          <span className="opacity-50">Loading…</span>
+        )}
+      </span>
     </div>
   );
 }
