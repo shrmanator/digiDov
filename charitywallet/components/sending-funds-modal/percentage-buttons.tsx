@@ -1,30 +1,37 @@
+// components/PercentageButtons.tsx
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 
-interface Props {
+interface PercentageButtonsProps {
   onSelect: (percentage: number) => void;
+  disabled?: boolean;
 }
 
 const PRESETS = [
-  { label: "25%", value: 25 },
+  { label: "10%", value: 10 },
   { label: "50%", value: 50 },
   { label: "75%", value: 75 },
   { label: "Max", value: 100 },
 ];
 
-const PercentageButtons = ({ onSelect }: Props) => (
-  <div className="flex gap-2 mt-2">
-    {PRESETS.map((p) => (
+const PercentageButtons = ({
+  onSelect,
+  disabled = false,
+}: PercentageButtonsProps) => (
+  <div className="flex items-center justify-between gap-2 py-2">
+    {PRESETS.map((preset) => (
       <Button
-        key={p.label}
+        key={preset.label}
         type="button"
-        variant="secondary"
+        variant="outline"
         size="sm"
-        className="px-2"
-        onClick={() => onSelect(p.value)}
+        className="w-full"
+        disabled={disabled}
+        onClick={() => onSelect(preset.value)}
       >
-        {p.label}
+        {preset.label}
       </Button>
     ))}
   </div>

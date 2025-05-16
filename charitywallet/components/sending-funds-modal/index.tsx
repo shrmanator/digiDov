@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import BalanceDisplay from "./balance-display";
+import PercentageButtons from "./percentage-buttons";
 
 export default function SendingFundsModal({
   charity,
@@ -54,8 +55,11 @@ export default function SendingFundsModal({
     setIsSendingOtp(false);
   };
 
-  const handleMax = () => {
-    if (balance != null) setAmount(balance.toString());
+  const handleSelectPercent = (percent: number) => {
+    if (balance != null) {
+      const calculated = ((balance * percent) / 100).toFixed(6);
+      setAmount(calculated);
+    }
   };
 
   const handleWithdraw = async (e: React.FormEvent) => {
@@ -119,22 +123,12 @@ export default function SendingFundsModal({
               >
                 <div className="flex justify-between items-center">
                   <Label htmlFor="amount">Amount To Send</Label>
-                  {!isOtpPhase && (
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="sm"
-                      onClick={handleMax}
-                    >
-                      Max
-                    </Button>
-                  )}
                 </div>
                 <Input
                   id="amount"
                   type="text"
-                  placeholder="$0.00"
-                  value={`$${amount}`}
+                  placeholder="0.00"
+                  value={amount}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^0-9.]/g, "");
                     setAmount(value);
@@ -143,13 +137,23 @@ export default function SendingFundsModal({
                   disabled={quoteLoading || isOtpPhase || isSendingOtp}
                 />
 
+                <PercentageButtons
+                  onSelect={handleSelectPercent}
+                  disabled={
+                    quoteLoading ||
+                    isOtpPhase ||
+                    isSendingOtp ||
+                    balance == null
+                  }
+                />
+
                 <div className="flex items-center text-sm text-muted-foreground">
                   {quoteError
                     ? "Error loading rate"
                     : quoteLoading
                     ? "Loading rate…"
                     : exchangeRate != null
-                    ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
+                    ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
                     : null}
                 </div>
 
@@ -202,7 +206,7 @@ export default function SendingFundsModal({
                 <AlertTitle>Success! 🎉</AlertTitle>
                 <AlertDescription>
                   {depositAmount != null
-                    ? `$${depositAmount} sent to your bank`
+                    ? `${depositAmount} sent to your bank`
                     : "Your withdrawal is in progress."}
                 </AlertDescription>
               </Alert>
