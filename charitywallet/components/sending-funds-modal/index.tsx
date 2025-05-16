@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import BalanceDisplay from "./balance-display";
+import OtpModal from "../opt-modal";
 import PercentageButtons from "./percentage-buttons";
 
 export default function SendingFundsModal({
@@ -42,14 +43,12 @@ export default function SendingFundsModal({
   );
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isOtpPhase, setIsOtpPhase] = useState(false);
+  const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState<string>("");
 
   const reset = () => {
-    setIsOtpPhase(false);
-    setOtpCode("");
+    setOtpOpen(false);
     setError("");
     setAmount("");
     setIsSendingOtp(false);
@@ -68,152 +67,117 @@ export default function SendingFundsModal({
     setIsSendingOtp(true);
     try {
       await initiateWithdraw();
-      setIsOtpPhase(true);
+      setIsSendingOtp(false);
+      setOtpOpen(true);
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setIsSendingOtp(false);
     }
   };
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // new handler for OTP verification
+  const handleOtpVerify = async (otp: string) => {
     setError("");
     try {
-      await confirmOtp(otpCode);
+      await confirmOtp(otp);
+      setOtpOpen(false);
     } catch (err: any) {
       setError(err.message);
+      throw err; // let OtpModal show inline error
     }
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-        if (!open) reset();
-      }}
-    >
-      <DialogTrigger asChild>
-        <Button variant="outline">Withdraw</Button>
-      </DialogTrigger>
+    <>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) reset();
+        }}
+      >
+        <DialogTrigger asChild>
+          <Button variant="outline">Withdraw</Button>
+        </DialogTrigger>
 
-      <DialogContent className="max-w-md space-y-3">
-        <DialogHeader>
-          <DialogTitle>Send Funds to Bank</DialogTitle>
-          <DialogDescription>
-            Funds will be converted to CAD and sent to your bank account.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent className="max-w-md space-y-3">
+          <DialogHeader>
+            <DialogTitle>Send Funds to Bank</DialogTitle>
+            <DialogDescription>
+              Funds will be converted to CAD and sent to your bank account.
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Balance & Rate */}
-        <Card>
-          <CardContent className="p-4 space-y-1">
-            <BalanceDisplay balance={balance} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="p-4 space-y-1">
+              <BalanceDisplay balance={balance} />
+            </CardContent>
+          </Card>
 
-        {/* Form or Success */}
-        <Card>
-          <CardContent className="p-4 space-y-2">
-            {!transactionId ? (
-              <form
-                onSubmit={isOtpPhase ? handleVerify : handleWithdraw}
-                className="space-y-2"
-              >
-                <div className="flex justify-between items-center">
+          <Card>
+            <CardContent className="p-4 space-y-2">
+              {!transactionId ? (
+                <form onSubmit={handleWithdraw} className="space-y-2">
                   <Label htmlFor="amount">Amount To Send</Label>
-                </div>
-                <Input
-                  id="amount"
-                  type="text"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, "");
-                    setAmount(value);
-                  }}
-                  required
-                  disabled={quoteLoading || isOtpPhase || isSendingOtp}
-                />
-
-                <PercentageButtons
-                  onSelect={handleSelectPercent}
-                  disabled={
-                    quoteLoading ||
-                    isOtpPhase ||
-                    isSendingOtp ||
-                    balance == null
-                  }
-                />
-
-                <div className="flex items-center text-sm text-muted-foreground">
-                  {quoteError
-                    ? "Error loading rate"
-                    : quoteLoading
-                    ? "Loading rate…"
-                    : exchangeRate != null
-                    ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
-                    : null}
-                </div>
-
-                {isOtpPhase && (
-                  <div className="space-y-1 p-4 bg-muted rounded-lg border border-primary">
-                    <Label htmlFor="otp">
-                      Enter the 6-digit code sent to your email
-                    </Label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value)}
-                      autoFocus
-                      className="ring-2 ring-primary"
-                    />
+                  <Input
+                    id="amount"
+                    type="text"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) =>
+                      setAmount(e.target.value.replace(/[^0-9.]/g, ""))
+                    }
+                    required
+                    disabled={quoteLoading || isSendingOtp}
+                  />
+                  <PercentageButtons
+                    onSelect={handleSelectPercent}
+                    disabled={quoteLoading || isSendingOtp || balance == null}
+                  />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    {quoteError
+                      ? "Error loading rate"
+                      : quoteLoading
+                      ? "Loading rate…"
+                      : exchangeRate != null
+                      ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
+                      : null}
                   </div>
-                )}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={quoteLoading || isSendingOtp || !amount}
+                  >
+                    {quoteLoading || isSendingOtp ? "Sending OTP…" : "Withdraw"}
+                  </Button>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                </form>
+              ) : (
+                <Alert variant="default">
+                  <AlertTitle>Success!</AlertTitle>
+                  <AlertDescription>
+                    {depositAmount != null
+                      ? `${depositAmount} will be converted to CAD and sent to your bank account. For questions: contact@digidov.com`
+                      : "Your withdrawal is in progress."}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </DialogContent>
+      </Dialog>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={
-                    quoteLoading ||
-                    isSendingOtp ||
-                    (!isOtpPhase && !amount) ||
-                    (isOtpPhase && otpCode.length < 6)
-                  }
-                >
-                  {isSendingOnChain
-                    ? "Processing…"
-                    : isOtpPhase
-                    ? "Send Funds to Bank"
-                    : isSendingOtp
-                    ? "Sending OTP…"
-                    : "Withdraw"}
-                </Button>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-              </form>
-            ) : (
-              <Alert variant="default">
-                <AlertTitle>Success! 🎉</AlertTitle>
-                <AlertDescription>
-                  {depositAmount != null
-                    ? `${depositAmount} sent to your bank`
-                    : "Your withdrawal is in progress."}
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      </DialogContent>
-    </Dialog>
+      <OtpModal
+        isOpen={otpOpen}
+        onOpenChange={setOtpOpen}
+        email={charity.contact_email}
+        onVerified={handleOtpVerify}
+      />
+    </>
   );
 }
