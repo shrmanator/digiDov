@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { useSendCryptoWithoutFee } from "@/hooks/use-send-without-fee";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
-import { usePayTrieTransaction } from "./use-paytrie-transaction";
+import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
 import { buildPaytrieSellOrderPayload } from "@/utils/paytrie/build-paytrie-transaction-payload";
 
 export function usePayTrieOfframp(
@@ -22,8 +22,7 @@ export function usePayTrieOfframp(
     isLoading: quoteLoading,
     error: quoteError,
   } = usePayTrieQuote();
-  const { createTransaction, isSubmitting: apiLoading } =
-    usePayTrieTransaction();
+  const { createTransaction, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
   const amountBigInt =
     depositAmount != null ? BigInt(Math.floor(depositAmount * 1e6)) : BigInt(0);

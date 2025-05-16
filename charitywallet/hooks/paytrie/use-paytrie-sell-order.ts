@@ -26,7 +26,7 @@ import type { PayTrieTransaction } from "@/app/types/paytrie/paytrie-transaction
  * };
  * ```
  */
-export function usePayTrieTransaction() {
+export function usePaytrieSellOrder() {
   const [transaction, setTransaction] = useState<PayTrieTransaction | null>(
     null
   );
