@@ -21,18 +21,11 @@ export default function SendingFundsModal({
 }: {
   charity: { wallet_address: string; contact_email: string };
 }) {
-  // Ensure required props
-  if (!charity?.wallet_address || !charity?.contact_email) {
-    console.error("SendingFundsModal: missing required 'charity' prop");
-    return null;
-  }
-
-  // Hook orchestration
-  const balance = useTotalUsdcBalance(charity.wallet_address);
+  // Always initialize hooks at top to comply with rules-of-hooks
+  const balance = useTotalUsdcBalance(charity?.wallet_address || "");
   const {
     amount,
     setAmount,
-    quote,
     quoteLoading,
     quoteError,
     initiateWithdraw,
@@ -41,11 +34,18 @@ export default function SendingFundsModal({
     exchangeRate,
     depositAmount,
     isSendingOnChain,
-  } = usePayTrieOfframp(charity.wallet_address, charity.contact_email);
-
-  // OTP modal state
+  } = usePayTrieOfframp(
+    charity?.wallet_address || "",
+    charity?.contact_email || ""
+  );
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otpError, setOtpError] = useState("");
+
+  // Then guard required props
+  if (!charity?.wallet_address || !charity?.contact_email) {
+    console.error("SendingFundsModal: missing required 'charity' prop");
+    return null;
+  }
 
   const DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
 
@@ -55,8 +55,9 @@ export default function SendingFundsModal({
     try {
       await initiateWithdraw();
       setIsOtpOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      setOtpError((err as Error).message);
     }
   };
 
@@ -65,8 +66,8 @@ export default function SendingFundsModal({
     try {
       await confirmOtp(code);
       setIsOtpOpen(false);
-    } catch (err: any) {
-      setOtpError(err.message);
+    } catch (err: unknown) {
+      setOtpError((err as Error).message);
     }
   };
 
@@ -117,19 +118,13 @@ export default function SendingFundsModal({
         {transactionId && (
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p className="text-success font-medium">Success! 🎉</p>
-            <p>
-              <strong>Order ID:</strong> {transactionId}
-            </p>
-            <p>
-              <strong>Rate:</strong> {exchangeRate}
-            </p>
           </div>
         )}
 
         {depositAmount != null && (
           <div className="p-2 bg-muted border rounded text-sm space-y-1">
             <p>
-              <strong>Sent:</strong> {depositAmount} USDC-POLY to
+              <strong>Sent:</strong> {depositAmount} Funds sent to
             </p>
             <pre className="font-mono p-1 bg-muted rounded">
               {DEPOSIT_ADDRESS}
