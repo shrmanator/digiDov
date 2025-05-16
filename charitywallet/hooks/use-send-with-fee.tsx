@@ -2,15 +2,9 @@
 
 import { useSendTransaction, useActiveWalletChain } from "thirdweb/react";
 import { getContract, prepareContractCall } from "thirdweb";
-import { getAddress } from "ethers";
 import { useMemo } from "react";
 import { client } from "@/lib/thirdwebClient";
 import { toast } from "@/hooks/use-toast";
-
-/** ✅ 3 % platform share goes here (checksummed) */
-const PLATFORM_FEE_ADDRESS = getAddress(
-  "0xa93674948ebad8e61A41E4167371cb76720AD5cA"
-);
 
 /** Uniswap V3 0.3 % pool */
 const DEFAULT_POOL_FEE = 3000;

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
+import type { TxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
 import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
 import { usePayTrieTransaction } from "@/hooks/use-paytrie-transaction";
 import { useSendCryptoWithoutFee } from "@/hooks/use-send-without-fee";

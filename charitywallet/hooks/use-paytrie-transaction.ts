@@ -1,13 +1,39 @@
 import { useState, useCallback } from "react";
-import type { TxPayload } from "@/app/types/paytrie-transaction-validation";
+import type { TxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
+import { createPayTrieTransaction } from "@/utils/create-paytrie-transaction";
+import type { PayTrieTransaction } from "@/app/types/paytrie/paytrie-transaction";
 
-export interface PayTrieTransaction {
-  transactionId: string;
-  exchangeRate: string;
-  depositAddress: string;
-  depositAmount: number;
-}
-
+/**
+ * Custom hook to place PayTrie off-ramp (sell) orders and track their state.
+ *
+ * This hook wraps createPayTrieTransaction, managing loading and error states
+ * and exposing the latest successful transaction.
+ *
+ * @returns {
+ *   createTransaction: (payload: TxPayload, jwt: string) => Promise<PayTrieTransaction>;
+ *   transaction: PayTrieTransaction | null;
+ *   transactionError: Error | null;
+ *   isSubmitting: boolean;
+ * }
+ *
+ * @example
+ * ```tsx
+ * function Component() {
+ *   const { createTransaction, transaction, isSubmitting, transactionError } = usePayTrieTransaction();
+ *
+ *   const onSubmit = async () => {
+ *     try {
+ *       const tx = await createTransaction(payload, jwt);
+ *       console.log("Order placed", tx.transactionId);
+ *     } catch (e) {
+ *       console.error("Failed to place order", e);
+ *     }
+ *   };
+ *
+ *   // render UI
+ * }
+ * ```
+ */
 export function usePayTrieTransaction() {
   const [transaction, setTransaction] = useState<PayTrieTransaction | null>(
     null
@@ -20,33 +46,7 @@ export function usePayTrieTransaction() {
       setIsSubmitting(true);
       setTransactionError(null);
       try {
-        const response = await fetch("/api/paytrie/transaction", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, jwt }),
-        });
-        if (!response.ok) throw new Error(await response.text());
-
-        // parse whatever shape PayTrie actually gives us
-        const data = await response.json();
-        console.log("[PayTrie] raw tx response:", data);
-
-        const tx: PayTrieTransaction = {
-          transactionId: data.transactionId ?? data.tx_id ?? "<missing_tx_id>",
-          exchangeRate:
-            (data.exchangeRate as string) ??
-            (data.exchange_rate as string) ??
-            "<missing_rate>",
-          depositAddress:
-            (data.depositAddress as string) ??
-            (data.deposit_address as string) ??
-            "",
-          depositAmount:
-            (data.depositAmount as number) ??
-            (data.deposit_amount as number) ??
-            0,
-        };
-
+        const tx = await createPayTrieTransaction(payload, jwt);
         setTransaction(tx);
         return tx;
       } catch (e: any) {
@@ -59,10 +59,5 @@ export function usePayTrieTransaction() {
     []
   );
 
-  return {
-    createTransaction,
-    transaction,
-    transactionError,
-    isSubmitting,
-  };
+  return { createTransaction, transaction, transactionError, isSubmitting };
 }

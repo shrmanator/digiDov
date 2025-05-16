@@ -1,4 +1,4 @@
-import { TxSchema } from "@/app/types/paytrie-transaction-validation";
+import { TxSchema } from "@/app/types/paytrie/paytrie-transaction-validation";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
