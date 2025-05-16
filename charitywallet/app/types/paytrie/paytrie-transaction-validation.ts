@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const TxSchema = z.object({
+export const PaytrieTxSchema = z.object({
   quoteId: z.number(),
   gasId: z.number(),
   email: z.string().email(),
@@ -14,4 +14,4 @@ export const TxSchema = z.object({
 });
 
 // TS types you can import anywhere
-export type TxPayload = z.infer<typeof TxSchema>;
+export type PaytrieTxPayload = z.infer<typeof PaytrieTxSchema>;

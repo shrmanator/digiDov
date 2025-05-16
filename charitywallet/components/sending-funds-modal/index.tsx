@@ -1,5 +1,5 @@
 "use client";
-import { usePayTrieOfframp } from "@/hooks/use-paytrie-offramp";
+import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import {
   Dialog,
   DialogTrigger,

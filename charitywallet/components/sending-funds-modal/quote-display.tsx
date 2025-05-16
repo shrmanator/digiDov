@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePayTrieQuote } from "@/hooks/use-paytrie-quotes";
+import { usePayTrieQuote } from "@/hooks/paytrie/use-paytrie-quotes";
 
 export default function QuoteDisplay() {
   const { quote, isLoading, error } = usePayTrieQuote();

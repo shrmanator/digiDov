@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import type { TxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
-import { createPayTrieTransaction } from "@/utils/create-paytrie-transaction";
+import type { PaytrieTxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
+import { placePaytrieSellOrder } from "@/utils/paytrie/create-paytrie-transaction";
 import type { PayTrieTransaction } from "@/app/types/paytrie/paytrie-transaction";
 
 /**
@@ -34,11 +34,11 @@ export function usePayTrieTransaction() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createTransaction = useCallback(
-    async (payload: TxPayload, jwt: string) => {
+    async (payload: PaytrieTxPayload, jwt: string) => {
       setIsSubmitting(true);
       setTransactionError(null);
       try {
-        const tx = await createPayTrieTransaction(payload, jwt);
+        const tx = await placePaytrieSellOrder(payload, jwt);
         setTransaction(tx);
         return tx;
       } catch (e: any) {
