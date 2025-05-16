@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent } from "@/components/ui/card";
 import BalanceDisplay from "./balance-display";
-import QuoteDisplay from "./quote-display";
 
 export default function SendingFundsModal({
   charity,
@@ -46,12 +46,6 @@ export default function SendingFundsModal({
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState<string>("");
 
-  if (!charity.wallet_address || !charity.contact_email) {
-    console.error("SendingFundsModal: missing required 'charity' prop");
-    return null;
-  }
-
-  // Reset on close
   const reset = () => {
     setIsOtpPhase(false);
     setOtpCode("");
@@ -60,14 +54,10 @@ export default function SendingFundsModal({
     setIsSendingOtp(false);
   };
 
-  // Quick-fill
   const handleMax = () => {
-    if (balance != null) {
-      setAmount(balance.toString());
-    }
+    if (balance != null) setAmount(balance.toString());
   };
 
-  // Step 1: send OTP
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -82,7 +72,6 @@ export default function SendingFundsModal({
     }
   };
 
-  // Step 2: verify & finalize
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -105,113 +94,120 @@ export default function SendingFundsModal({
         <Button variant="outline">Withdraw</Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md space-y-6">
+      <DialogContent className="max-w-md space-y-3">
         <DialogHeader>
-          <DialogTitle>Send funds to your bank</DialogTitle>
+          <DialogTitle>Send Funds to Bank</DialogTitle>
+          <DialogDescription>
+            Funds will be converted to CAD and sent to your bank account.
+          </DialogDescription>
         </DialogHeader>
 
-        <BalanceDisplay balance={balance} />
-        <QuoteDisplay />
+        {/* Balance & Rate */}
+        <Card>
+          <CardContent className="p-4 space-y-1">
+            <BalanceDisplay balance={balance} />
+          </CardContent>
+        </Card>
 
-        {!transactionId ? (
-          <form
-            onSubmit={isOtpPhase ? handleVerify : handleWithdraw}
-            className="space-y-4"
-          >
-            {/* Amount field */}
-            <div className="flex justify-between items-center">
-              <Label htmlFor="amount">Amount (USD)</Label>
-              {!isOtpPhase && (
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  onClick={handleMax}
-                >
-                  Max
-                </Button>
-              )}
-            </div>
-            <Input
-              id="amount"
-              type="number"
-              step="0.000001"
-              min="0"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              disabled={quoteLoading || isOtpPhase || isSendingOtp}
-            />
-
-            {/* Exchange rate */}
-            <div className="flex items-center text-sm text-muted-foreground">
-              {quoteError
-                ? "Error loading rate"
-                : quoteLoading
-                ? "Loading rate…"
-                : exchangeRate != null
-                ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
-                : null}
-            </div>
-
-            {/* OTP entry */}
-            {isOtpPhase && (
-              <div className="space-y-1 p-4 bg-muted rounded-lg border border-primary">
-                <Label htmlFor="otp">
-                  Enter the 6-digit code sent to your email
-                </Label>
+        {/* Form or Success */}
+        <Card>
+          <CardContent className="p-4 space-y-2">
+            {!transactionId ? (
+              <form
+                onSubmit={isOtpPhase ? handleVerify : handleWithdraw}
+                className="space-y-2"
+              >
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="amount">Amount (USD)</Label>
+                  {!isOtpPhase && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={handleMax}
+                    >
+                      Max
+                    </Button>
+                  )}
+                </div>
                 <Input
-                  id="otp"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  autoFocus
-                  className="ring-2 ring-primary"
+                  id="amount"
+                  type="number"
+                  step="0.000001"
+                  min="0"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                  disabled={quoteLoading || isOtpPhase || isSendingOtp}
                 />
-              </div>
-            )}
 
-            {/* Submit */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={
-                quoteLoading ||
-                isSendingOtp ||
-                (!isOtpPhase && !amount) ||
-                (isOtpPhase && otpCode.length < 6)
-              }
-            >
-              {isSendingOnChain
-                ? "Processing…"
-                : isOtpPhase
-                ? "Send Funds To Bank"
-                : isSendingOtp
-                ? "Sending OTP…"
-                : "Withdraw"}
-            </Button>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  {quoteError
+                    ? "Error loading rate"
+                    : quoteLoading
+                    ? "Loading rate…"
+                    : exchangeRate != null
+                    ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
+                    : null}
+                </div>
 
-            {/* Error alert */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                {isOtpPhase && (
+                  <div className="space-y-1 p-4 bg-muted rounded-lg border border-primary">
+                    <Label htmlFor="otp">
+                      Enter the 6-digit code sent to your email
+                    </Label>
+                    <Input
+                      id="otp"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      autoFocus
+                      className="ring-2 ring-primary"
+                    />
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={
+                    quoteLoading ||
+                    isSendingOtp ||
+                    (!isOtpPhase && !amount) ||
+                    (isOtpPhase && otpCode.length < 6)
+                  }
+                >
+                  {isSendingOnChain
+                    ? "Processing…"
+                    : isOtpPhase
+                    ? "Send Funds to Bank"
+                    : isSendingOtp
+                    ? "Sending OTP…"
+                    : "Withdraw"}
+                </Button>
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+              </form>
+            ) : (
+              <Alert variant="default">
+                <AlertTitle>Success! 🎉</AlertTitle>
+                <AlertDescription>
+                  {depositAmount != null
+                    ? `$${depositAmount} sent to your bank`
+                    : "Your withdrawal is in progress."}
+                </AlertDescription>
               </Alert>
             )}
-          </form>
-        ) : (
-          <Alert variant="default">
-            <AlertTitle>Success! 🎉</AlertTitle>
-            <AlertDescription>
-              {depositAmount != null
-                ? `$${depositAmount} processing`
-                : "Your withdrawal is in progress."}
-            </AlertDescription>
-          </Alert>
-        )}
+          </CardContent>
+        </Card>
       </DialogContent>
     </Dialog>
   );

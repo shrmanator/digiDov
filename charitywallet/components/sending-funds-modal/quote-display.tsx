@@ -15,8 +15,8 @@ export default function QuoteDisplay() {
     <span className="flex items-center text-sm text-muted-foreground">
       {isLoading ? (
         <Skeleton className="h-4 w-24" />
-      ) : quote ? (
-        <>1 CAD ≈ {quote.cadusd.toFixed(4)} USD</>
+      ) : quote && quote.cadusd ? (
+        <>1 USD ≈ {(1 / quote.cadusd).toFixed(4)} CAD</>
       ) : (
         "No rate"
       )}
