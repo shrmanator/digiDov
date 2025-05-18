@@ -1,3 +1,5 @@
+// hooks/paytrie/use-paytrie-offramp.ts
+
 import { useState, useCallback, useEffect } from "react";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
@@ -16,17 +18,14 @@ export function usePayTrieOfframp(
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
 
   const { sendOtp, verifyOtp } = usePayTrieAuth(contact_email);
-
   const amtNum = parseFloat(amount) || 0;
   const {
     quote,
     isLoading: quoteLoading,
     error: quoteError,
   } = usePayTrieQuote(amtNum);
-
   const { placeSellOrder, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
-  // Only pull out onClick + isPending
   const { onClick: sendOnChain, isPending: isSendingOnChain } =
     useSendErc20Token(
       (depositAmount ?? 0).toString(),
@@ -42,24 +41,35 @@ export function usePayTrieOfframp(
 
   const confirmOtp = useCallback(
     async (code: string) => {
-      const token = await verifyOtp(code);
-      const payload = buildPaytrieSellOrderPayload(
-        amtNum,
-        quote!,
-        wallet_address,
-        contact_email
-      );
-      const tx = await placeSellOrder(payload, token);
-      setTransactionId(tx.transactionId);
-      setExchangeRate(tx.exchangeRate);
-      setDepositAmount(tx.depositAmount);
+      if (code) {
+        // REAL FLOW
+        const token = await verifyOtp(code);
+        const payload = buildPaytrieSellOrderPayload(
+          amtNum,
+          quote!,
+          wallet_address,
+          contact_email
+        );
+        const tx = await placeSellOrder(payload, token);
+        setTransactionId(tx.transactionId);
+        setExchangeRate(tx.exchangeRate);
+        setDepositAmount(tx.depositAmount);
+      } else {
+        // DEV-SKIP
+        setTransactionId(null);
+        setExchangeRate(null);
+        setDepositAmount(amtNum);
+      }
     },
     [amtNum, quote, wallet_address, contact_email, verifyOtp, placeSellOrder]
   );
 
   useEffect(() => {
     if (depositAmount != null) {
+      // trigger the on-chain send
       sendOnChain();
+      // then reset depositAmount so this effect only runs once per set
+      setDepositAmount(null);
     }
   }, [depositAmount, sendOnChain]);
 

@@ -37,7 +37,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     quoteLoading,
     quoteError,
     exchangeRate,
-    initiateWithdraw,
+    initiateWithdraw, // we won’t use this in dev-skip
     confirmOtp,
     depositAmount,
     isSendingOnChain,
@@ -46,27 +46,27 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     charity.contact_email || ""
   );
 
-  // 🔍 Debug: log whenever depositAmount or send‐state changes
+  // DEBUG: logs
   useEffect(() => {
     console.log("→ depositAmount:", depositAmount);
     console.log("→ isSendingOnChain:", isSendingOnChain);
   }, [depositAmount, isSendingOnChain]);
 
   const [isOpen, setIsOpen] = useState(false);
+  // OTP modal never actually opens in dev-skip
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  const getErrorMessage = (err: any): string => {
-    if (err?.message) {
-      try {
-        const parsed = JSON.parse(err.message);
-        return parsed.message || err.message;
-      } catch {
-        return err.message;
-      }
-    }
-    return String(err);
-  };
+  const getErrorMessage = (err: any): string =>
+    err?.message
+      ? (() => {
+          try {
+            return JSON.parse(err.message).message;
+          } catch {
+            return err.message;
+          }
+        })()
+      : String(err);
 
   const reset = () => {
     setIsSendingOtp(false);
@@ -74,12 +74,11 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     setOtpOpen(false);
   };
 
-  const handleSelectPercent = (percent: number) => {
-    if (balance != null) {
-      setAmount(((balance * percent) / 100).toFixed(6));
-    }
+  const handleSelectPercent = (pct: number) => {
+    if (balance != null) setAmount(((balance * pct) / 100).toFixed(6));
   };
 
+  // ← Dev-skip: bypass OTP, call confirmOtp immediately
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     const amtNum = parseFloat(amount) || 0;
@@ -89,8 +88,8 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     }
     setIsSendingOtp(true);
     try {
-      await initiateWithdraw();
-      setOtpOpen(true);
+      // immediately call confirmOtp (no OTP needed)
+      await confirmOtp("");
     } catch (err: any) {
       toast({
         title: "Withdrawal Error",
@@ -103,6 +102,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   };
 
   const handleOtpVerify = async (otp: string) => {
+    // not used in dev-skip
     try {
       await confirmOtp(otp);
       setOtpOpen(false);
@@ -138,24 +138,21 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
         <DialogContent className="max-w-md space-y-4">
           <DialogHeader>
             <DialogTitle>Send Funds to Bank</DialogTitle>
-            <DialogDescription>
-              Funds will be converted to CAD and sent to your bank account.
-            </DialogDescription>
+            <DialogDescription>DEV MODE: OTP skipped</DialogDescription>
           </DialogHeader>
 
-          {/* 1) Balance */}
+          {/* Balance */}
           <Card>
             <CardContent className="flex items-center justify-center py-6">
               <BalanceDisplay balance={balance} />
             </CardContent>
           </Card>
 
-          {/* 2) Amount form */}
+          {/* Amount Form */}
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-6">
               <form onSubmit={handleWithdraw} className="w-full space-y-3">
                 <Label htmlFor="amount">Amount To Send</Label>
-
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground">
                     $
@@ -173,12 +170,10 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                     className="pl-7 h-10 w-full"
                   />
                 </div>
-
                 <PercentageButtons
                   onSelect={handleSelectPercent}
                   disabled={isSendingOtp || balance == null}
                 />
-
                 <div className="text-sm text-muted-foreground">
                   {quoteError
                     ? "Error loading rate"
@@ -188,7 +183,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                     ? `1 CAD ≈ ${exchangeRate} USD`
                     : null}
                 </div>
-
                 <Button
                   type="submit"
                   className="w-full h-10"
@@ -197,7 +191,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   {isSendingOnChain
                     ? "Broadcasting…"
                     : isSendingOtp
-                    ? "Sending OTP…"
+                    ? "Processing…"
                     : amount
                     ? `Withdraw $${amount}`
                     : "Withdraw"}
@@ -208,6 +202,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
         </DialogContent>
       </Dialog>
 
+      {/* OTP modal remains, but never opens in dev-skip */}
       <OtpModal
         isOpen={otpOpen}
         onOpenChange={setOtpOpen}
