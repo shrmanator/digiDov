@@ -50,7 +50,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  // Clean JSON error messages
   const getErrorMessage = (err: any): string => {
     if (err?.message) {
       try {
@@ -130,7 +129,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
         <DialogTrigger asChild>
           <Button variant="outline">Withdraw</Button>
         </DialogTrigger>
-
         <DialogContent className="max-w-md space-y-4">
           <DialogHeader>
             <DialogTitle>Send Funds to Bank</DialogTitle>
@@ -139,27 +137,36 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             </DialogDescription>
           </DialogHeader>
 
+          {/* 1) Balance card – centered */}
           <Card>
-            <CardContent>
+            <CardContent className="flex items-center justify-center py-6">
               <BalanceDisplay balance={balance} />
             </CardContent>
           </Card>
 
+          {/* 2) Amount-to-send card – centered & uniform heights */}
           <Card>
-            <CardContent className="space-y-3">
-              <form onSubmit={handleWithdraw} className="space-y-3">
+            <CardContent className="flex flex-col items-center justify-center py-6">
+              <form onSubmit={handleWithdraw} className="w-full space-y-3">
                 <Label htmlFor="amount">Amount To Send</Label>
-                <Input
-                  id="amount"
-                  type="text"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) =>
-                    setAmount(e.target.value.replace(/[^\d.]/g, ""))
-                  }
-                  disabled={isSendingOtp}
-                  required
-                />
+
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="amount"
+                    type="text"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) =>
+                      setAmount(e.target.value.replace(/[^\d.]/g, ""))
+                    }
+                    disabled={isSendingOtp}
+                    required
+                    className="pl-7 h-10 w-full"
+                  />
+                </div>
 
                 <PercentageButtons
                   onSelect={handleSelectPercent}
@@ -178,10 +185,14 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-10"
                   disabled={isSendingOtp || !amount}
                 >
-                  {isSendingOtp ? "Sending OTP…" : "Withdraw"}
+                  {isSendingOtp
+                    ? "Sending OTP…"
+                    : amount
+                    ? `Withdraw $${amount}`
+                    : "Withdraw"}
                 </Button>
               </form>
             </CardContent>

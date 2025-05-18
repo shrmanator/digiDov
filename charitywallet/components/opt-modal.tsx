@@ -1,3 +1,5 @@
+// components/OtpModal.tsx
+
 "use client";
 
 import React, { useState, ChangeEvent } from "react";
@@ -49,12 +51,10 @@ export default function OtpModal({
       const raw = err?.message ?? String(err);
       let msg = "OTP verification failed. Please try again.";
       if (typeof raw === "string") {
-        // Extract JSON payload
         const outerMatch = raw.match(/\{[^]*\}/);
         if (outerMatch) {
           try {
             const parsedOuter = JSON.parse(outerMatch[0]);
-            // If there's a nested 'error' field, extract its JSON
             if (parsedOuter.error) {
               const innerMatch = (parsedOuter.error as string).match(
                 /\{[^]*\}/

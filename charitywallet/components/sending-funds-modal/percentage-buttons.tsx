@@ -1,36 +1,34 @@
-"use client";
+import { Button } from "../ui/button";
 
-import { Button } from "@/components/ui/button";
+const PRESETS = [
+  { label: "25%", value: 25 },
+  { label: "50%", value: 50 },
+  { label: "75%", value: 75 },
+  { label: "100%", value: 100 },
+];
 
-export interface PercentageButtonsProps {
-  onSelect: (percentage: number) => void;
+interface PercentageButtonsProps {
+  onSelect: (pct: number) => void;
   disabled?: boolean;
 }
 
-const PRESETS = [
-  { label: "10%", value: 10 },
-  { label: "50%", value: 50 },
-  { label: "75%", value: 75 },
-  { label: "Max", value: 100 },
-];
-
 export default function PercentageButtons({
   onSelect,
-  disabled = false,
+  disabled,
 }: PercentageButtonsProps) {
   return (
-    <div className="flex items-center justify-between gap-2 py-2">
-      {PRESETS.map((preset) => (
+    <div className="grid grid-cols-4 gap-2 w-full">
+      {PRESETS.map(({ label, value }) => (
         <Button
-          key={preset.label}
+          key={label}
           type="button"
           variant="outline"
           size="sm"
           className="w-full"
           disabled={disabled}
-          onClick={() => onSelect(preset.value)}
+          onClick={() => onSelect(value)}
         >
-          {preset.label}
+          {label}
         </Button>
       ))}
     </div>
