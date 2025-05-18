@@ -6,33 +6,29 @@ import { toast } from "@/hooks/use-toast";
 import { useSendTransaction } from "thirdweb/react";
 import type { Chain } from "thirdweb/chains";
 
-/**
- * Hook to send any ERC-20 token on any supported chain.
- *
- * @param amount           Amount of tokens (decimal string) to send.
- * @param recipientAddress Address to receive the tokens.
- * @param contractAddress  ERC-20 contract address to send from.
- * @param chain            Chain object (e.g. polygon, ethereum, etc.).
- */
 export function useSendErc20Token(
-  amount: string,
+  amount: string, // e.g. "12.345"
   recipientAddress: string,
   contractAddress: string,
   chain: Chain
 ) {
+  // 1) This hook gives you back a mutate function plus status flags:
   const {
     mutate: sendTx,
-    isPending,
+    isPending, // you can use this to disable your button
     data: transactionResult,
   } = useSendTransaction();
 
+  // 2) Instantiate your ERC-20 contract
   const contract = getContract({
     address: contractAddress,
     chain,
     client,
   });
 
-  function onClick() {
+  // 3) Build + send the actual transfer
+  const onClick = () => {
+    // toWei() will convert your decimal-string into the right units
     const tx = transfer({
       contract,
       to: recipientAddress,
@@ -43,7 +39,7 @@ export function useSendErc20Token(
       onSuccess: () => {
         toast({
           title: "Token Sent",
-          description: `Sent ${amount} tokens to ${recipientAddress}`,
+          description: `Sent ${amount} USDC to ${recipientAddress}`,
         });
       },
       onError: (error: Error) => {
@@ -54,7 +50,7 @@ export function useSendErc20Token(
         });
       },
     });
-  }
+  };
 
   return { onClick, isPending, transactionResult };
 }

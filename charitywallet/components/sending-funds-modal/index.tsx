@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OtpModal from "../opt-modal";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
@@ -45,6 +45,12 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     charity.wallet_address || "",
     charity.contact_email || ""
   );
+
+  // 🔍 Debug: log whenever depositAmount or send‐state changes
+  useEffect(() => {
+    console.log("→ depositAmount:", depositAmount);
+    console.log("→ isSendingOnChain:", isSendingOnChain);
+  }, [depositAmount, isSendingOnChain]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
@@ -137,14 +143,14 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* 1) Balance card – centered */}
+          {/* 1) Balance */}
           <Card>
             <CardContent className="flex items-center justify-center py-6">
               <BalanceDisplay balance={balance} />
             </CardContent>
           </Card>
 
-          {/* 2) Amount-to-send card – centered & uniform heights */}
+          {/* 2) Amount form */}
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-6">
               <form onSubmit={handleWithdraw} className="w-full space-y-3">
@@ -186,9 +192,11 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                 <Button
                   type="submit"
                   className="w-full h-10"
-                  disabled={isSendingOtp || !amount}
+                  disabled={isSendingOtp || isSendingOnChain || !amount}
                 >
-                  {isSendingOtp
+                  {isSendingOnChain
+                    ? "Broadcasting…"
+                    : isSendingOtp
                     ? "Sending OTP…"
                     : amount
                     ? `Withdraw $${amount}`

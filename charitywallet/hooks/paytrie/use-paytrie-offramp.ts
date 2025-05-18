@@ -1,5 +1,3 @@
-// hooks/paytrie/use-paytrie-offramp.ts
-
 import { useState, useCallback, useEffect } from "react";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
@@ -12,7 +10,7 @@ export function usePayTrieOfframp(
   wallet_address: string,
   contact_email: string
 ) {
-  const [amount, setAmount] = useState(""); // string from input
+  const [amount, setAmount] = useState("");
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
@@ -20,7 +18,6 @@ export function usePayTrieOfframp(
   const { sendOtp, verifyOtp } = usePayTrieAuth(contact_email);
 
   const amtNum = parseFloat(amount) || 0;
-
   const {
     quote,
     isLoading: quoteLoading,
@@ -29,7 +26,7 @@ export function usePayTrieOfframp(
 
   const { placeSellOrder, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
-  // onClick/send hook always re-bound each render with the latest depositAmount
+  // Only pull out onClick + isPending
   const { onClick: sendOnChain, isPending: isSendingOnChain } =
     useSendErc20Token(
       (depositAmount ?? 0).toString(),
@@ -46,25 +43,20 @@ export function usePayTrieOfframp(
   const confirmOtp = useCallback(
     async (code: string) => {
       const token = await verifyOtp(code);
-
       const payload = buildPaytrieSellOrderPayload(
         amtNum,
-        quote!, // this includes your parsed amtNum
+        quote!,
         wallet_address,
         contact_email
       );
-
       const tx = await placeSellOrder(payload, token);
       setTransactionId(tx.transactionId);
       setExchangeRate(tx.exchangeRate);
       setDepositAmount(tx.depositAmount);
-
-      // ← no direct sendOnChain() here
     },
     [amtNum, quote, wallet_address, contact_email, verifyOtp, placeSellOrder]
   );
 
-  // ▶️ Fire the on-chain transfer only after depositAmount updates:
   useEffect(() => {
     if (depositAmount != null) {
       sendOnChain();
