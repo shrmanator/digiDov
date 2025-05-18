@@ -1,6 +1,9 @@
+// components/sending-funds-modal/index.tsx
+
 "use client";
 
 import React, { useState } from "react";
+import OtpModal from "../opt-modal";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
 import {
@@ -10,21 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent } from "@/components/ui/card";
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Card, CardContent } from "../ui/card";
 import BalanceDisplay from "./balance-display";
-import OtpModal from "../opt-modal";
+import { toast } from "@/hooks/use-toast";
 import PercentageButtons from "./percentage-buttons";
 
-export default function SendingFundsModal({
-  charity,
-}: {
-  charity: { wallet_address: string; contact_email: string };
-}) {
+interface SendingFundsModalProps {
+  charity: {
+    wallet_address: string;
+    contact_email: string;
+  };
+}
+
+export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const balance = useTotalUsdcBalance(charity.wallet_address || "");
   const {
     amount,
@@ -34,7 +39,6 @@ export default function SendingFundsModal({
     exchangeRate,
     initiateWithdraw,
     confirmOtp,
-    transactionId,
     depositAmount,
     isSendingOnChain,
   } = usePayTrieOfframp(
@@ -45,45 +49,72 @@ export default function SendingFundsModal({
   const [isOpen, setIsOpen] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [error, setError] = useState<string>("");
+
+  // Clean JSON error messages
+  const getErrorMessage = (err: any): string => {
+    if (err?.message) {
+      try {
+        const parsed = JSON.parse(err.message);
+        return parsed.message || err.message;
+      } catch {
+        return err.message;
+      }
+    }
+    return String(err);
+  };
 
   const reset = () => {
-    setOtpOpen(false);
-    setError("");
-    setAmount("");
     setIsSendingOtp(false);
+    setAmount("");
+    setOtpOpen(false);
   };
 
   const handleSelectPercent = (percent: number) => {
     if (balance != null) {
-      const calculated = ((balance * percent) / 100).toFixed(6);
-      setAmount(calculated);
+      setAmount(((balance * percent) / 100).toFixed(6));
     }
   };
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    const amtNum = parseFloat(amount) || 0;
+    if (amtNum <= 0) {
+      toast({ title: "Invalid Amount", description: "Enter an amount > 0." });
+      return;
+    }
     setIsSendingOtp(true);
     try {
       await initiateWithdraw();
-      setIsSendingOtp(false);
       setOtpOpen(true);
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        title: "Withdrawal Error",
+        description: getErrorMessage(err),
+        variant: "destructive",
+      });
+    } finally {
       setIsSendingOtp(false);
     }
   };
 
-  // new handler for OTP verification
   const handleOtpVerify = async (otp: string) => {
-    setError("");
     try {
       await confirmOtp(otp);
       setOtpOpen(false);
+      toast({
+        title: "Withdrawal Successful!",
+        description:
+          "Your withdrawal is being processed and funds will be sent to your bank shortly.",
+      });
+      setIsOpen(false);
+      reset();
     } catch (err: any) {
-      setError(err.message);
-      throw err; // let OtpModal show inline error
+      toast({
+        title: "Verification Error",
+        description: getErrorMessage(err),
+        variant: "destructive",
+      });
+      throw err;
     }
   };
 
@@ -100,7 +131,7 @@ export default function SendingFundsModal({
           <Button variant="outline">Withdraw</Button>
         </DialogTrigger>
 
-        <DialogContent className="max-w-md space-y-3">
+        <DialogContent className="max-w-md space-y-4">
           <DialogHeader>
             <DialogTitle>Send Funds to Bank</DialogTitle>
             <DialogDescription>
@@ -109,64 +140,50 @@ export default function SendingFundsModal({
           </DialogHeader>
 
           <Card>
-            <CardContent className="p-4 space-y-1">
+            <CardContent>
               <BalanceDisplay balance={balance} />
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4 space-y-2">
-              {!transactionId ? (
-                <form onSubmit={handleWithdraw} className="space-y-2">
-                  <Label htmlFor="amount">Amount To Send</Label>
-                  <Input
-                    id="amount"
-                    type="text"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) =>
-                      setAmount(e.target.value.replace(/[^0-9.]/g, ""))
-                    }
-                    required
-                    disabled={quoteLoading || isSendingOtp}
-                  />
-                  <PercentageButtons
-                    onSelect={handleSelectPercent}
-                    disabled={quoteLoading || isSendingOtp || balance == null}
-                  />
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    {quoteError
-                      ? "Error loading rate"
-                      : quoteLoading
-                      ? "Loading rate…"
-                      : exchangeRate != null
-                      ? `1 CAD ≈ ${Number(exchangeRate).toFixed(4)} USD`
-                      : null}
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={quoteLoading || isSendingOtp || !amount}
-                  >
-                    {quoteLoading || isSendingOtp ? "Sending OTP…" : "Withdraw"}
-                  </Button>
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                </form>
-              ) : (
-                <Alert variant="default">
-                  <AlertTitle>Success!</AlertTitle>
-                  <AlertDescription>
-                    {depositAmount != null
-                      ? `${depositAmount} will be converted to CAD and sent to your bank account. For questions: contact@digidov.com`
-                      : "Your withdrawal is in progress."}
-                  </AlertDescription>
-                </Alert>
-              )}
+            <CardContent className="space-y-3">
+              <form onSubmit={handleWithdraw} className="space-y-3">
+                <Label htmlFor="amount">Amount To Send</Label>
+                <Input
+                  id="amount"
+                  type="text"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) =>
+                    setAmount(e.target.value.replace(/[^\d.]/g, ""))
+                  }
+                  disabled={isSendingOtp}
+                  required
+                />
+
+                <PercentageButtons
+                  onSelect={handleSelectPercent}
+                  disabled={isSendingOtp || balance == null}
+                />
+
+                <div className="text-sm text-muted-foreground">
+                  {quoteError
+                    ? "Error loading rate"
+                    : quoteLoading
+                    ? "Loading rate…"
+                    : exchangeRate != null
+                    ? `1 CAD ≈ ${exchangeRate} USD`
+                    : null}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSendingOtp || !amount}
+                >
+                  {isSendingOtp ? "Sending OTP…" : "Withdraw"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </DialogContent>

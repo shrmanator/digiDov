@@ -4,8 +4,12 @@ import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePayTrieQuote } from "@/hooks/paytrie/use-paytrie-quotes";
 
+/**
+ * Displays the current USD → CAD conversion rate by quoting 1 USD.
+ */
 export default function QuoteDisplay() {
-  const { quote, isLoading, error } = usePayTrieQuote();
+  // Always pass 1 to fetch a rate for 1 USD
+  const { quote, isLoading, error } = usePayTrieQuote(1);
 
   if (error) {
     return <span className="text-sm text-destructive">Error loading rate</span>;
