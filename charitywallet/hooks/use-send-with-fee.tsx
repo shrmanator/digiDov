@@ -28,7 +28,7 @@ export function useSendWithFee(
 
     switch (activeChain.id) {
       case 137: // Polygon main‑net
-        contractAddress = "0x337FeC6c583A8e143Dc0660243cF21Db558c980C";
+        contractAddress = "0x79B0A75852603091033fD445D1119Bf1B001aDA6";
         break;
       case 1: // Ethereum main‑net – (not yet deployed)
       default:
