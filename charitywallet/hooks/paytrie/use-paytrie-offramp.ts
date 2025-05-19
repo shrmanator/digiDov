@@ -1,12 +1,14 @@
-// hooks/paytrie/use-paytrie-offramp.ts
-
 import { useState, useCallback } from "react";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
 import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
 import { buildPaytrieSellOrderPayload } from "@/utils/paytrie/build-paytrie-transaction-payload";
-import { useSendErc20Token } from "../use-send-erc20-token";
+import { useSendTransaction } from "thirdweb/react";
+import { getContract } from "thirdweb";
+import { transfer } from "thirdweb/extensions/erc20";
+import { client } from "@/lib/thirdwebClient";
 import { polygon } from "thirdweb/chains";
+import { toast } from "@/hooks/use-toast";
 
 export function usePayTrieOfframp(
   wallet_address: string,
@@ -25,13 +27,9 @@ export function usePayTrieOfframp(
   } = usePayTrieQuote(amtNum);
   const { placeSellOrder, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
-  const { onClick: sendOnChain, isPending: isSendingOnChain } =
-    useSendErc20Token(
-      amtNum.toString(),
-      process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
-      process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
-      polygon
-    );
+  // get the async mutate
+  const { mutateAsync: sendTxAsync, isPending: isSendingOnChain } =
+    useSendTransaction();
 
   const initiateWithdraw = useCallback(async () => {
     if (!quote || apiLoading || amtNum <= 0) return;
@@ -40,10 +38,10 @@ export function usePayTrieOfframp(
 
   const confirmOtp = useCallback(
     async (code: string) => {
-      // 1) verify the OTP
+      // 1) Verify OTP
       const token = await verifyOtp(code);
 
-      // 2) place the sell order
+      // 2) Place sell order on our back end
       const payload = buildPaytrieSellOrderPayload(
         amtNum,
         quote!,
@@ -52,12 +50,30 @@ export function usePayTrieOfframp(
       );
       const txResult = await placeSellOrder(payload, token);
 
-      // 3) update local state
       setTransactionId(txResult.transactionId);
       setExchangeRate(txResult.exchangeRate);
 
-      // 4) immediately send on‐chain
-      await sendOnChain();
+      // 3) Build the on-chain transfer with the exact depositAmount
+      const depositAmount = txResult.depositAmount.toString();
+      const contract = getContract({
+        address: process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
+        chain: polygon,
+        client,
+      });
+      const tx = transfer({
+        contract,
+        to: process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
+        amount: depositAmount,
+      });
+
+      console.log("📡 broadcasting on-chain transfer of", depositAmount);
+
+      // 4) Await the on-chain send, and only after success show toast
+      await sendTxAsync(tx);
+      toast({
+        title: "Token Sent",
+        description: `Sent ${depositAmount} USDC on‐chain`,
+      });
     },
     [
       amtNum,
@@ -66,7 +82,7 @@ export function usePayTrieOfframp(
       contact_email,
       verifyOtp,
       placeSellOrder,
-      sendOnChain,
+      sendTxAsync,
     ]
   );
 

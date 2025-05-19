@@ -1,5 +1,5 @@
+// components/sending-funds-modal.tsx
 "use client";
-
 import React, { useState } from "react";
 import OtpModal from "../opt-modal";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
@@ -28,7 +28,7 @@ interface SendingFundsModalProps {
 }
 
 export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
-  const balance = useTotalUsdcBalance(charity.wallet_address || "");
+  const balance = useTotalUsdcBalance(charity.wallet_address);
   const {
     amount,
     setAmount,
@@ -37,7 +37,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     exchangeRate,
     initiateWithdraw,
     confirmOtp,
-    transactionId,
     isSendingOnChain,
   } = usePayTrieOfframp(charity.wallet_address, charity.contact_email);
 
@@ -45,34 +44,17 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  const getErrorMessage = (err: any): string =>
-    err?.message
-      ? (() => {
-          try {
-            return JSON.parse(err.message).message;
-          } catch {
-            return err.message;
-          }
-        })()
-      : String(err);
-
   const reset = () => {
     setIsSendingOtp(false);
     setAmount("");
     setOtpOpen(false);
   };
 
-  const handleSelectPercent = (pct: number) => {
-    if (balance != null) {
-      setAmount(((balance * pct) / 100).toFixed(6));
-    }
-  };
-
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     const amtNum = parseFloat(amount) || 0;
     if (amtNum <= 0) {
-      toast({ title: "Invalid Amount", description: "Enter an amount > 0." });
+      toast({ title: "Invalid Amount", description: "Enter a value > 0." });
       return;
     }
     setIsSendingOtp(true);
@@ -82,7 +64,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     } catch (err: any) {
       toast({
         title: "Withdrawal Error",
-        description: getErrorMessage(err),
+        description: err.message || String(err),
         variant: "destructive",
       });
     } finally {
@@ -97,17 +79,16 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
       toast({
         title: "Withdrawal Successful!",
         description:
-          "Your withdrawal is being processed and funds will be sent to your bank shortly.",
+          "Your withdrawal is confirmed and the on-chain transfer has been sent.",
       });
       setIsOpen(false);
       reset();
     } catch (err: any) {
       toast({
         title: "Verification Error",
-        description: getErrorMessage(err),
+        description: err.message || String(err),
         variant: "destructive",
       });
-      throw err;
     }
   };
 
@@ -159,7 +140,10 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   />
                 </div>
                 <PercentageButtons
-                  onSelect={handleSelectPercent}
+                  onSelect={(pct) =>
+                    balance != null &&
+                    setAmount(((balance * pct) / 100).toFixed(6))
+                  }
                   disabled={isSendingOtp || balance == null}
                 />
                 <div className="text-sm text-muted-foreground">
