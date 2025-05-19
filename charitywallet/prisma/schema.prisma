@@ -76,6 +76,7 @@ model donation_receipt {
     donation_date        DateTime
     fiat_amount          Float
     crypto_amount_wei    BigInt? // Optional
+    usdc_sent            BigInt?
     transaction_hash     String       @unique
     chainId              String? // Optional
     jurisdiction         Jurisdiction @default(CRA)
