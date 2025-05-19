@@ -1,16 +1,15 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Prisma, DonationReceipt, Charity, Donor } from "@prisma/client";
+import type { ReceiptDTO } from "../types/receipt";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
-import { Prisma, donation_receipt, charity, donor } from "@prisma/client";
-import { DonationReceipt } from "../types/receipt";
 import { getChainName } from "../types/chains";
 
 /**
  * 1) The shared “include” fragment for Prisma.
- *    Changes here flow through both queries.
  */
-const baseInclude: Prisma.donation_receiptInclude = {
+const baseInclude: Prisma.DonationReceiptInclude = {
   charity: {
     select: {
       charity_name: true,
@@ -29,41 +28,76 @@ const baseInclude: Prisma.donation_receiptInclude = {
 
 /**
  * 2) Map a raw Prisma record → our front-end DTO.
- *    Single Responsibility: only handles conversion.
  */
 function mapReceipt(
-  r: donation_receipt & {
-    charity: {
-      charity_name: string | null;
-      registration_number: string | null;
-      charity_sends_receipt: boolean;
-    } | null;
-    donor: {
-      first_name: string | null;
-      last_name: string | null;
-      email: string | null;
-    } | null;
-  }
-): DonationReceipt {
+  r: DonationReceipt & { charity: Charity | null; donor: Donor | null }
+): ReceiptDTO {
   return {
-    ...r, // includes id, receipt_number, fiat_amount, crypto_amount_wei, usdc_sent, transaction_hash, etc.
+    id: r.id,
+    receipt_number: r.receipt_number,
     donation_date: r.donation_date.toISOString(),
-    charity: r.charity,
-    donor: r.donor,
+    fiat_amount: r.fiat_amount,
+    crypto_amount_wei: r.crypto_amount_wei,
+    usdc_sent: r.usdc_sent?.toString() ?? null,
+    transaction_hash: r.transaction_hash,
+    chainId: r.chainId,
     chain: getChainName(r.chainId),
+    jurisdiction: r.jurisdiction,
+    jurisdiction_details: r.jurisdiction_details,
+    created_at: r.created_at,
+    updated_at: r.updated_at,
+    charity: r.charity
+      ? {
+          charity_name: r.charity.charity_name,
+          registration_number: r.charity.registration_number,
+          charity_sends_receipt: r.charity.charity_sends_receipt,
+        }
+      : null,
     charity_name: r.charity?.charity_name ?? null,
-    usdcSent: r.usdc_sent != null ? r.usdc_sent.toString() : null, // convert bigint to string
+    donor: r.donor
+      ? {
+          first_name: r.donor.first_name,
+          last_name: r.donor.last_name,
+          email: r.donor.email,
+        }
+      : null,
+  };
+}
+): ReceiptDTO {
+  return {
+    id: r.id,
+    receipt_number: r.receipt_number,
+    donation_date: r.donation_date.toISOString(),
+    fiat_amount: r.fiat_amount,
+    crypto_amount_wei: r.crypto_amount_wei,
+    usdc_sent: r.usdc_sent?.toString() ?? null,
+    transaction_hash: r.transaction_hash,
+    chain: getChainName(r.chainId),
+    charity: r.charity
+      ? {
+          charity_name: r.charity.charity_name,
+          registration_number: r.charity.registration_number,
+          charity_sends_receipt: r.charity.charity_sends_receipt,
+        }
+      : null,
+    charity_name: r.charity?.charity_name ?? null,
+    donor: r.donor
+      ? {
+          first_name: r.donor.first_name,
+          last_name: r.donor.last_name,
+          email: r.donor.email,
+        }
+      : null,
   };
 }
 
 /**
  * 3) Generic fetch + map pipeline.
- *    Accepts any Prisma “where” filter.
  */
 async function fetchReceipts(
-  where: Prisma.donation_receiptWhereInput
-): Promise<DonationReceipt[]> {
-  const records = await prisma.donation_receipt.findMany({
+  where: Prisma.DonationReceiptWhereInput
+): Promise<ReceiptDTO[]> {
+  const records = await prisma.donationReceipt.findMany({
     where,
     orderBy: { donation_date: "desc" },
     include: baseInclude,
@@ -76,15 +110,8 @@ async function fetchReceipts(
  */
 export async function getDonationReceiptsForDonor(
   walletAddress: string
-): Promise<DonationReceipt[]> {
-  return fetchReceipts({
-    donor: {
-      wallet_address: {
-        equals: walletAddress.toLowerCase(),
-        mode: "insensitive",
-      },
-    },
-  });
+): Promise<ReceiptDTO[]> {
+  return fetchReceipts({ donor: { wallet_address: { equals: walletAddress.toLowerCase(), mode: "insensitive" } } });
 }
 
 /**
@@ -92,12 +119,8 @@ export async function getDonationReceiptsForDonor(
  */
 export async function getDonationReceiptsForCharity(
   walletAddress: string
-): Promise<DonationReceipt[]> {
-  return fetchReceipts({
-    charity: {
-      wallet_address: walletAddress,
-    },
-  });
+): Promise<ReceiptDTO[]> {
+  return fetchReceipts({ charity: { wallet_address: walletAddress } });
 }
 
 /**
@@ -106,29 +129,12 @@ export async function getDonationReceiptsForCharity(
 export async function getDonationReceiptPdf(
   receiptId: string
 ): Promise<string> {
-  const receipt = await prisma.donation_receipt.findUnique({
+  const receipt = await prisma.donationReceipt.findUnique({
     where: { id: receiptId },
-    include: {
-      charity: true,
-      donor: true,
-    },
+    include: { charity: true, donor: true },
   });
-
-  if (!receipt) {
-    throw new Error("Donation receipt not found");
-  }
-
-  // Ensure `date_of_issue` is present
-  const receiptData: donation_receipt & {
-    charity?: charity | null;
-    donor?: donor | null;
-    date_of_issue: string;
-  } = {
-    ...receipt,
-    date_of_issue: receipt.donation_date.toISOString(),
-  };
-
-  const pdfBytes = await generateDonationReceiptPDF(receiptData);
+  if (!receipt) throw new Error("Donation receipt not found");
+  const pdfBytes = await generateDonationReceiptPDF(receipt as DonationReceipt);
   return Buffer.from(pdfBytes).toString("base64");
 }
 
@@ -139,70 +145,67 @@ async function incrementJurisdictionCounter(
   jurisdiction: "CRA" | "IRS",
   tx: Prisma.TransactionClient
 ): Promise<number> {
-  const counterRecord = await tx.donation_receipt_counter.findUnique({
-    where: { jurisdiction },
-  });
-
-  if (counterRecord) {
-    const newCounter = counterRecord.counter + 1;
-    await tx.donation_receipt_counter.update({
-      where: { jurisdiction },
-      data: { counter: newCounter },
-    });
-    return newCounter;
-  } else {
-    await tx.donation_receipt_counter.create({
-      data: { jurisdiction, counter: 1 },
-    });
-    return 1;
+  const counter = await tx.donationReceiptCounter.findUnique({ where: { jurisdiction } });
+  if (counter) {
+    const next = counter.counter + 1;
+    await tx.donationReceiptCounter.update({ where: { jurisdiction }, data: { counter: next } });
+    return next;
   }
+  await tx.donationReceiptCounter.create({ data: { jurisdiction, counter: 1 } });
+  return 1;
 }
 
 /**
  * Formats a jurisdiction and counter into a receipt number string.
  */
-function formatReceiptNumber(jurisdiction: string, counter: number): string {
-  return `${jurisdiction.toLowerCase()}-${String(counter).padStart(3, "0")}`;
+function formatReceiptNumber(jurisdiction: string, count: number): string {
+  return `${jurisdiction.toLowerCase()}-${String(count).padStart(3, "00")}`;
 }
 
 /**
- * Retrieves and increments the receipt counter for the given jurisdiction,
- * returning a formatted receipt number (e.g., "cra-001").
+ * Retrieves and increments the receipt counter, returning a formatted receipt number.
  */
 export async function getNextReceiptNumber(
   jurisdiction: "CRA" | "IRS"
 ): Promise<string> {
-  const newCounter = await prisma.$transaction((tx) =>
-    incrementJurisdictionCounter(jurisdiction, tx)
-  );
-
-  return formatReceiptNumber(jurisdiction, newCounter);
+  const count = await prisma.$transaction((tx) => incrementJurisdictionCounter(jurisdiction, tx));
+  return formatReceiptNumber(jurisdiction, count);
 }
 
 /**
  * Creates a new donation receipt in the database.
- * If no receipt number is provided, one will be generated.
  */
 export async function createDonationReceipt(
-  data: Omit<donation_receipt, "id" | "created_at" | "updated_at">
-): Promise<donation_receipt> {
-  const jurisdiction = data.jurisdiction || "CRA";
-  const receiptNumber =
-    data.receipt_number || (await getNextReceiptNumber(jurisdiction));
+  data: Omit<ReceiptDTO, "id" | "created_at" | "updated_at" | "charity" | "donor" | "charity_name" | "chain">
+): Promise<DonationReceipt> {
+  // Map DTO input to Prisma create data
+  const {
+    donation_date,
+    fiat_amount,
+    crypto_amount_wei,
+    usdc_sent,
+    transaction_hash,
+    chainId,
+    jurisdiction,
+    jurisdiction_details,
+    charity_id,
+    donor_id,
+  } = data;
 
-  return prisma.donation_receipt.create({
+  const donationDate = typeof donation_date === 'string' ? new Date(donation_date) : donation_date;
+
+  return prisma.donationReceipt.create({
     data: {
-      receipt_number: receiptNumber,
-      donation_date: new Date(data.donation_date),
-      fiat_amount: data.fiat_amount,
-      crypto_amount_wei: data.crypto_amount_wei,
-      usdc_sent: data.usdc_sent, // new USDC field
-      transaction_hash: data.transaction_hash,
-      chainId: data.chainId,
+      donation_date: donationDate,
+      fiat_amount,
+      crypto_amount_wei,
+      usdc_sent: usdc_sent != null ? BigInt(usdc_sent) : undefined,
+      transaction_hash,
+      chainId,
       jurisdiction,
-      jurisdiction_details: data.jurisdiction_details ?? Prisma.JsonNull,
-      charity_id: data.charity_id,
-      donor_id: data.donor_id,
+      jurisdiction_details,
+      charity_id,
+      donor_id,
     },
   });
 }
@@ -211,7 +214,9 @@ export async function createDonationReceipt(
  * Generates a donation receipt PDF and returns it as a base64 string.
  */
 export async function handleDonationReceipt(
-  receiptData: donation_receipt
+  receiptData: DonationReceipt
+): Promise<string> {(
+  receiptData: DonationReceipt
 ): Promise<string> {
   const pdfBytes = await generateDonationReceiptPDF(receiptData);
   return Buffer.from(pdfBytes).toString("base64");
