@@ -17,11 +17,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
-import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
-import CombinedWalletBalance, {
-  SupportedChain,
-} from "@/components/combine-wallet-balance";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
@@ -29,6 +26,7 @@ import { getDonationLink } from "@/utils/get-donation-link";
 import DonationHistory from "@/components/transaction-history-via-db";
 import SendingFundsModal from "@/components/sending-funds-modal";
 import TotalUsdcBalance from "@/components/total-usdc-balance";
+import { SupportedChain } from "@/components/combine-wallet-balance";
 
 export const revalidate = 60;
 

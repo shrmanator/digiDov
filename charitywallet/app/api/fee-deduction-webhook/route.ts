@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 
 import {
   createDonationReceipt,
@@ -21,7 +20,8 @@ import {
   notifyDonorWithReceipt,
   notifyCharityAboutDonation,
 } from "@/app/actions/email";
-import { DonationReceipt } from "@/app/types/receipt";
+import { Prisma } from "@prisma/client";
+import { DonationReceiptDto } from "@/app/types/receipt";
 
 const web3 = new Web3();
 
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     }
 
     // 8. Build the DonationReceipt DTO
-    const donationDto: DonationReceipt = {
+    const donationDto: DonationReceiptDto = {
       ...receipt,
       donation_date: receipt.donation_date.toISOString(),
       charity: {
