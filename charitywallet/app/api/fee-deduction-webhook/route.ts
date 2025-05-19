@@ -79,6 +79,7 @@ export async function POST(request: Request) {
         donation_date: new Date(ts * 1000),
         fiat_amount: fiat,
         crypto_amount_wei: BigInt(event.fullAmount),
+        usdc_sent: BigInt(event.usdcSent), // ← NEW FIELD
         chainId: String(chainId),
         transaction_hash: event.transactionHash,
         jurisdiction: "CRA",
@@ -126,6 +127,7 @@ export async function POST(request: Request) {
         email: donor.email!,
       },
       chain: chainId ? String(chainId) : null,
+      usdcSent: receipt.usdc_sent?.toString() ?? null, // ← NEW FIELD
     };
 
     // 9. Notify donor and charity
