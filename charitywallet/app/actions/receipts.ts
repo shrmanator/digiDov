@@ -46,13 +46,13 @@ function mapReceipt(
   }
 ): DonationReceipt {
   return {
-    ...r, // id, receipt_number, fiat_amount, transaction_hash, etc.
+    ...r, // includes id, receipt_number, fiat_amount, crypto_amount_wei, usdc_sent, transaction_hash, etc.
     donation_date: r.donation_date.toISOString(),
     charity: r.charity,
     donor: r.donor,
     chain: getChainName(r.chainId),
     charity_name: r.charity?.charity_name ?? null,
-    // transaction_hash is already there via the spread
+    usdcSent: r.usdc_sent != null ? r.usdc_sent.toString() : null, // convert bigint to string
   };
 }
 
@@ -196,6 +196,7 @@ export async function createDonationReceipt(
       donation_date: new Date(data.donation_date),
       fiat_amount: data.fiat_amount,
       crypto_amount_wei: data.crypto_amount_wei,
+      usdc_sent: data.usdc_sent, // new USDC field
       transaction_hash: data.transaction_hash,
       chainId: data.chainId,
       jurisdiction,
