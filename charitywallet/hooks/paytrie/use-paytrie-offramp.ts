@@ -1,6 +1,6 @@
 // hooks/paytrie/use-paytrie-offramp.ts
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { usePayTrieAuth } from "./use-paytrie-auth";
 import { usePayTrieQuote } from "./use-paytrie-quotes";
 import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
@@ -15,10 +15,9 @@ export function usePayTrieOfframp(
   const [amount, setAmount] = useState("");
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
-  const [depositAmount, setDepositAmount] = useState<number | null>(null);
 
-  const { sendOtp, verifyOtp } = usePayTrieAuth(contact_email);
   const amtNum = parseFloat(amount) || 0;
+  const { sendOtp, verifyOtp } = usePayTrieAuth(contact_email);
   const {
     quote,
     isLoading: quoteLoading,
@@ -28,7 +27,7 @@ export function usePayTrieOfframp(
 
   const { onClick: sendOnChain, isPending: isSendingOnChain } =
     useSendErc20Token(
-      (depositAmount ?? 0).toString(),
+      amtNum.toString(),
       process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
       process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
       polygon
@@ -39,30 +38,37 @@ export function usePayTrieOfframp(
     await sendOtp();
   }, [quote, apiLoading, amtNum, sendOtp]);
 
-  // REAL OTP flow only—no DEV-SKIP branch
   const confirmOtp = useCallback(
     async (code: string) => {
+      // 1) verify the OTP
       const token = await verifyOtp(code);
+
+      // 2) place the sell order
       const payload = buildPaytrieSellOrderPayload(
         amtNum,
         quote!,
         wallet_address,
         contact_email
       );
-      const tx = await placeSellOrder(payload, token);
-      setTransactionId(tx.transactionId);
-      setExchangeRate(tx.exchangeRate);
-      setDepositAmount(tx.depositAmount);
-    },
-    [amtNum, quote, wallet_address, contact_email, verifyOtp, placeSellOrder]
-  );
+      const txResult = await placeSellOrder(payload, token);
 
-  // trigger on-chain send once a real depositAmount arrives
-  useEffect(() => {
-    if (depositAmount != null) {
-      sendOnChain();
-    }
-  }, [depositAmount, sendOnChain]);
+      // 3) update local state
+      setTransactionId(txResult.transactionId);
+      setExchangeRate(txResult.exchangeRate);
+
+      // 4) immediately send on‐chain
+      await sendOnChain();
+    },
+    [
+      amtNum,
+      quote,
+      wallet_address,
+      contact_email,
+      verifyOtp,
+      placeSellOrder,
+      sendOnChain,
+    ]
+  );
 
   return {
     amount,
@@ -74,7 +80,6 @@ export function usePayTrieOfframp(
     confirmOtp,
     transactionId,
     exchangeRate,
-    depositAmount,
     isSendingOnChain,
   };
 }

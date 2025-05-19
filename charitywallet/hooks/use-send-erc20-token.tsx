@@ -1,5 +1,6 @@
 // hooks/use-send-erc20-token.tsx
 
+import { useCallback } from "react";
 import { getContract } from "thirdweb";
 import { transfer } from "thirdweb/extensions/erc20";
 import { client } from "@/lib/thirdwebClient";
@@ -25,7 +26,7 @@ export function useSendErc20Token(
     client,
   });
 
-  const onClick = () => {
+  const onClick = useCallback(() => {
     console.log("→ sending rawAmount:", amount);
     const tx = transfer({
       contract,
@@ -48,7 +49,7 @@ export function useSendErc20Token(
         });
       },
     });
-  };
+  }, [amount, contract, recipientAddress, sendTx]);
 
   return { onClick, isPending, transactionResult };
 }

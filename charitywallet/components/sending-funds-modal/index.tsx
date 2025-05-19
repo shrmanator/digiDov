@@ -37,12 +37,9 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     exchangeRate,
     initiateWithdraw,
     confirmOtp,
-    depositAmount,
+    transactionId,
     isSendingOnChain,
-  } = usePayTrieOfframp(
-    charity.wallet_address || "",
-    charity.contact_email || ""
-  );
+  } = usePayTrieOfframp(charity.wallet_address, charity.contact_email);
 
   const [isOpen, setIsOpen] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
@@ -66,7 +63,9 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   };
 
   const handleSelectPercent = (pct: number) => {
-    if (balance != null) setAmount(((balance * pct) / 100).toFixed(6));
+    if (balance != null) {
+      setAmount(((balance * pct) / 100).toFixed(6));
+    }
   };
 
   const handleWithdraw = async (e: React.FormEvent) => {
@@ -132,14 +131,12 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Balance */}
           <Card>
             <CardContent className="flex items-center justify-center py-6">
               <BalanceDisplay balance={balance} />
             </CardContent>
           </Card>
 
-          {/* Amount Form */}
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-6">
               <form onSubmit={handleWithdraw} className="w-full space-y-3">
