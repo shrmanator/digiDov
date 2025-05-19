@@ -1,3 +1,5 @@
+// app/api/fee-deduction-webhook/route.ts
+
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
@@ -21,7 +23,6 @@ import {
   notifyCharityAboutDonation,
 } from "@/app/actions/email";
 import { Prisma } from "@prisma/client";
-import { DonationReceiptDto } from "@/app/types/receipt";
 
 const web3 = new Web3();
 
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       convertWeiToFiat(event.fee, ts, "cad", chainId),
     ]);
 
-    // 5. Load full donor & charity from DB for notifications
+    // 5. Load donor & charity from DB
     const donor = await prisma.donor.findUnique({
       where: { wallet_address: event.donor.toLowerCase() },
     });
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
         donation_date: new Date(ts * 1000),
         fiat_amount: fiat,
         crypto_amount_wei: BigInt(event.fullAmount),
-        usdc_sent: BigInt(event.usdcSent), // ← NEW FIELD
+        usdc_sent: BigInt(event.usdcSent),
         chainId: String(chainId),
         transaction_hash: event.transactionHash,
         jurisdiction: "CRA",
@@ -111,10 +112,11 @@ export async function POST(request: Request) {
       await generateDonationReceiptPDF(receipt);
     }
 
-    // 8. Build the DonationReceipt DTO
-    const donationDto: DonationReceiptDto = {
+    // 8. Build DonationReceipt DTO (for emails/CSV)
+    const donationDto = {
       ...receipt,
       donation_date: receipt.donation_date.toISOString(),
+      usdcSent: receipt.usdc_sent?.toString() ?? null,
       charity: {
         charity_name: charity.charity_name,
         registration_number: charity.registration_number,
@@ -127,7 +129,6 @@ export async function POST(request: Request) {
         email: donor.email!,
       },
       chain: chainId ? String(chainId) : null,
-      usdcSent: receipt.usdc_sent?.toString() ?? null, // ← NEW FIELD
     };
 
     // 9. Notify donor and charity
@@ -139,7 +140,7 @@ export async function POST(request: Request) {
       });
       if (!donorRes.success) throw new Error(donorRes.error);
 
-      // ——— extend the row with wallet addresses ———
+      // extend row for CSV
       const csvRow = {
         ...donationDto,
         donor_wallet_address: donor.wallet_address,
@@ -168,14 +169,21 @@ export async function POST(request: Request) {
       if (!pdfRes.success) throw new Error(pdfRes.error);
     }
 
-    // 10. Respond success
+    // 10. Respond success — convert BigInt fields to strings, guarding null
+    const safeReceipt = {
+      ...receipt,
+      donation_date: receipt.donation_date.toISOString(),
+      crypto_amount_wei:
+        receipt.crypto_amount_wei != null
+          ? receipt.crypto_amount_wei.toString()
+          : null,
+      usdc_sent: receipt.usdc_sent != null ? receipt.usdc_sent.toString() : "0",
+    };
+
     return NextResponse.json(
       {
         message: "Webhook processed successfully",
-        receipt: {
-          ...receipt,
-          crypto_amount_wei: receipt.crypto_amount_wei?.toString() ?? "0",
-        },
+        receipt: safeReceipt,
       },
       { status: 200 }
     );

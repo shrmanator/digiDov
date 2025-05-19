@@ -72,7 +72,7 @@ export function useSendWithFee(
         toast({
           title: "Donation Sent",
           description:
-            "Your ETH is being swapped to USDC and split. Thanks for donating!",
+            "Your ETH is being broadcasted to the blockchain. Thanks for donating!",
         }),
       onError: (error) =>
         toast({
