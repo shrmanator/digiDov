@@ -1,8 +1,6 @@
-// components/sending-funds-modal/index.tsx
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import OtpModal from "../opt-modal";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
@@ -37,7 +35,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     quoteLoading,
     quoteError,
     exchangeRate,
-    initiateWithdraw, // we won’t use this in dev-skip
+    initiateWithdraw,
     confirmOtp,
     depositAmount,
     isSendingOnChain,
@@ -46,14 +44,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     charity.contact_email || ""
   );
 
-  // DEBUG: logs
-  useEffect(() => {
-    console.log("→ depositAmount:", depositAmount);
-    console.log("→ isSendingOnChain:", isSendingOnChain);
-  }, [depositAmount, isSendingOnChain]);
-
   const [isOpen, setIsOpen] = useState(false);
-  // OTP modal never actually opens in dev-skip
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
@@ -78,7 +69,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     if (balance != null) setAmount(((balance * pct) / 100).toFixed(6));
   };
 
-  // ← Dev-skip: bypass OTP, call confirmOtp immediately
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     const amtNum = parseFloat(amount) || 0;
@@ -88,8 +78,8 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     }
     setIsSendingOtp(true);
     try {
-      // immediately call confirmOtp (no OTP needed)
-      await confirmOtp("");
+      await initiateWithdraw();
+      setOtpOpen(true);
     } catch (err: any) {
       toast({
         title: "Withdrawal Error",
@@ -102,7 +92,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   };
 
   const handleOtpVerify = async (otp: string) => {
-    // not used in dev-skip
     try {
       await confirmOtp(otp);
       setOtpOpen(false);
@@ -138,7 +127,9 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
         <DialogContent className="max-w-md space-y-4">
           <DialogHeader>
             <DialogTitle>Send Funds to Bank</DialogTitle>
-            <DialogDescription>DEV MODE: OTP skipped</DialogDescription>
+            <DialogDescription>
+              Funds will be converted to CAD and sent to your bank account.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Balance */}
@@ -191,7 +182,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   {isSendingOnChain
                     ? "Broadcasting…"
                     : isSendingOtp
-                    ? "Processing…"
+                    ? "Sending OTP…"
                     : amount
                     ? `Withdraw $${amount}`
                     : "Withdraw"}
@@ -202,7 +193,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
         </DialogContent>
       </Dialog>
 
-      {/* OTP modal remains, but never opens in dev-skip */}
       <OtpModal
         isOpen={otpOpen}
         onOpenChange={setOtpOpen}

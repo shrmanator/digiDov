@@ -39,37 +39,28 @@ export function usePayTrieOfframp(
     await sendOtp();
   }, [quote, apiLoading, amtNum, sendOtp]);
 
+  // REAL OTP flow only—no DEV-SKIP branch
   const confirmOtp = useCallback(
     async (code: string) => {
-      if (code) {
-        // REAL FLOW
-        const token = await verifyOtp(code);
-        const payload = buildPaytrieSellOrderPayload(
-          amtNum,
-          quote!,
-          wallet_address,
-          contact_email
-        );
-        const tx = await placeSellOrder(payload, token);
-        setTransactionId(tx.transactionId);
-        setExchangeRate(tx.exchangeRate);
-        setDepositAmount(tx.depositAmount);
-      } else {
-        // DEV-SKIP
-        setTransactionId(null);
-        setExchangeRate(null);
-        setDepositAmount(amtNum);
-      }
+      const token = await verifyOtp(code);
+      const payload = buildPaytrieSellOrderPayload(
+        amtNum,
+        quote!,
+        wallet_address,
+        contact_email
+      );
+      const tx = await placeSellOrder(payload, token);
+      setTransactionId(tx.transactionId);
+      setExchangeRate(tx.exchangeRate);
+      setDepositAmount(tx.depositAmount);
     },
     [amtNum, quote, wallet_address, contact_email, verifyOtp, placeSellOrder]
   );
 
+  // trigger on-chain send once a real depositAmount arrives
   useEffect(() => {
     if (depositAmount != null) {
-      // trigger the on-chain send
       sendOnChain();
-      // then reset depositAmount so this effect only runs once per set
-      setDepositAmount(null);
     }
   }, [depositAmount, sendOnChain]);
 
