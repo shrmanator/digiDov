@@ -1,12 +1,13 @@
 import React from "react";
 import { usePayTrieQuote } from "@/hooks/paytrie/use-paytrie-quotes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BalanceDisplayProps {
   balance: number | null;
 }
 
 export default function BalanceDisplay({ balance }: BalanceDisplayProps) {
-  // make sure usePayTrieQuote always gets a number
+  // ensure usePayTrieQuote always gets a number
   const amountToQuote = balance ?? 0;
   const { quote, isLoading, error } = usePayTrieQuote(amountToQuote);
 
@@ -21,13 +22,13 @@ export default function BalanceDisplay({ balance }: BalanceDisplayProps) {
         {balance != null ? `$${balance.toFixed(4)} USD` : "Loading…"}
       </span>
       <span className="text-sm text-muted-foreground">
-        {error
-          ? "Error loading conversion"
-          : isLoading
-          ? "Loading conversion…"
-          : cadValue
-          ? `≈ $${cadValue} CAD`
-          : null}
+        {error ? (
+          "Error loading conversion"
+        ) : isLoading ? (
+          <Skeleton className="h-5 w-32" />
+        ) : cadValue ? (
+          `≈ $${cadValue} CAD`
+        ) : null}
       </span>
     </div>
   );

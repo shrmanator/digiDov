@@ -1,4 +1,3 @@
-// components/sending-funds-modal.tsx
 "use client";
 import React, { useState } from "react";
 import OtpModal from "../opt-modal";
