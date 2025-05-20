@@ -49,6 +49,12 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     setOtpOpen(false);
   };
 
+  // compute estimated CAD received; convert exchangeRate (string) to number
+  const cadEstimate =
+    exchangeRate != null && amount
+      ? (parseFloat(amount) / parseFloat(exchangeRate)).toFixed(2)
+      : null;
+
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     const amtNum = parseFloat(amount) || 0;
@@ -145,19 +151,19 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   }
                   disabled={isSendingOtp || balance == null}
                 />
-                <div className="text-sm text-muted-foreground">
-                  {quoteError
-                    ? "Error loading rate"
-                    : quoteLoading
-                    ? "Loading rate…"
-                    : exchangeRate != null
-                    ? `1 CAD ≈ ${exchangeRate} USD`
-                    : null}
+                {/* Reserve fixed space; no skeleton shown */}
+                <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
+                  {quoteError && "Error loading conversion"}
+                  {!quoteError &&
+                    cadEstimate &&
+                    `You'll receive ≈ $${cadEstimate} CAD`}
                 </div>
                 <Button
                   type="submit"
                   className="w-full h-10"
-                  disabled={isSendingOtp || isSendingOnChain || !amount}
+                  disabled={
+                    isSendingOtp || isSendingOnChain || quoteLoading || !amount
+                  }
                 >
                   {isSendingOnChain
                     ? "Broadcasting…"
