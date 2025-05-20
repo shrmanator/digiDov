@@ -1,4 +1,4 @@
-import { getHistoricalCryptoToFiatPrice } from "@/utils/get-historical-crytpo-price";
+import { getHistoricalCryptoToFiatPrice } from "@/utils/get-historical-crypto-price";
 import { useEffect, useState } from "react";
 
 /**
