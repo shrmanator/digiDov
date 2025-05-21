@@ -82,8 +82,9 @@ export function useSendErc20Token(
     setIsPending(true);
     try {
       // Prepare ERC20 transfer transaction (extension handles decimals)
+      console.log("useSendErc20Token: preparing transaction", amount);
       const preparedTx = transfer({ contract, to: recipientAddress, amount });
-
+      console.log("useSendErc20Token: prepared transaction", preparedTx);
       // Send the transaction from the active account
       const result = await sendTransaction({
         transaction: preparedTx,
