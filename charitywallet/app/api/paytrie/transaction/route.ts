@@ -2,18 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { PaytrieTxSchema } from "@/app/types/paytrie/paytrie-transaction-validation";
-import { parseUnits } from "ethers";
 
 // Combine JWT string with Paytrie transaction schema
 const CombinedSchema = z.object({ jwt: z.string() }).merge(PaytrieTxSchema);
-
 type PaytrieRouteRequest = z.infer<typeof CombinedSchema>;
 
 export async function POST(request: NextRequest) {
   console.log("[PayTrie] Received POST /api/paytrie/transaction");
   const API_KEY = process.env.PAYTRIE_API_KEY;
   const DEPOSIT_ADDR = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS;
-  const USDC_DECIMALS = 6;
 
   if (!API_KEY || !DEPOSIT_ADDR) {
     console.error("[PayTrie] Missing API_KEY or DEPOSIT_ADDR from env");
@@ -79,7 +76,6 @@ export async function POST(request: NextRequest) {
   try {
     const parsedRes = JSON.parse(text);
     console.log("[PayTrie] Parsed JSON from PayTrie:", parsedRes);
-    // Normalize to object
     result = Array.isArray(parsedRes) ? parsedRes[0] : parsedRes;
   } catch (err) {
     console.error("[PayTrie] Failed to parse JSON from PayTrie", err);
@@ -100,24 +96,15 @@ export async function POST(request: NextRequest) {
   }
   console.log("[PayTrie] transactionId=", transactionId);
 
-  // Exchange rate may not be returned
+  // Optional: Capture exchange rate
   const exchangeRate = result.fxRate ?? null;
   console.log("[PayTrie] exchangeRate=", exchangeRate);
 
-  // Compute deposit amount (USDC-POLY atomic units)
+  // Pass decimal USDC-POLY amount directly
   const usdcDecimal = payload.leftSideValue;
   console.log("[PayTrie] leftSideValue (USDC decimal) =", usdcDecimal);
-  let depositAmount: string;
-  try {
-    depositAmount = parseUnits(
-      usdcDecimal.toString(),
-      USDC_DECIMALS
-    ).toString();
-    console.log("[PayTrie] depositAmount (atomic units) =", depositAmount);
-  } catch (err) {
-    console.error("[PayTrie] Failed to parse USDC amount to units", err);
-    return NextResponse.json({ error: "Invalid USDC amount" }, { status: 502 });
-  }
+  const depositAmount = usdcDecimal.toString();
+  console.log("[PayTrie] depositAmount (decimal) =", depositAmount);
 
   // Return full result
   const responseBody = {
