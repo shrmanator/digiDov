@@ -1,43 +1,51 @@
-// app/api/paytrie/transaction/route.ts
-
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { z } from "zod";
 import { PaytrieTxSchema } from "@/app/types/paytrie/paytrie-transaction-validation";
+import { parseUnits } from "ethers";
 
-export async function POST(request: Request) {
-  const API_KEY = process.env.PAYTRIE_API_KEY!;
-  const DEPOSIT_ADDR = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!;
+// Combine JWT string with Paytrie transaction schema
+const CombinedSchema = z.object({ jwt: z.string() }).merge(PaytrieTxSchema);
+
+type PaytrieRouteRequest = z.infer<typeof CombinedSchema>;
+
+export async function POST(request: NextRequest) {
+  console.log("[PayTrie] Received POST /api/paytrie/transaction");
+  const API_KEY = process.env.PAYTRIE_API_KEY;
+  const DEPOSIT_ADDR = process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS;
   const USDC_DECIMALS = 6;
 
   if (!API_KEY || !DEPOSIT_ADDR) {
-    console.error("[PayTrie API] Missing config");
+    console.error("[PayTrie] Missing API_KEY or DEPOSIT_ADDR from env");
     return NextResponse.json(
       { error: "Server misconfiguration." },
       { status: 500 }
     );
   }
 
-  let body: any;
+  // Read raw JSON
+  let rawBody: unknown;
   try {
-    body = await request.json();
-  } catch {
+    rawBody = await request.json();
+    console.log("[PayTrie] Raw request body:", rawBody);
+  } catch (err) {
+    console.error("[PayTrie] Invalid JSON in request body", err);
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  const { jwt, ...payload } = body;
-  if (!jwt) {
-    return NextResponse.json({ error: "Missing JWT" }, { status: 400 });
-  }
-
-  // Validate payload schema
-  try {
-    PaytrieTxSchema.parse(payload);
-  } catch (e) {
+  // Validate payload
+  const parsed = CombinedSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    console.error("[PayTrie] Payload validation failed", parsed.error.format());
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
+  const { jwt, ...payload } = parsed.data as PaytrieRouteRequest;
+  console.log("[PayTrie] Validated payload:", payload);
 
-  // Submit to PayTrie
+  // Send transaction to PayTrie
   let paytrieRes: Response;
   try {
+    console.log("[PayTrie] Sending to PayTrie endpoint with payload:", payload);
     paytrieRes = await fetch("https://mod.paytrie.com/transactions", {
       method: "POST",
       headers: {
@@ -47,66 +55,95 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(payload),
     });
-  } catch (err: any) {
+    console.log("[PayTrie] PayTrie responded with status", paytrieRes.status);
+  } catch (err) {
+    console.error("[PayTrie] Network error sending to PayTrie", err);
     return NextResponse.json(
-      { error: "Network error: " + err.message },
+      { error: "Network error sending to PayTrie" },
       { status: 502 }
     );
   }
 
   const text = await paytrieRes.text();
+  console.log("[PayTrie] Raw response text from PayTrie:", text);
   if (!paytrieRes.ok) {
-    console.error("[PayTrie] Error", paytrieRes.status, text);
+    console.error("[PayTrie] Error response", paytrieRes.status, text);
     return NextResponse.json(
       { error: `PayTrie error: ${text}` },
       { status: paytrieRes.status }
     );
   }
 
-  // Parse response
-  let data: Array<{
-    tx: string;
-    fxRate: string;
-    rightSideValue?: string;
-  }>;
+  // Parse PayTrie response (may be object or array)
+  let result: any;
   try {
-    data = JSON.parse(text);
-  } catch {
+    const parsedRes = JSON.parse(text);
+    console.log("[PayTrie] Parsed JSON from PayTrie:", parsedRes);
+    // Normalize to object
+    result = Array.isArray(parsedRes) ? parsedRes[0] : parsedRes;
+  } catch (err) {
+    console.error("[PayTrie] Failed to parse JSON from PayTrie", err);
     return NextResponse.json(
       { error: "Invalid JSON from PayTrie" },
       { status: 502 }
     );
   }
 
-  const { tx, fxRate, rightSideValue } = data[0];
-  if (!tx || !fxRate) {
+  // Ensure transaction ID exists
+  const transactionId = result.tx;
+  if (!transactionId) {
+    console.error("[PayTrie] Missing tx in response", result);
     return NextResponse.json(
-      { error: "Missing tx or fxRate in PayTrie response" },
+      { error: "Missing transaction ID from PayTrie" },
       { status: 502 }
     );
   }
+  console.log("[PayTrie] transactionId=", transactionId);
 
-  // Compute deposit amount in smallest units
-  const decimalValue =
-    rightSideValue ?? payload.rightSideValue?.toString() ?? "0";
-  let depositUnits: string;
+  // Exchange rate may not be returned
+  const exchangeRate = result.fxRate ?? null;
+  console.log("[PayTrie] exchangeRate=", exchangeRate);
+
+  // Compute deposit amount (USDC-POLY atomic units)
+  const usdcDecimal = payload.leftSideValue;
+  console.log("[PayTrie] leftSideValue (USDC decimal) =", usdcDecimal);
+  let depositAmount: string;
   try {
-    depositUnits = parseInt(decimalValue, USDC_DECIMALS).toString();
-  } catch (e) {
-    console.error("Failed to parse USDC amount:", decimalValue, e);
+    depositAmount = parseUnits(
+      usdcDecimal.toString(),
+      USDC_DECIMALS
+    ).toString();
+    console.log("[PayTrie] depositAmount (atomic units) =", depositAmount);
+  } catch (err) {
+    console.error("[PayTrie] Failed to parse USDC amount to units", err);
     return NextResponse.json({ error: "Invalid USDC amount" }, { status: 502 });
   }
 
-  // Respond with fields for the front-end
-  console.log("[PayTrie] Transaction created", {
-    transactionId: tx,
-    exchangeRate: fxRate,
+  // Return full result
+  const responseBody = {
+    transactionId,
+    exchangeRate,
     depositAddress: DEPOSIT_ADDR,
-  });
-  return NextResponse.json({
-    transactionId: tx,
-    exchangeRate: fxRate,
-    depositAddress: DEPOSIT_ADDR,
-    depositAmount: depositUnits,
-  });
+    depositAmount,
+  };
+  console.log("[PayTrie] Returning response to client", responseBody);
+  return NextResponse.json(responseBody);
 }
+
+/**
+ * Request JSON structure for /api/paytrie/transaction
+ * {
+ *   jwt: string;
+ *   quoteId: number;
+ *   gasId: number;
+ *   email: string;
+ *   wallet: string;
+ *   leftSideLabel: string;    // e.g. "USDC-POLY"
+ *   leftSideValue: number;     // decimal amount of USDC-POLY to sell
+ *   rightSideLabel: string;   // e.g. "CAD"
+ *   ethCost?: string;
+ *   vendorId?: number;
+ *   useReferral?: boolean;
+ * }
+ */
+Now

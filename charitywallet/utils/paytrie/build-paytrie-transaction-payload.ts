@@ -1,5 +1,6 @@
 import type { PaytrieTxPayload } from "@/app/types/paytrie/paytrie-transaction-validation";
 import { PayTrieQuote } from "@/hooks/paytrie/use-paytrie-quotes";
+import { queryObjects } from "v8";
 
 /**
  * Build the payload for a PayTrie off-ramp (sell) order.
@@ -15,6 +16,7 @@ export function buildPaytrieSellOrderPayload(
   wallet: string,
   email: string
 ): PaytrieTxPayload {
+  console.log("the quote", quote);
   return {
     quoteId: quote.id,
     gasId: quote.gasId,
