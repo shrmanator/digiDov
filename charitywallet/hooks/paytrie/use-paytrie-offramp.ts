@@ -24,12 +24,23 @@ export function usePayTrieOfframp(
   } = usePayTrieQuote(amtNum);
   const { placeSellOrder, isSubmitting: apiLoading } = usePaytrieSellOrder();
 
-  // prepare ERC20 sender using external hook
+  // prepare ERC20 sender with onSuccess callback to clear depositAmount
   const { onClick: sendErc20, isPending: isSendingOnChain } = useSendErc20Token(
     depositAmount,
     process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
     process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
-    polygon
+    polygon,
+    {
+      onSuccess: () => {
+        console.log(
+          "usePayTrieOfframp: on-chain send succeeded, clearing depositAmount"
+        );
+        setDepositAmount("");
+      },
+      onError: (err: Error) => {
+        console.error("usePayTrieOfframp: on-chain send failed", err);
+      },
+    }
   );
 
   const initiateWithdraw = useCallback(async () => {
@@ -72,9 +83,9 @@ export function usePayTrieOfframp(
       depositAmount
     );
     sendErc20();
-    // clear to avoid rerun
-    setDepositAmount("");
-  }, [depositAmount, sendErc20]);
+    // we intentionally only run when depositAmount changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [depositAmount]);
 
   return {
     amount,
