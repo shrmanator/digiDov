@@ -1,5 +1,3 @@
-// hooks/use-send-erc20-token.tsx
-
 import { useCallback } from "react";
 import { getContract } from "thirdweb";
 import { transfer } from "thirdweb/extensions/erc20";
@@ -14,6 +12,14 @@ export function useSendErc20Token(
   contractAddress: string,
   chain: Chain
 ) {
+  // Log hook parameters
+  console.log("useSendErc20Token initialized with:", {
+    amount,
+    recipientAddress,
+    contractAddress,
+    chain,
+  });
+
   const {
     mutate: sendTx,
     isPending,
@@ -27,21 +33,26 @@ export function useSendErc20Token(
   });
 
   const onClick = useCallback(() => {
-    console.log("→ sending rawAmount:", amount);
+    console.log("useSendErc20Token.onClick triggered");
+    console.log("→ preparing to send rawAmount:", amount);
+
     const tx = transfer({
       contract,
       to: recipientAddress,
       amount, // DECIMAL string
     });
+    console.log("useSendErc20Token: transfer tx object created", tx);
 
     sendTx(tx, {
       onSuccess: () => {
+        console.log("useSendErc20Token: onSuccess callback");
         toast({
           title: "Token Sent",
           description: `Sent ${amount} USDC to ${recipientAddress}`,
         });
       },
       onError: (error: Error) => {
+        console.error("useSendErc20Token: onError callback", error);
         toast({
           title: "Transaction Failed",
           description: error.message,
