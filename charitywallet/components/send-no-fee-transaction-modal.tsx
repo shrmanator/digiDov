@@ -188,7 +188,7 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
         {/* Your Balance */}
         <div className="mb-2">
           <label className="block text-xs text-muted-foreground mb-1">
-            Your Balance (ETH)
+            Your Balance (POL)
           </label>
           <div className="bg-muted p-2 rounded font-semibold text-base">
             {walletBalance !== null ? walletBalance.toFixed(4) : "Loading..."}
@@ -223,7 +223,7 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
           {/* Amount */}
           <div>
             <label className="block text-xs font-medium mb-1">
-              Amount to Send (ETH)
+              Amount to Send (POL)
             </label>
             <Input
               {...register("amount", {
