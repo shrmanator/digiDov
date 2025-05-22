@@ -16,10 +16,10 @@ import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { getWalletBalance } from "thirdweb/wallets";
 import { PreparedTransaction, prepareTransaction, toWei } from "thirdweb";
 import { polygon, sepolia } from "thirdweb/chains";
-import { client as thirdwebClient } from "@/lib/thirdwebClient";
 import { ArrowUpRight, BellRing, AlertCircle, CheckCircle } from "lucide-react";
 import { sendOtpAction, verifyOtpAction } from "@/app/actions/otp";
 import OtpModal from "./opt-modal";
+import { client } from "@/lib/thirdwebClient";
 
 interface SendingFundsModalProps {
   charity: {
@@ -52,8 +52,8 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
       try {
         const balanceResponse = await getWalletBalance({
           address: charity.wallet_address,
-          client: thirdwebClient,
-          chain: sepolia,
+          client: client,
+          chain: polygon,
         });
         setWalletBalance(parseFloat(balanceResponse.displayValue || "0"));
       } catch (err) {
@@ -88,7 +88,7 @@ export function SendingFundsModal({ charity }: SendingFundsModalProps) {
       to: formData.recipientAddress,
       value: toWei(formData.amount),
       chain: polygon,
-      client: thirdwebClient,
+      client: client,
     });
 
     // Store the pending transaction.
