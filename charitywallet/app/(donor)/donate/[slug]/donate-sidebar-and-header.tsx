@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DonorConnectWalletButton from "@/components/donor-connect-wallet-button";
+import DonorConnectWalletButton from "@/components/connect-wallet-button";
 import { TaxReceiptDrawer } from "@/components/tax-receipt-drawer";
 import { Icon } from "@iconify/react";
 import ethIcon from "@iconify/icons-cryptocurrency/eth";
