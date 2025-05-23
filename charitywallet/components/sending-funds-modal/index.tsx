@@ -19,10 +19,6 @@ import BalanceDisplay from "./balance-display";
 import { toast } from "@/hooks/use-toast";
 import PercentageButtons from "./percentage-buttons";
 
-// <-- new imports
-import { useSwitchActiveWalletChain } from "thirdweb/react";
-import { ethereum, polygon } from "thirdweb/chains";
-
 interface SendingFundsModalProps {
   charity: {
     wallet_address: string;
@@ -31,9 +27,6 @@ interface SendingFundsModalProps {
 }
 
 export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
-  // hook to switch wallet chain
-  const switchChain = useSwitchActiveWalletChain();
-
   const balance = useTotalUsdcBalance(charity.wallet_address);
   const {
     amount,
@@ -124,16 +117,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Chain switch buttons */}
-          <div className="flex space-x-2">
-            <Button size="sm" onClick={() => switchChain(ethereum)}>
-              Ethereum
-            </Button>
-            <Button size="sm" onClick={() => switchChain(polygon)}>
-              Polygon
-            </Button>
-          </div>
-
           <Card>
             <CardContent className="flex items-center justify-center py-6">
               <BalanceDisplay balance={balance} />
@@ -168,6 +151,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   }
                   disabled={isSendingOtp || balance == null}
                 />
+                {/* Reserve fixed space; no skeleton shown */}
                 <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
                   {quoteError && "Error loading conversion"}
                   {!quoteError &&
