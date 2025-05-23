@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
@@ -19,7 +19,7 @@ const wallets = [
   inAppWallet({ auth: { options: ["google", "email"] } }),
   createWallet("io.metamask"),
   createWallet("app.phantom"),
-  createWallet("com.ledger"),
+  walletConnect(),
 ];
 
 export default function Home() {
