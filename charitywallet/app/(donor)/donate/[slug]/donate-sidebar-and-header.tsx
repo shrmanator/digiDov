@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DonorConnectWalletButton from "@/components/connect-wallet-button";
 import { TaxReceiptDrawer } from "@/components/tax-receipt-drawer";
 import { Icon } from "@iconify/react";
 import ethIcon from "@iconify/icons-cryptocurrency/eth";
@@ -18,6 +17,7 @@ import maticIcon from "@iconify/icons-cryptocurrency/matic";
 import { polygon, ethereum } from "thirdweb/chains";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import DonorConnectWalletButton from "@/components/donor-connect-wallet-button";
 
 interface Charity {
   charity_name?: string | null;

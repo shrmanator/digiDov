@@ -3,8 +3,8 @@
 import prisma from "@/lib/prisma";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
 import { Prisma, donation_receipt, charity, donor } from "@prisma/client";
-import { DonationReceipt } from "../types/receipt";
 import { getChainName } from "../types/chains";
+import { DonationReceiptDto } from "../types/receipt";
 
 /**
  * 1) The shared “include” fragment for Prisma.
@@ -44,7 +44,7 @@ function mapReceipt(
       email: string | null;
     } | null;
   }
-): DonationReceipt {
+): DonationReceiptDto {
   return {
     ...r, // id, receipt_number, fiat_amount, transaction_hash, etc.
     donation_date: r.donation_date.toISOString(),
@@ -52,6 +52,7 @@ function mapReceipt(
     donor: r.donor,
     chain: getChainName(r.chainId),
     charity_name: r.charity?.charity_name ?? null,
+    usdcSent: r.usdc_sent?.toString() ?? null,
     // transaction_hash is already there via the spread
   };
 }
@@ -62,7 +63,7 @@ function mapReceipt(
  */
 async function fetchReceipts(
   where: Prisma.donation_receiptWhereInput
-): Promise<DonationReceipt[]> {
+): Promise<DonationReceiptDto[]> {
   const records = await prisma.donation_receipt.findMany({
     where,
     orderBy: { donation_date: "desc" },
@@ -76,7 +77,7 @@ async function fetchReceipts(
  */
 export async function getDonationReceiptsForDonor(
   walletAddress: string
-): Promise<DonationReceipt[]> {
+): Promise<DonationReceiptDto[]> {
   return fetchReceipts({
     donor: {
       wallet_address: {
@@ -92,7 +93,7 @@ export async function getDonationReceiptsForDonor(
  */
 export async function getDonationReceiptsForCharity(
   walletAddress: string
-): Promise<DonationReceipt[]> {
+): Promise<DonationReceiptDto[]> {
   return fetchReceipts({
     charity: {
       wallet_address: walletAddress,
@@ -198,6 +199,7 @@ export async function createDonationReceipt(
       crypto_amount_wei: data.crypto_amount_wei,
       transaction_hash: data.transaction_hash,
       chainId: data.chainId,
+      usdc_sent: data.usdc_sent,
       jurisdiction,
       jurisdiction_details: data.jurisdiction_details ?? Prisma.JsonNull,
       charity_id: data.charity_id,

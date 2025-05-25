@@ -16,18 +16,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
-import { client } from "@/lib/thirdwebClient";
 import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
-import CombinedWalletBalance, {
-  SupportedChain,
-} from "@/components/combine-wallet-balance";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
 import { getDonationLink } from "@/utils/get-donation-link";
 import DonationHistory from "@/components/transaction-history-via-db";
+import SendingFundsModal from "@/components/sending-funds-modal";
+import TotalUsdcBalance from "@/components/total-usdc-balance";
+import { SupportedChain } from "@/components/combine-wallet-balance";
 
 export const revalidate = 60;
 
@@ -101,15 +100,15 @@ export default async function Overview() {
             </div>
             <div className="flex flex-col items-end gap-1 mt-10">
               <div className="mt-1">
-                <CombinedWalletBalance
-                  initialPriceData={initialPriceData}
-                  address={charity.wallet_address}
-                  client={client}
-                  currency="usd"
-                />
+                <TotalUsdcBalance address={charity.wallet_address} />
               </div>
               <div className="mt-1">
-                <SendingFundsModal charity={charity} />
+                <SendingFundsModal
+                  charity={{
+                    wallet_address: charity.wallet_address,
+                    contact_email: charity.contact_email ?? "no contact email",
+                  }}
+                />
               </div>
             </div>
           </header>

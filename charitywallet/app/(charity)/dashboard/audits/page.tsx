@@ -26,7 +26,8 @@ import CombinedWalletBalance, {
   SupportedChain,
 } from "@/components/combine-wallet-balance";
 import ExternalWalletTransfersList from "@/components/external-fund-transfer-list";
-import { SendingFundsModal } from "@/components/send-no-fee-transaction-modal";
+import SendingFundsModal from "@/components/sending-funds-modal";
+import TotalUsdcBalance from "@/components/total-usdc-balance";
 
 export default async function Dashboard() {
   // 1) Check user
@@ -84,12 +85,7 @@ export default async function Dashboard() {
             </div>
             <div className="flex flex-col items-end gap-1 mt-10">
               <div className="mt-1">
-                <CombinedWalletBalance
-                  initialPriceData={initialPriceData}
-                  address={charity.wallet_address}
-                  client={client}
-                  currency="usd"
-                />
+                <TotalUsdcBalance address={charity.wallet_address} />
               </div>
               <div className="mt-1">
                 <SendingFundsModal

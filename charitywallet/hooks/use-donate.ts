@@ -10,15 +10,15 @@ type UseDonateResult = {
 };
 
 /**
- * Encapsulates the full "connect → sign → send" flow.
- * @param amountWei - Amount to send in wei.
- * @param to - Recipient address.
+ * Full “connect → sign → send” donation flow.
+ *
+ * @param amountWei  ETH amount (in wei) the user wants to donate
+ * @param to         Charity recipient address
  */
 export function useDonate(amountWei: bigint, to: string): UseDonateResult {
   const { account, login } = useLogin();
   const [error, setError] = useState<Error | null>(null);
 
-  // Wrap the existing send-with-fee hook
   const {
     onClick: sendWithFee,
     isPending,
@@ -28,11 +28,13 @@ export function useDonate(amountWei: bigint, to: string): UseDonateResult {
   const onDonate = useCallback(async () => {
     try {
       setError(null);
-      // Ensure wallet is connected
+
+      // 1 · Make sure the wallet is connected
       if (!account) {
         await login();
       }
-      // Trigger the send flow
+
+      // 2 · Trigger the donation transaction
       sendWithFee();
     } catch (e) {
       setError(e as Error);

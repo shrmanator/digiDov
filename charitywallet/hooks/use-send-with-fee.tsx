@@ -6,27 +6,34 @@ import { useMemo } from "react";
 import { client } from "@/lib/thirdwebClient";
 import { toast } from "@/hooks/use-toast";
 
+/** Uniswap V3 0.3 % pool */
+const DEFAULT_POOL_FEE = 3000;
+
+/**
+ * Swap the donated ETH ➜ USDC, then split
+ * 97 % to charity / 3 % to platform.
+ */
 export function useSendWithFee(
   donationValue: bigint,
-  recipientAddress: string
+  charityAddress: string,
+  poolFee: number = DEFAULT_POOL_FEE
 ) {
   const activeChain = useActiveWalletChain();
 
-  // Retrieve the fee-enabled contract instance based on the active chain.
+  /** Get the version of the contract for the current network */
   const feeContract = useMemo(() => {
     if (!activeChain) return null;
 
     let contractAddress = "";
-    // Check the chain ID: 1 for Ethereum, 137 for Polygon.
-    if (activeChain.id === 1) {
-      // Ethereum mainnet
-      contractAddress = "0x27fEde2dC50C03EF8C90Bf1Aa9Cf69A3D181c9DF";
-    } else if (activeChain.id === 137) {
-      // Polygon mainnet
-      contractAddress = "0x1C8Ed2efAeD9F2d4F13e8F95973Ac8B50A862Ef0";
-    } else {
-      console.error("Unsupported chain:", activeChain.id);
-      return null;
+
+    switch (activeChain.id) {
+      case 137: // Polygon main‑net
+        contractAddress = "0x79B0A75852603091033fD445D1119Bf1B001aDA6";
+        break;
+      case 1: // Ethereum main‑net – (not yet deployed)
+      default:
+        console.error("Unsupported chain:", activeChain.id);
+        return null;
     }
 
     return getContract({
@@ -42,34 +49,37 @@ export function useSendWithFee(
     data: transactionResult,
   } = useSendTransaction();
 
+  /** Executes the donation transaction */
   const onClick = () => {
     if (!feeContract) {
-      console.error("Active chain not available for fee contract.");
+      toast({
+        title: "Chain not supported",
+        description: "Switch to Polygon to donate.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const transaction = prepareContractCall({
+    const txRequest = prepareContractCall({
       contract: feeContract,
-      method: "function sendWithFee(address recipient) payable",
-      params: [recipientAddress],
+      method: "function donateAndSwap(address,uint24) payable",
+      params: [charityAddress, poolFee],
       value: donationValue,
     });
 
-    sendTx(transaction, {
-      onSuccess: () => {
+    sendTx(txRequest, {
+      onSuccess: () =>
         toast({
           title: "Donation Sent",
           description:
-            "Donation sent! You will receive a receipt once the transaction is confirmed.",
-        });
-      },
-      onError: (error) => {
+            "Your ETH is being broadcasted to the blockchain. Thanks for donating!",
+        }),
+      onError: (error) =>
         toast({
           title: "Transaction Failed",
           description: error.message,
           variant: "destructive",
-        });
-      },
+        }),
     });
   };
 

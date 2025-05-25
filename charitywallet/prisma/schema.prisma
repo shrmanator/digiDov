@@ -44,15 +44,15 @@ model charity {
 model charity_fund_transfer {
     id                 String   @id @default(uuid())
     charity_id         String
-    charity            charity  @relation(fields: [charity_id], references: [id])
-    amount_wei         BigInt // Amount in Wei
-    fiat_equivalent    Float? // Optional: Fiat value at the time of transfer
-    fiat_currency      String? // Optional: Fiat currency code (e.g., USD, CAD)
+    charity            charity  @relation(fields: [charity_id], references: [id], onDelete: Cascade)
+    amount_wei         BigInt
+    fiat_equivalent    Float?
+    fiat_currency      String?
     transaction_hash   String   @unique
     destination_wallet String
     chain_id           String?
-    gas_fee_wei        BigInt? // Optional: Gas fee for transaction
-    transfer_reason    String? // Optional: Description of transfer
+    gas_fee_wei        BigInt?
+    transfer_reason    String?
     created_at         DateTime @default(now())
 }
 
@@ -71,11 +71,13 @@ model donor {
 }
 
 model donation_receipt {
-    id                   String       @id @default(uuid())
-    receipt_number       String       @unique
-    donation_date        DateTime
-    fiat_amount          Float
-    crypto_amount_wei    BigInt? // Optional
+    id                String   @id @default(uuid())
+    receipt_number    String   @unique
+    donation_date     DateTime
+    fiat_amount       Float
+    crypto_amount_wei BigInt? // Optional
+    usdc_sent         BigInt?
+
     transaction_hash     String       @unique
     chainId              String? // Optional
     jurisdiction         Jurisdiction @default(CRA)

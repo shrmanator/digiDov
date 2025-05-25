@@ -20,10 +20,16 @@ export default function Home() {
   const router = useRouter();
 
   const wallets = [
-    inAppWallet({ auth: { options: ["google", "email"] } }),
+    inAppWallet({
+      auth: { options: ["google", "email"] },
+      smartAccount: {
+        chain: ethereum,
+        sponsorGas: false, // or true if you want to sponsor gas
+      },
+    }),
     createWallet("io.metamask"),
     createWallet("app.phantom"),
-    createWallet("com.ledger"),
+    createWallet("com.zengo"),
   ];
 
   return (
@@ -53,7 +59,6 @@ export default function Home() {
             header={{ title: " " }}
             showThirdwebBranding={false}
             accountAbstraction={{ chain: ethereum, sponsorGas: false }}
-            chain={ethereum}
             auth={{
               isLoggedIn: async () => await isLoggedIn(),
               doLogin: async (params) => {

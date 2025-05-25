@@ -1,6 +1,8 @@
+// components/OtpModal.tsx
+
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 export interface OtpModalProps {
   isOpen: boolean;
@@ -26,35 +29,53 @@ export default function OtpModal({
   onVerified,
 }: OtpModalProps) {
   const [otp, setOtp] = useState("");
-  const [error, setError] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleChange = ({
     target: { value },
   }: ChangeEvent<HTMLInputElement>) => {
     setOtp(value.trim());
-    if (error) setError("");
   };
 
-  // Pass the OTP back to the parent for verification and handle errors inline.
   const handleVerify = async () => {
     if (!otp) {
-      setError("Please enter the OTP.");
+      toast({ title: "Invalid Code", description: "Please enter the OTP." });
       return;
     }
     setIsVerifying(true);
     try {
-      // This call will now throw if OTP verification fails.
       await onVerified(otp);
-      setError("");
       onOpenChange(false);
-    } catch (err: unknown) {
-      const errorMsg =
-        err instanceof Error
-          ? err.message
-          : "OTP verification failed. Please try again.";
-      setError(errorMsg);
-      // Keep modal open for another attempt.
+      setOtp("");
+    } catch (err: any) {
+      const raw = err?.message ?? String(err);
+      let msg = "OTP verification failed. Please try again.";
+      if (typeof raw === "string") {
+        const outerMatch = raw.match(/\{[^]*\}/);
+        if (outerMatch) {
+          try {
+            const parsedOuter = JSON.parse(outerMatch[0]);
+            if (parsedOuter.error) {
+              const innerMatch = (parsedOuter.error as string).match(
+                /\{[^]*\}/
+              );
+              if (innerMatch) {
+                const parsedInner = JSON.parse(innerMatch[0]);
+                msg = parsedInner.message || msg;
+              } else {
+                msg = parsedOuter.error as string;
+              }
+            } else if (parsedOuter.message) {
+              msg = parsedOuter.message;
+            }
+          } catch {
+            msg = raw;
+          }
+        } else {
+          msg = raw;
+        }
+      }
+      toast({ title: "OTP Error", description: msg, variant: "destructive" });
     } finally {
       setIsVerifying(false);
     }
@@ -66,22 +87,24 @@ export default function OtpModal({
         <DialogHeader>
           <DialogTitle>Two-Factor Authentication</DialogTitle>
           <DialogDescription>
-            Please enter the OTP sent to your email.
+            Enter the 6-digit code sent to your email.
           </DialogDescription>
           {email && (
             <p className="mt-2 text-sm">
-              OTP was sent to <strong>{email}</strong>
+              Code sent to <strong>{email}</strong>
             </p>
           )}
         </DialogHeader>
+
         <Input
           type="text"
           placeholder="Enter OTP"
           value={otp}
           onChange={handleChange}
           className="mt-4"
+          disabled={isVerifying}
         />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
         <DialogFooter className="mt-4 flex justify-end space-x-2">
           <Button
             variant="outline"

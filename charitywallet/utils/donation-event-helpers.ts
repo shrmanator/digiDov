@@ -1,13 +1,14 @@
 import Web3 from "web3";
 const web3 = new Web3();
 
-// Raw event data as emitted by the contract.
+// Raw event data including the new usdcSent field
 export interface RawDonationEventData {
   donor: string;
   charity: string;
   fullAmount: string;
   netAmount: string;
   fee: string;
+  usdcSent: string; // newly added to capture forwarded USDC
 }
 
 // Enriched event data including extra metadata (e.g. transactionHash).
@@ -23,43 +24,42 @@ export interface EnrichedDonationEventData extends RawDonationEventData {
 export function extractDonationEventFromPayload(
   payload: any
 ): RawDonationEventData | null {
-  // Check if logs exist.
   if (!payload.logs || payload.logs.length === 0) {
     return null;
   }
 
-  // Hardcoded topic0 hash for DonationForwarded:
-  const donationForwardedTopicHash =
-    "0x51297710db35bfe3f03247b2601c68b45cdab2ca01be3f3be727346c408f0f25";
+  // Updated topic0 hash for 6-parameter DonationForwarded
+  const donationForwardedTopicHash = web3.utils.sha3(
+    "DonationForwarded(address,address,uint256,uint256,uint256,uint256)"
+  )!;
 
-  // Find the DonationForwarded event log.
+  // Find the DonationForwarded event log using topic0
   const donationLog = payload.logs.find(
     (log: any) => log.topic0 === donationForwardedTopicHash
   );
+  if (!donationLog) return null;
 
-  return donationLog ? decodeDonationLog(donationLog) : null;
+  return decodeDonationLog(donationLog);
 }
 
 /**
  * Decodes a DonationForwarded event log into a RawDonationEventData object.
- *
- * The event is defined as:
- * event DonationForwarded(address indexed donor, address indexed charity, uint256 fullAmount, uint256 netAmount, uint256 fee)
+ * Handles four non-indexed values now: fullAmount, netAmount, fee, usdcSent.
  */
 export function decodeDonationLog(log: any): RawDonationEventData {
-  // The donor and charity addresses are indexed and stored in topics[1] and topics[2].
   const donor = "0x" + log.topic1.slice(-40);
   const charity = "0x" + log.topic2.slice(-40);
 
-  // The data field contains three 32-byte (64 hex characters) values: fullAmount, netAmount, fee.
   const data = log.data.slice(2); // Remove "0x"
   const fullAmountHex = data.slice(0, 64);
   const netAmountHex = data.slice(64, 128);
   const feeHex = data.slice(128, 192);
+  const usdcSentHex = data.slice(192, 256);
 
   const fullAmount = web3.utils.hexToNumberString("0x" + fullAmountHex);
   const netAmount = web3.utils.hexToNumberString("0x" + netAmountHex);
   const fee = web3.utils.hexToNumberString("0x" + feeHex);
+  const usdcSent = web3.utils.hexToNumberString("0x" + usdcSentHex);
 
   return {
     donor,
@@ -67,6 +67,7 @@ export function decodeDonationLog(log: any): RawDonationEventData {
     fullAmount,
     netAmount,
     fee,
+    usdcSent,
   };
 }
 
