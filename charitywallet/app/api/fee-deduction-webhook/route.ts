@@ -30,7 +30,11 @@ export async function POST(request: Request) {
   try {
     // 1. Verify signature
     const bodyText = await request.text();
+    console.log("🦄 Moralis raw body text:", bodyText);
+
     const body = JSON.parse(bodyText);
+    console.log("🦄 Moralis parsed payload:", JSON.stringify(body, null, 2));
+
     const secret = process.env.MORALIS_STREAM_SECRET_KEY_7810049!;
     const providedSig = request.headers.get("x-signature");
     if (!providedSig || web3.utils.sha3(bodyText + secret) !== providedSig) {
@@ -40,6 +44,9 @@ export async function POST(request: Request) {
     // 2. Only confirmed transactions
     const { confirmed, block, chainId } = body;
     if (!confirmed) {
+      console.log(
+        `🦄 Ignoring unconfirmed tx ${body.txs?.[0]?.hash}, block ${block.number}`
+      );
       return NextResponse.json(
         { message: "Unconfirmed ignored" },
         { status: 200 }
