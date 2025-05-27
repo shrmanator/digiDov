@@ -7,6 +7,13 @@ import { PaytrieTxSchema } from "@/app/types/paytrie/paytrie-transaction-validat
 const CombinedSchema = z.object({ jwt: z.string() }).merge(PaytrieTxSchema);
 type PaytrieRouteRequest = z.infer<typeof CombinedSchema>;
 
+// Define a minimal shape for the PayTrie response
+type PaytrieResult = {
+  tx?: string;
+  fxRate?: number;
+  [key: string]: unknown;
+};
+
 export async function POST(request: NextRequest) {
   console.log("[PayTrie] Received POST /api/paytrie/transaction");
   const API_KEY = process.env.PAYTRIE_API_KEY;
@@ -25,7 +32,7 @@ export async function POST(request: NextRequest) {
   try {
     rawBody = await request.json();
     console.log("[PayTrie] Raw request body:", rawBody);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("[PayTrie] Invalid JSON in request body", err);
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
@@ -53,7 +60,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(payload),
     });
     console.log("[PayTrie] PayTrie responded with status", paytrieRes.status);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("[PayTrie] Network error sending to PayTrie", err);
     return NextResponse.json(
       { error: "Network error sending to PayTrie" },
@@ -72,12 +79,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse PayTrie response (may be object or array)
-  let result: any;
+  let result: PaytrieResult;
   try {
     const parsedRes = JSON.parse(text);
     console.log("[PayTrie] Parsed JSON from PayTrie:", parsedRes);
-    result = Array.isArray(parsedRes) ? parsedRes[0] : parsedRes;
-  } catch (err) {
+    const first = Array.isArray(parsedRes) ? parsedRes[0] : parsedRes;
+    result = first as PaytrieResult;
+  } catch (err: unknown) {
     console.error("[PayTrie] Failed to parse JSON from PayTrie", err);
     return NextResponse.json(
       { error: "Invalid JSON from PayTrie" },
@@ -97,7 +105,7 @@ export async function POST(request: NextRequest) {
   console.log("[PayTrie] transactionId=", transactionId);
 
   // Optional: Capture exchange rate
-  const exchangeRate = result.fxRate ?? null;
+  const exchangeRate = typeof result.fxRate === "number" ? result.fxRate : null;
   console.log("[PayTrie] exchangeRate=", exchangeRate);
 
   // Pass decimal USDC-POLY amount directly

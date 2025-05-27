@@ -1,4 +1,3 @@
-// app/(protected)/dashboard/page.tsx
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/utils/getAuthenticatedUser";
@@ -20,11 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonationReceiptsList from "@/components/donation-receipt-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { client } from "@/lib/thirdwebClient";
-import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
-import CombinedWalletBalance, {
-  SupportedChain,
-} from "@/components/combine-wallet-balance";
+
 import ExternalWalletTransfersList from "@/components/external-fund-transfer-list";
 import SendingFundsModal from "@/components/sending-funds-modal";
 import TotalUsdcBalance from "@/components/total-usdc-balance";
@@ -52,15 +47,6 @@ export default async function Dashboard() {
 
   // Determine whether to show the Tax Receipts tab
   const showTaxTab = !charity.charity_sends_receipt;
-
-  // 3) Fetch price data on the server
-  const chains: SupportedChain[] = ["ethereum", "polygon"];
-  const COIN_IDS: Record<SupportedChain, string> = {
-    ethereum: "ethereum",
-    polygon: "matic-network",
-  };
-  const coinIds = chains.map((c) => COIN_IDS[c]).join(",");
-  const initialPriceData = await fetchPrices(coinIds, "usd");
 
   return (
     <SidebarProvider>

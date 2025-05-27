@@ -20,12 +20,24 @@ export function useSendWithFee(
 
   const feeContract = useMemo(() => {
     if (!activeChain) return null;
-    if (activeChain.id !== 137) {
-      toast({ title: "Unsupported chain", variant: "destructive" });
+    let contractAddress: string;
+    if (activeChain.id === 137) {
+      // Polygon main-net
+      contractAddress = "0x2ad35AA65D6E1B8dd8DA41F8639d08b1abE3964f";
+    } else if (activeChain.id === 1) {
+      // Ethereum main-net
+      contractAddress = "0x7682aC87d3bB704CC637324d68E31dd8aD9D273e";
+    } else {
+      toast({
+        title: "Unsupported chain",
+        description: "Switch to Polygon or Ethereum to donate.",
+        variant: "destructive",
+      });
       return null;
     }
+
     return getContract({
-      address: "0x2ad35AA65D6E1B8dd8DA41F8639d08b1abE3964f",
+      address: contractAddress,
       chain: activeChain,
       client,
     });
@@ -38,16 +50,8 @@ export function useSendWithFee(
   } = useSendTransaction();
 
   const onClick = () => {
-    if (!feeContract) {
-      toast({
-        title: "Chain not supported",
-        description: "Switch to Polygon to donate.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!feeContract) return;
 
-    // ⚠️ Include the slippageBps (uint16) as the 3rd arg
     const txRequest = prepareContractCall({
       contract: feeContract,
       method: "function donateAndSwap(address,uint24,uint16) payable",
@@ -60,7 +64,7 @@ export function useSendWithFee(
         toast({
           title: "Donation Sent",
           description:
-            "Your POL is being broadcast to the blockchain. Thanks for donating!",
+            "Your token is being broadcast to the blockchain. Thanks for donating!",
         }),
       onError: (error) =>
         toast({

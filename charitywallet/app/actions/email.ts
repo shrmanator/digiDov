@@ -8,9 +8,9 @@ import {
   Attachment,
 } from "mailersend";
 import { generateDonationReceiptPDF } from "@/utils/generate-donation-receipt";
-import { DonationReceipt } from "../types/receipt";
 import { receiptsToCsv } from "@/utils/convert-receipt-to-csv";
 import { donation_receipt, donor, charity } from "@prisma/client";
+import { DonationReceiptDto } from "../types/receipt";
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
@@ -191,7 +191,7 @@ export async function notifyDonorWithoutReceipt(
  * Email a CSV of DonationReceipts to the charity
  */
 export async function notifyCharityWithCsv(
-  receipts: DonationReceipt[],
+  receipts: DonationReceiptDto[],
   charityEmail: string,
   charityName?: string
 ): Promise<{ success: boolean; error?: string }> {

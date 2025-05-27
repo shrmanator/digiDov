@@ -16,11 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import CombinedWalletBalance, {
-  SupportedChain,
-} from "@/components/combine-wallet-balance";
-import { client } from "@/lib/thirdwebClient";
-import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
+
 import ProfileWithOtp from "@/components/profile-form-with-otp/profile-form-with-otp";
 import SendingFundsModal from "@/components/sending-funds-modal";
 import TotalUsdcBalance from "@/components/total-usdc-balance";
@@ -36,13 +32,6 @@ export default async function Profile() {
   if (!charity) {
     return <p>No charity found.</p>;
   }
-  const chains: SupportedChain[] = ["ethereum", "polygon"];
-  const COIN_IDS: Record<SupportedChain, string> = {
-    ethereum: "ethereum",
-    polygon: "matic-network",
-  };
-  const coinIds = chains.map((chain) => COIN_IDS[chain]).join(",");
-  const initialPriceData = await fetchPrices(coinIds, "usd");
 
   return (
     <SidebarProvider>

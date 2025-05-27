@@ -49,7 +49,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     setOtpOpen(false);
   };
 
-  // compute estimated CAD received; convert exchangeRate (string) to number
   const cadEstimate =
     exchangeRate != null && amount
       ? (parseFloat(amount) / parseFloat(exchangeRate)).toFixed(2)
@@ -66,10 +65,11 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
     try {
       await initiateWithdraw();
       setOtpOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: "Withdrawal Error",
-        description: err.message || String(err),
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -88,10 +88,11 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
       });
       setIsOpen(false);
       reset();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: "Verification Error",
-        description: err.message || String(err),
+        description: message,
         variant: "destructive",
       });
     }
@@ -151,7 +152,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                   }
                   disabled={isSendingOtp || balance == null}
                 />
-                {/* Reserve fixed space; no skeleton shown */}
                 <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
                   {quoteError && "Error loading conversion"}
                   {!quoteError &&

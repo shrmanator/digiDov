@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     });
 
     const text = await res.text();
-    let data;
+    let data: unknown;
     try {
       data = JSON.parse(text);
     } catch {
@@ -42,8 +42,12 @@ export async function GET(req: Request) {
 
     // PayTrie returns an array; we just forward it
     return NextResponse.json(data);
-  } catch (err: any) {
-    console.error("[PayTrie] getTransactionById exception:", err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("[PayTrie] getTransactionById exception:", err.message);
+    } else {
+      console.error("[PayTrie] getTransactionById exception (non-Error):", err);
+    }
     return NextResponse.json(
       { error: "Unexpected server error" },
       { status: 500 }

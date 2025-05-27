@@ -1,5 +1,3 @@
-// components/OtpModal.tsx
-
 "use client";
 
 import React, { useState, ChangeEvent } from "react";
@@ -47,8 +45,8 @@ export default function OtpModal({
       await onVerified(otp);
       onOpenChange(false);
       setOtp("");
-    } catch (err: any) {
-      const raw = err?.message ?? String(err);
+    } catch (err: unknown) {
+      const raw = err instanceof Error ? err.message : String(err);
       let msg = "OTP verification failed. Please try again.";
       if (typeof raw === "string") {
         const outerMatch = raw.match(/\{[^]*\}/);

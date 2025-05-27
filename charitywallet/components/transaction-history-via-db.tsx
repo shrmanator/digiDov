@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Copy, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DonationReceipt } from "@/app/types/receipt";
+import { DonationReceiptDto } from "@/app/types/receipt";
 
 // Map of blockchain chainId to display name and symbol
 const CHAIN_MAP: Record<string, { symbol: string; name: string }> = {
@@ -27,7 +27,7 @@ const CHAIN_MAP: Record<string, { symbol: string; name: string }> = {
 };
 
 interface DonationHistoryProps {
-  receipts: DonationReceipt[];
+  receipts: DonationReceiptDto[];
   donationLink?: string;
 }
 
@@ -100,7 +100,7 @@ function getRelativeTime(timestamp: number): string {
   } ago`;
 }
 
-function DonationReceiptItem({ receipt }: { receipt: DonationReceipt }) {
+function DonationReceiptItem({ receipt }: { receipt: DonationReceiptDto }) {
   const dateTs = new Date(receipt.donation_date).getTime();
   const relativeTime = getRelativeTime(dateTs);
   const formattedDate = new Date(receipt.donation_date).toLocaleString();

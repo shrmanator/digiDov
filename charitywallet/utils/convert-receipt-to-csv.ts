@@ -1,4 +1,4 @@
-import { DonationReceipt } from "@/app/types/receipt";
+import { DonationReceiptDto } from "@/app/types/receipt";
 import { chainIdToName } from "./chainid-to-name";
 import { weiToEvm } from "./convert-wei-to-evm";
 
@@ -6,7 +6,7 @@ import { weiToEvm } from "./convert-wei-to-evm";
  * Convert DonationReceipt[] to CSV string with full financial breakdown,
  * including donor_address and donor_wallet_address if present on the row.
  */
-export function receiptsToCsv(receipts: DonationReceipt[]): string {
+export function receiptsToCsv(receipts: DonationReceiptDto[]): string {
   if (!receipts.length) {
     return "No receipts\n";
   }

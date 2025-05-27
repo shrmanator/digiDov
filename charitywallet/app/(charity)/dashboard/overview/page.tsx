@@ -17,8 +17,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import CharitySetupModal from "@/components/new-charity-modal/charity-setup-modal";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
-import { fetchPrices } from "@/utils/convert-crypto-to-fiat";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsCharts from "@/components/analytics-chart";
 import { getCharityByWalletAddress } from "@/app/actions/charities";
@@ -26,22 +24,8 @@ import { getDonationLink } from "@/utils/get-donation-link";
 import DonationHistory from "@/components/transaction-history-via-db";
 import SendingFundsModal from "@/components/sending-funds-modal";
 import TotalUsdcBalance from "@/components/total-usdc-balance";
-import { SupportedChain } from "@/components/combine-wallet-balance";
 
 export const revalidate = 60;
-
-// Keep your coin‐ID map for price fetch
-const COIN_IDS: Record<SupportedChain, string> = {
-  ethereum: "ethereum",
-  polygon: "matic-network",
-};
-
-// Helper to pull USD prices for all supported chains
-async function fetchCryptoPrices() {
-  const chains: SupportedChain[] = ["ethereum", "polygon"];
-  const coinIds = chains.map((c) => COIN_IDS[c]).join(",");
-  return fetchPrices(coinIds, "usd");
-}
 
 export default async function Overview() {
   // 1) Auth
@@ -54,9 +38,8 @@ export default async function Overview() {
   const isCharityComplete = charity.is_profile_complete ?? false;
 
   // 3) Fetch from DB + price data in parallel
-  const [receipts, initialPriceData] = await Promise.all([
+  const [receipts] = await Promise.all([
     getDonationReceiptsForCharity(charity.wallet_address),
-    fetchCryptoPrices(),
   ]);
 
   // 4) Build analytics data off receipts

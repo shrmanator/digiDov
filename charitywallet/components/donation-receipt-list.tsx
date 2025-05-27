@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Mail, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DonationReceipt } from "@/app/types/receipt";
+import { DonationReceiptDto } from "@/app/types/receipt";
 import { getDonationReceiptsForCharity } from "@/app/actions/receipts";
 
 interface DonationReceiptsListProps {
@@ -13,9 +13,9 @@ interface DonationReceiptsListProps {
 export default function DonationReceiptsList({
   walletAddress,
 }: DonationReceiptsListProps) {
-  const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
+  const [receipts, setReceipts] = useState<DonationReceiptDto[]>([]);
   const [groupedReceipts, setGroupedReceipts] = useState<
-    Record<string, DonationReceipt[]>
+    Record<string, DonationReceiptDto[]>
   >({});
   const [loading, setLoading] = useState(true);
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>(
@@ -44,8 +44,8 @@ export default function DonationReceiptsList({
     fetchReceipts();
   }, [fetchReceipts]);
 
-  function groupByDay(receipts: DonationReceipt[]) {
-    const groups: Record<string, DonationReceipt[]> = {};
+  function groupByDay(receipts: DonationReceiptDto[]) {
+    const groups: Record<string, DonationReceiptDto[]> = {};
     receipts.forEach((receipt) => {
       const dateKey = new Date(receipt.donation_date).toLocaleDateString();
       if (!groups[dateKey]) {
@@ -63,7 +63,7 @@ export default function DonationReceiptsList({
     }));
   };
 
-  const getTotalForDate = (receipts: DonationReceipt[]) => {
+  const getTotalForDate = (receipts: DonationReceiptDto[]) => {
     return receipts
       .reduce((sum, receipt) => sum + receipt.fiat_amount, 0)
       .toFixed(2);

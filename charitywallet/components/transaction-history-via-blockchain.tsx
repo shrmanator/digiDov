@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Copy, User } from "lucide-react";
-import { DonationReceipt } from "@/app/types/receipt";
+import { DonationReceiptDto } from "@/app/types/receipt";
 import { useHistoricalPrice } from "@/hooks/use-historical-crypto-price";
 import Web3 from "web3";
 import { CopyButton } from "./copy-button";
@@ -27,7 +27,7 @@ const web3 = new Web3();
 
 interface DonationHistoryProps {
   donations: DonationEvent[];
-  receipts?: DonationReceipt[];
+  receipts?: DonationReceiptDto[];
   donationLink?: string; // new prop for the donation link
 }
 
@@ -76,7 +76,7 @@ function DonationCard({
   receipt,
 }: {
   donation: DonationEvent;
-  receipt?: DonationReceipt;
+  receipt?: DonationReceiptDto;
 }) {
   const nativeValue = web3.utils.fromWei(donation.netAmount, "ether");
   const chainInfo = CHAIN_MAP[donation.chain as keyof typeof CHAIN_MAP] || {
@@ -240,7 +240,7 @@ export default function DonationHistory({
   }
 
   // Create a map of receipts for easy lookup
-  const receiptMap = new Map<string, DonationReceipt>();
+  const receiptMap = new Map<string, DonationReceiptDto>();
   receipts.forEach((receipt) => {
     receiptMap.set(receipt.transaction_hash, receipt);
   });

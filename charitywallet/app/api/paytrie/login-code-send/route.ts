@@ -40,8 +40,12 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(json, { status: res.status });
-  } catch (err: any) {
-    console.error("[PayTrie] loginCodeSend error:", err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("[PayTrie] loginCodeSend error:", err.message);
+    } else {
+      console.error("[PayTrie] loginCodeSend error (non-Error):", err);
+    }
     return NextResponse.json(
       { error: "Unexpected server error" },
       { status: 500 }

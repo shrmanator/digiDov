@@ -17,7 +17,7 @@ import {
   getDonationReceiptsForDonor,
   getDonationReceiptPdf,
 } from "@/app/actions/receipts";
-import { DonationReceipt } from "@/app/types/receipt";
+import { DonationReceiptDto } from "@/app/types/receipt";
 import { useLogin } from "@/hooks/use-thirdweb-headless-login";
 
 // Helper: are two dates the same calendar day?
@@ -37,8 +37,8 @@ function isYesterday(receiptDate: Date, today: Date) {
 }
 
 // Group receipts into “Today”, “Yesterday”, or locale date string
-function groupReceiptsByDate(receipts: DonationReceipt[]) {
-  const grouped: Record<string, DonationReceipt[]> = {};
+function groupReceiptsByDate(receipts: DonationReceiptDto[]) {
+  const grouped: Record<string, DonationReceiptDto[]> = {};
   const today = new Date();
   receipts.forEach((r) => {
     const d = new Date(r.donation_date);
@@ -69,7 +69,7 @@ export function TaxReceiptDrawer({
   walletAddress,
 }: TaxReceiptDrawerProps) {
   const { login } = useLogin();
-  const [receipts, setReceipts] = useState<DonationReceipt[]>([]);
+  const [receipts, setReceipts] = useState<DonationReceiptDto[]>([]);
   const [loading, setLoading] = useState(true);
   // track which receipt hash was just copied
   const [copiedId, setCopiedId] = useState<string | null>(null);

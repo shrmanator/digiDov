@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    // Next’s fetch with built‑in ISR caching
+    // Next’s fetch with built-in ISR caching
     const res = await fetch("https://mod.paytrie.com/quotes", {
       headers: { "x-api-key": API_KEY },
       // this tells Next.js to cache the result for 300s
@@ -25,8 +25,12 @@ export async function GET() {
 
     const data = JSON.parse(text);
     return NextResponse.json(data);
-  } catch (err: any) {
-    console.error("[PayTrie] Network error", err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("[PayTrie] Network error:", err.message);
+    } else {
+      console.error("[PayTrie] Network error (non-Error):", err);
+    }
     return NextResponse.json({ error: "Network error" }, { status: 502 });
   }
 }
