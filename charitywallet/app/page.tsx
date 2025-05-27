@@ -24,7 +24,7 @@ export default function Home() {
       auth: { options: ["google", "email"] },
       smartAccount: {
         chain: ethereum,
-        sponsorGas: false, // or true if you want to sponsor gas
+        sponsorGas: false, // or true if you want to sponsor gas/
       },
     }),
     createWallet("io.metamask"),
