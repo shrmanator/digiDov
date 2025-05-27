@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
-import { ethereum } from "thirdweb/chains";
+import { ethereum, sepolia } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
   isLoggedIn,
@@ -19,7 +19,7 @@ const wallets = [
   inAppWallet({
     auth: { options: ["google", "email"] },
     smartAccount: {
-      chain: ethereum,
+      chain: sepolia,
       sponsorGas: false, // or true if you want to sponsor gas
     },
   }),
@@ -54,7 +54,7 @@ export default function Home() {
           wallets={wallets}
           header={{ title: " " }}
           showThirdwebBranding={false}
-          accountAbstraction={{ chain: ethereum, sponsorGas: false }}
+          accountAbstraction={{ chain: sepolia, sponsorGas: false }}
           auth={{
             isLoggedIn: async () => await isLoggedIn(),
             doLogin: async (params) => {
@@ -73,7 +73,7 @@ export default function Home() {
             getLoginPayload: async ({ address }) =>
               generatePayload({
                 address: address.toLowerCase(),
-                chainId: ethereum.id,
+                chainId: sepolia.id,
               }),
             doLogout: async () => await logout(),
           }}
