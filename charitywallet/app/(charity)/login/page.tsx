@@ -4,8 +4,8 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed } from "thirdweb/react";
-import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
-import { ethereum, polygon } from "thirdweb/chains";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import {
   isLoggedIn,
@@ -16,10 +16,16 @@ import {
 import { getUserEmail } from "thirdweb/wallets/in-app";
 
 const wallets = [
-  inAppWallet({ auth: { options: ["google", "email"] } }),
+  inAppWallet({
+    auth: { options: ["google", "email"] },
+    smartAccount: {
+      chain: ethereum,
+      sponsorGas: false, // or true if you want to sponsor gas
+    },
+  }),
   createWallet("io.metamask"),
   createWallet("app.phantom"),
-  walletConnect(),
+  createWallet("com.zengo"),
 ];
 
 export default function Home() {
@@ -48,7 +54,7 @@ export default function Home() {
           wallets={wallets}
           header={{ title: " " }}
           showThirdwebBranding={false}
-          chain={polygon}
+          accountAbstraction={{ chain: ethereum, sponsorGas: false }}
           auth={{
             isLoggedIn: async () => await isLoggedIn(),
             doLogin: async (params) => {
