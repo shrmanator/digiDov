@@ -15,7 +15,6 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent } from "../ui/card";
-import BalanceDisplay from "./balance-display";
 import { toast } from "@/hooks/use-toast";
 import PercentageButtons from "./percentage-buttons";
 
@@ -27,7 +26,15 @@ interface SendingFundsModalProps {
 }
 
 export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
-  const balance = useTotalUsdcBalance(charity.wallet_address);
+  // fetch balances separately
+  const ethBalance = useTotalUsdcBalance(charity.wallet_address, "ethereum");
+  const polyBalance = useTotalUsdcBalance(charity.wallet_address, "polygon");
+
+  // normalize null to 0 for rendering and calculations
+  const ethVal = ethBalance ?? 0;
+  const polyVal = polyBalance ?? 0;
+  const totalVal = ethVal + polyVal;
+
   const {
     amount,
     setAmount,
@@ -119,8 +126,14 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
           </DialogHeader>
 
           <Card>
-            <CardContent className="flex items-center justify-center py-6">
-              <BalanceDisplay balance={balance} />
+            <CardContent className="flex flex-col items-center justify-center space-y-1 py-6">
+              {ethVal > 0 && <div>Ethereum USDC: {ethVal.toFixed(6)}</div>}
+              {polyVal > 0 && <div>Polygon USDC: {polyVal.toFixed(6)}</div>}
+              {totalVal === 0 && (
+                <div className="text-sm text-muted-foreground">
+                  No USDC balance
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -147,10 +160,9 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
                 </div>
                 <PercentageButtons
                   onSelect={(pct) =>
-                    balance != null &&
-                    setAmount(((balance * pct) / 100).toFixed(6))
+                    setAmount(((totalVal * pct) / 100).toFixed(6))
                   }
-                  disabled={isSendingOtp || balance == null}
+                  disabled={isSendingOtp || totalVal === 0}
                 />
                 <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
                   {quoteError && "Error loading conversion"}
