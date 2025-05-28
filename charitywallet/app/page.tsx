@@ -26,7 +26,7 @@ export default function Home() {
       auth: { options: ["google", "email"] },
       executionMode: {
         mode: "EIP7702",
-        sponsorGas: true,
+        sponsorGas: false,
       },
     }),
     createWallet("io.metamask"),
