@@ -58,7 +58,6 @@ export default function Home() {
             wallets={wallets}
             header={{ title: " " }}
             showThirdwebBranding={false}
-            accountAbstraction={{ chain: ethereum, sponsorGas: false }}
             auth={{
               isLoggedIn: async () => await isLoggedIn(),
               doLogin: async (params) => {
