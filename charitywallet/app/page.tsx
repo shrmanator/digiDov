@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
@@ -19,7 +18,6 @@ import { getUserEmail } from "thirdweb/wallets/in-app";
 export default function Home() {
   const router = useRouter();
   const activeAccount = useActiveAccount();
-  console.log("Active Account:", activeAccount);
 
   const wallets = [
     inAppWallet({
