@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
@@ -24,9 +24,9 @@ export default function Home() {
   const wallets = [
     inAppWallet({
       auth: { options: ["google", "email"] },
-      smartAccount: {
-        chain: ethereum,
-        sponsorGas: false, // or true if you want to sponsor gas/
+      executionMode: {
+        mode: "EIP7702",
+        sponsorGas: true,
       },
     }),
     createWallet("io.metamask"),
@@ -67,13 +67,19 @@ export default function Home() {
                 // 1. fetch OAuth email from in-app wallet session
                 const email = await getUserEmail({ client });
 
-                // 2. attach email to login payload
-                const enrichedParams = { ...params, context: { email } };
+                // 2. fetch active transaction wallet
+                const txWallet = activeAccount?.address;
 
-                // 3. call server action with enriched payload
+                // 3. attach email and txWallet to login payload
+                const enrichedParams = {
+                  ...params,
+                  context: { email, txWallet },
+                };
+
+                // 4. call server action with enriched payload
                 await charityLogin(enrichedParams);
 
-                // 4. navigate to dashboard
+                // 5. navigate to dashboard
                 router.push("/dashboard/overview");
               },
               getLoginPayload: async ({ address }) =>

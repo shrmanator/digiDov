@@ -2,7 +2,11 @@ import { useCallback, useState } from "react";
 import { getContract } from "thirdweb";
 import { transfer } from "thirdweb/extensions/erc20";
 import { sendTransaction } from "thirdweb";
-import { useActiveAccount, useWalletBalance } from "thirdweb/react";
+import {
+  useActiveAccount,
+  useActiveWallet,
+  useWalletBalance,
+} from "thirdweb/react";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import { toast } from "@/hooks/use-toast";
@@ -28,7 +32,9 @@ export function useSendErc20Token(
 
   // Get the active connected wallet account
   const activeAccount = useActiveAccount();
-
+  console.log("useSendErc20Token: active account", activeAccount);
+  const activeWalet = useActiveWallet();
+  console.log("useSendErc20Token: active wallet", activeWalet);
   // Fetch native ETH balance via Thirdweb hook
   const {
     data: balanceData,
