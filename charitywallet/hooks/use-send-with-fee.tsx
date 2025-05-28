@@ -26,7 +26,7 @@ export function useSendWithFee(
       contractAddress = "0x2ad35AA65D6E1B8dd8DA41F8639d08b1abE3964f";
     } else if (activeChain.id === 1) {
       // Ethereum main-net
-      contractAddress = "0x7682aC87d3bB704CC637324d68E31dd8aD9D273e";
+      contractAddress = "0x2f4557388E720f6ba3e2191E66F2C1f15B1559b0";
     } else {
       toast({
         title: "Unsupported chain",
