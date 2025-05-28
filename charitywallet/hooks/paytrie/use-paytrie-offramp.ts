@@ -4,7 +4,7 @@ import { usePayTrieQuote } from "./use-paytrie-quotes";
 import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
 import { buildPaytrieSellOrderPayload } from "@/utils/paytrie/build-paytrie-transaction-payload";
 import { useSendErc20Token } from "@/hooks/use-send-erc20-token";
-import { polygon } from "thirdweb/chains";
+import { ethereum, polygon } from "thirdweb/chains";
 
 export function usePayTrieOfframp(
   wallet_address: string,
@@ -29,7 +29,7 @@ export function usePayTrieOfframp(
     depositAmount,
     process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
     process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
-    polygon,
+    ethereum,
     {
       onSuccess: () => {
         console.log(

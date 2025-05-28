@@ -23,7 +23,7 @@ export default function Home() {
     inAppWallet({
       auth: { options: ["google", "email"] },
       smartAccount: {
-        chain: sepolia,
+        chain: ethereum,
         sponsorGas: false, // or true if you want to sponsor gas
       },
     }),
@@ -58,7 +58,7 @@ export default function Home() {
             wallets={wallets}
             header={{ title: " " }}
             showThirdwebBranding={false}
-            accountAbstraction={{ chain: sepolia, sponsorGas: false }}
+            accountAbstraction={{ chain: ethereum, sponsorGas: false }}
             auth={{
               isLoggedIn: async () => await isLoggedIn(),
               doLogin: async (params) => {
@@ -77,7 +77,7 @@ export default function Home() {
               getLoginPayload: async ({ address }) =>
                 generatePayload({
                   address: address.toLowerCase(),
-                  chainId: sepolia.id,
+                  chainId: ethereum.id,
                 }),
               doLogout: async () => {
                 await logout();

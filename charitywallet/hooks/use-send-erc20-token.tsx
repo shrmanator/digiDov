@@ -3,7 +3,7 @@ import { getContract } from "thirdweb";
 import { transfer } from "thirdweb/extensions/erc20";
 import { sendTransaction } from "thirdweb";
 import { useActiveAccount, useWalletBalance } from "thirdweb/react";
-import { polygon } from "thirdweb/chains";
+import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
 import { toast } from "@/hooks/use-toast";
 import type { Chain } from "thirdweb/chains";
@@ -15,13 +15,13 @@ interface SendErc20Callbacks {
 
 /**
  * Hook to send ERC-20 tokens via ThirdWeb, with gas balance check using useWalletBalance.
- * Returns onClick, isPending, and native POL balance.
+ * Returns onClick, isPending, and native ETH balance.
  */
 export function useSendErc20Token(
   amount: string,
   recipientAddress: string,
   contractAddress: string,
-  chain: Chain = polygon,
+  chain: Chain = ethereum,
   callbacks?: SendErc20Callbacks
 ) {
   const [isPending, setIsPending] = useState(false);
@@ -29,7 +29,7 @@ export function useSendErc20Token(
   // Get the active connected wallet account
   const activeAccount = useActiveAccount();
 
-  // Fetch native POL (MATIC) balance via Thirdweb hook
+  // Fetch native ETH balance via Thirdweb hook
   const {
     data: balanceData,
     isLoading: balanceLoading,
@@ -39,10 +39,10 @@ export function useSendErc20Token(
     address: activeAccount?.address,
     client,
   });
-  const polBalance = balanceData?.displayValue || null;
+  const ethBalance = balanceData?.displayValue || null;
   console.log(
-    "useSendErc20Token: POL balance",
-    polBalance,
+    "useSendErc20Token: ETH balance",
+    ethBalance,
     balanceData?.symbol
   );
 
@@ -59,21 +59,21 @@ export function useSendErc20Token(
       return;
     }
 
-    // Ensure we have enough POL for gas (0.01 POL)
+    // Ensure we have enough ETH for gas (0.01 ETH)
     if (!balanceData || balanceLoading || balanceError) {
       toast({
         title: "Balance unavailable",
-        description: "Could not fetch POL balance.",
+        description: "Could not fetch ETH balance.",
         variant: "destructive",
       });
       return;
     }
     const minGas = 0.01;
-    const current = parseFloat(polBalance!);
+    const current = parseFloat(ethBalance!);
     if (current < minGas) {
       toast({
-        title: "Insufficient POL",
-        description: `You need at least ${minGas} POL to cover gas fees.`,
+        title: "Insufficient ETH",
+        description: `You need at least ${minGas} ETH to cover gas fees.`,
         variant: "destructive",
       });
       return;
@@ -113,11 +113,12 @@ export function useSendErc20Token(
     recipientAddress,
     contract,
     activeAccount,
-    polBalance,
+    ethBalance,
     balanceLoading,
     balanceError,
     callbacks,
+    balanceData,
   ]);
 
-  return { onClick, isPending, polBalance, balanceLoading, balanceError };
+  return { onClick, isPending, ethBalance, balanceLoading, balanceError };
 }
