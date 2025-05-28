@@ -26,14 +26,11 @@ interface SendingFundsModalProps {
 }
 
 export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
-  // fetch balances separately
-  const ethBalance = useTotalUsdcBalance(charity.wallet_address, "ethereum");
-  const polyBalance = useTotalUsdcBalance(charity.wallet_address, "polygon");
+  const ethBalance = useTotalUsdcBalance(charity.wallet_address);
 
   // normalize null to 0 for rendering and calculations
   const ethVal = ethBalance ?? 0;
-  const polyVal = polyBalance ?? 0;
-  const totalVal = ethVal + polyVal;
+  const totalVal = ethVal;
 
   const {
     amount,
@@ -128,7 +125,6 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
           <Card>
             <CardContent className="flex flex-col items-center justify-center space-y-1 py-6">
               {ethVal > 0 && <div>Ethereum USDC: {ethVal.toFixed(6)}</div>}
-              {polyVal > 0 && <div>Polygon USDC: {polyVal.toFixed(6)}</div>}
               {totalVal === 0 && (
                 <div className="text-sm text-muted-foreground">
                   No USDC balance
