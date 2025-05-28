@@ -4,7 +4,7 @@ import { usePayTrieQuote } from "./use-paytrie-quotes";
 import { usePaytrieSellOrder } from "./use-paytrie-sell-order";
 import { buildPaytrieSellOrderPayload } from "@/utils/paytrie/build-paytrie-transaction-payload";
 import { useSendErc20Token } from "@/hooks/use-send-erc20-token";
-import { polygon } from "thirdweb/chains";
+import { ethereum, polygon } from "thirdweb/chains";
 
 export function usePayTrieOfframp(
   wallet_address: string,
@@ -27,9 +27,9 @@ export function usePayTrieOfframp(
   // prepare ERC20 sender using external hook
   const { onClick: sendErc20, isPending: isSendingOnChain } = useSendErc20Token(
     depositAmount,
-    process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
+    "0x4ce18aaB797Dfe451823492c06bd7a8c09A72874",
     process.env.NEXT_PUBLIC_POLYGON_USDC_ADDRESS!,
-    polygon
+    ethereum
   );
 
   const initiateWithdraw = useCallback(async () => {
