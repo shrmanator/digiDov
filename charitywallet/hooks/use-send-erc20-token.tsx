@@ -43,7 +43,8 @@ export function useSendErc20Token(
   console.log(
     "useSendErc20Token: ETH balance",
     ethBalance,
-    balanceData?.symbol
+    balanceData?.symbol,
+    activeAccount?.address
   );
 
   // Initialize contract reference for USDC
@@ -68,16 +69,16 @@ export function useSendErc20Token(
       });
       return;
     }
-    const minGas = 0.01;
-    const current = parseFloat(ethBalance!);
-    if (current < minGas) {
-      toast({
-        title: "Insufficient ETH",
-        description: `You need at least ${minGas} ETH to cover gas fees.`,
-        variant: "destructive",
-      });
-      return;
-    }
+    // const minGas = 0.01;
+    // const current = parseFloat(ethBalance!);
+    // if (current < minGas) {
+    //   toast({
+    //     title: "Insufficient ETH",
+    //     description: `You need at least ${minGas} ETH to cover gas fees.`,
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     setIsPending(true);
     try {
