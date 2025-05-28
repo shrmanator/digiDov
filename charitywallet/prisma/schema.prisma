@@ -33,6 +33,7 @@ model charity {
     postCode                      String?
     countryCode                   String? // Eg. Canada, United States Of America
     wallet_address                String                  @unique
+    tx_wallet_address             String?                 @unique
     transak_stream_wallet_address String?                 @unique
     is_profile_complete           Boolean                 @default(false)
     slug                          String?                 @unique
