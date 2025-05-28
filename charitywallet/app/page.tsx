@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ConnectEmbed } from "thirdweb/react";
+import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
@@ -18,6 +18,8 @@ import { getUserEmail } from "thirdweb/wallets/in-app";
 
 export default function Home() {
   const router = useRouter();
+  const activeAccount = useActiveAccount();
+  console.log("Active Account:", activeAccount);
 
   const wallets = [
     inAppWallet({

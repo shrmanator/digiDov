@@ -32,8 +32,8 @@ model charity {
     state                         String?
     postCode                      String?
     countryCode                   String? // Eg. Canada, United States Of America
-    wallet_address                String                  @unique
-    tx_wallet_address             String?                 @unique
+    wallet_address                String                  @unique // The SIWE EOA.
+    tx_wallet_address             String?                 @unique // The wallet address used for transactions.
     transak_stream_wallet_address String?                 @unique
     is_profile_complete           Boolean                 @default(false)
     slug                          String?                 @unique

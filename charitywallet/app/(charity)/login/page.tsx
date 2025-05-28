@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ConnectEmbed } from "thirdweb/react";
+import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { ethereum } from "thirdweb/chains";
 import { client } from "@/lib/thirdwebClient";
@@ -30,6 +30,8 @@ const wallets = [
 
 export default function Home() {
   const router = useRouter();
+  const activeAccount = useActiveAccount();
+  console.log("Active Account:", activeAccount);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">

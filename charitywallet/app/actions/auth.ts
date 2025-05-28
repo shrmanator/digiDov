@@ -10,11 +10,12 @@ export const generatePayload = thirdwebAuth.generatePayload;
 export const verifyPayload = thirdwebAuth.verifyPayload;
 
 export async function charityLogin(
-  params: VerifyLoginPayloadParams & { context?: { email?: string } }
+  params: VerifyLoginPayloadParams & {
+    context?: { email?: string; txWallet?: string };
+  }
 ) {
   // 1. Verify the SIWE payload
   const verified = await thirdwebAuth.verifyPayload(params);
-  console.log("charityLogin verified payload:", verified);
   if (!verified.valid) {
     throw new Error("Invalid login payload");
   }
@@ -22,20 +23,21 @@ export async function charityLogin(
   // 2. Generate and set JWT cookie
   const jwt = await thirdwebAuth.generateJWT({ payload: verified.payload });
   (await cookies()).set("jwt", jwt);
-  console.log("JWT set for wallet:", verified.payload.address);
 
-  // 3. Read email from client-passed context
+  // 3. Extract email and tx wallet from context
   const email = params.context?.email;
-  console.log("charityLogin received email:", email);
+  const txWallet = params.context?.txWallet;
 
-  // 4. Upsert charity with contact_email if provided
-  const walletAddress = verified.payload.address.toLowerCase();
-  console.log("charityLogin upserting walletAddress:", walletAddress);
+  // 4. Normalize addresses
+  const authAddress = verified.payload.address.toLowerCase();
+  const txAddress = txWallet ? txWallet.toLowerCase() : undefined;
+
+  // 5. Upsert charity record
   await upsertCharity({
-    wallet_address: walletAddress,
+    wallet_address: authAddress,
+    ...(txAddress ? { tx_wallet_address: txAddress } : {}),
     ...(email ? { contact_email: email } : {}),
   });
-  console.log("charity record upserted for:", walletAddress);
 }
 
 export async function donorLogin(
