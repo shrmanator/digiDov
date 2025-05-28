@@ -21,6 +21,7 @@ const wallets = [
     executionMode: {
       mode: "EIP7702",
       sponsorGas: false,
+      
     },
   }),
   createWallet("io.metamask"),

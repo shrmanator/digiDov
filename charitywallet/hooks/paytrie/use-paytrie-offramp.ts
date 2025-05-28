@@ -27,8 +27,8 @@ export function usePayTrieOfframp(
   // prepare ERC20 sender using external hook
   const { onClick: sendErc20, isPending: isSendingOnChain } = useSendErc20Token(
     depositAmount,
-    "0x4ce18aaB797Dfe451823492c06bd7a8c09A72874",
-    process.env.NEXT_PUBLIC_ETH_USDC_ADDRESS!, //
+    process.env.NEXT_PUBLIC_PAYTRIE_DEPOSIT_ADDRESS!,
+    process.env.NEXT_PUBLIC_ETH_USDC_ADDRESS!,
     ethereum
   );
 
