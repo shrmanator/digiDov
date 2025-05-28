@@ -56,6 +56,7 @@ export default function Home() {
           <ConnectEmbed
             client={client}
             wallets={wallets}
+            chain={ethereum}
             header={{ title: " " }}
             showThirdwebBranding={false}
             auth={{
