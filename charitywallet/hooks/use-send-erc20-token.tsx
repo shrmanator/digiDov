@@ -68,16 +68,16 @@ export function useSendErc20Token(
       });
       return;
     }
-    const minGas = 0.01;
-    const current = parseFloat(ethBalance!);
-    if (current < minGas) {
-      toast({
-        title: "Insufficient ETH",
-        description: `You need at least ${minGas} ETH to cover gas fees.`,
-        variant: "destructive",
-      });
-      return;
-    }
+    // const minGas = 0.01;
+    // const current = parseFloat(ethBalance!);
+    // if (current < minGas) {
+    //   toast({
+    //     title: "Insufficient ETH",
+    //     description: `You need at least ${minGas} ETH to cover gas fees.`,
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     setIsPending(true);
     try {
