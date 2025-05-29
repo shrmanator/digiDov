@@ -74,25 +74,21 @@ export async function generateDonationReceiptPDF(
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-  const fontSignature = await pdfDoc.embedFont(StandardFonts.CourierBold); // Font for signature
+  const fontSignature = await pdfDoc.embedFont(StandardFonts.CourierBold);
 
   // Color palette
   const colors = {
-    primary: rgb(0, 0, 0), // Black for main text
-    secondary: rgb(0.4, 0.4, 0.4), // Dark gray for secondary text
-    accent: rgb(0.1, 0.3, 0.6), // Navy blue for headings
-    divider: rgb(0.7, 0.7, 0.7), // Light gray for dividers
-    signature: rgb(0.1, 0.2, 0.5), // Dark blue for signature
+    primary: rgb(0, 0, 0),
+    secondary: rgb(0.4, 0.4, 0.4),
+    accent: rgb(0.1, 0.3, 0.6),
+    divider: rgb(0.7, 0.7, 0.7),
+    signature: rgb(0.1, 0.2, 0.5),
   };
 
   // Layout settings
   const margin = 60;
   let y = height - margin;
-  const lineHeight = {
-    normal: 16,
-    large: 24,
-    small: 12,
-  };
+  const lineHeight = { normal: 16, large: 24, small: 12 };
 
   // Drawing helpers
   const drawText = (
@@ -105,13 +101,7 @@ export async function generateDonationReceiptPDF(
       lineSpacing = lineHeight.normal,
     } = {}
   ) => {
-    page.drawText(text, {
-      x: margin + offset,
-      y,
-      font,
-      size,
-      color,
-    });
+    page.drawText(text, { x: margin + offset, y, font, size, color });
     y -= lineSpacing;
   };
 
@@ -124,16 +114,31 @@ export async function generateDonationReceiptPDF(
       lineSpacing = lineHeight.normal,
     } = {}
   ) => {
-    const textWidth = font.widthOfTextAtSize(text, size);
-    const x = (width - textWidth) / 2;
-    page.drawText(text, {
-      x,
-      y,
-      font,
-      size,
-      color,
-    });
-    y -= lineSpacing;
+    const maxWidth = width - 2 * margin;
+    const words = text.split(" ");
+    let line = "";
+    for (const word of words) {
+      const testLine = line ? `${line} ${word}` : word;
+      if (font.widthOfTextAtSize(testLine, size) > maxWidth) {
+        const textWidth = font.widthOfTextAtSize(line, size);
+        page.drawText(line, {
+          x: (width - textWidth) / 2,
+          y,
+          font,
+          size,
+          color,
+        });
+        y -= lineSpacing;
+        line = word;
+      } else {
+        line = testLine;
+      }
+    }
+    if (line) {
+      const textWidth = font.widthOfTextAtSize(line, size);
+      page.drawText(line, { x: (width - textWidth) / 2, y, font, size, color });
+      y -= lineSpacing;
+    }
   };
 
   const drawLine = (yPosition = y, thickness = 1) => {
@@ -155,7 +160,6 @@ export async function generateDonationReceiptPDF(
       size: 10,
       color: colors.primary,
     });
-
     const labelWidth = fontBold.widthOfTextAtSize(labelText, 10);
     page.drawText(value, {
       x: margin + labelWidth,
@@ -164,13 +168,12 @@ export async function generateDonationReceiptPDF(
       size: 10,
       color: colors.primary,
     });
-
     y -= lineHeight.normal;
   };
 
-  // Draw header
+  // Header
   drawCenteredText(
-    "OFFICIAL DONATION RECEIPT FOR INCOME TAX PURPOSES (Non-Cash-Gift-Cryptocurrency)",
+    "Official Donation Receipt For Income Tax Purposes (Non-Cash-Gift-Cryptocurrency)",
     {
       font: fontBold,
       size: 16,
@@ -178,54 +181,47 @@ export async function generateDonationReceiptPDF(
       lineSpacing: lineHeight.large,
     }
   );
-
-  // Add receipt number prominently near the top
   drawCenteredText(`Receipt #: ${receiptNumber}`, {
     font: fontBold,
     size: 12,
     color: colors.accent,
     lineSpacing: lineHeight.normal,
   });
-
   drawLine(y + lineHeight.small);
   y -= lineHeight.small;
 
-  // Organization section
-  drawText("Charitable Organization", {
+  // Organization
+  drawText("Charitable Information", {
     font: fontBold,
     size: 12,
     color: colors.accent,
   });
-
   drawField("Charity Name", charityName);
-  drawField("Registration Number", registrationNumber);
   drawField("Address", charityAddress);
+  drawField("Registration Number", registrationNumber);
   drawField("Email", charityEmail);
   drawField("Phone", charityPhone);
-
   y -= lineHeight.small;
 
-  // Donor section
+  // Donor
   drawText("Donor Information", {
     font: fontBold,
     size: 12,
     color: colors.accent,
   });
-
   drawField("Name", donorName);
   drawField("Address", donorAddress);
-  drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
-
   y -= lineHeight.small;
 
-  // Donation details section
+  // Donation details
   drawText("Donation Details", {
     font: fontBold,
     size: 12,
     color: colors.accent,
   });
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
-  drawField("Date and Time of Donation", formatDateTime(donationDate));
+  drawField("Date and Time of Donation Received", formatDateTime(donationDate));
+  drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
   drawField(
     "Amount Donated for Tax Purposes",
     `${cryptoAmount} ${blockchainInfo.symbol}`
@@ -240,53 +236,39 @@ export async function generateDonationReceiptPDF(
   );
   drawField("Transaction Hash", txHash);
   drawField("Wallet Address Used", walletAddress);
-
   y -= lineHeight.normal;
   drawLine();
 
-  // Compliance section
+  // Compliance
   drawText("CRA Compliance", {
     font: fontBold,
     size: 11,
     color: colors.accent,
   });
-
   drawText(
     "This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes.",
-    {
-      size: 9,
-      lineSpacing: lineHeight.small,
-    }
+    { size: 9, lineSpacing: lineHeight.small }
   );
-
   drawText("No advantage was received in exchange for this donation.", {
     size: 9,
     lineSpacing: lineHeight.small,
   });
-
   drawText(
     "For verification, visit the CRA website: www.canada.ca/charities-giving",
-    {
-      size: 9,
-      lineSpacing: lineHeight.normal,
-    }
+    { size: 9, lineSpacing: lineHeight.normal }
   );
 
-  // Receipt authentication section
+  // Receipt authentication
   y -= lineHeight.small;
   drawLine();
-
   drawField("This Official Receipt Is Issued By", issuedBy);
-
-  // Add digital signature
   y -= lineHeight.normal;
 
+  // Signature
   if (signerTitle && signerFirstName && signerLastName) {
     const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}, ${signerTitle}`;
     const dateText = `Date: ${formatDateTime(issueDate)}`;
-
-    y -= 5; // Small space below the line
-
+    y -= 5;
     page.drawText(signatureText, {
       x: margin,
       y,
@@ -294,9 +276,7 @@ export async function generateDonationReceiptPDF(
       size: 10,
       color: colors.signature,
     });
-
     y -= lineHeight.small;
-
     page.drawText(dateText, {
       x: margin,
       y,
@@ -304,17 +284,10 @@ export async function generateDonationReceiptPDF(
       size: 8,
       color: colors.secondary,
     });
-
     y -= lineHeight.normal;
     page.drawText(
       "This document has been electronically signed and is legally binding.",
-      {
-        x: margin,
-        y,
-        font: fontItalic,
-        size: 8,
-        color: colors.secondary,
-      }
+      { x: margin, y, font: fontItalic, size: 8, color: colors.secondary }
     );
   } else {
     y -= lineHeight.small;
@@ -327,11 +300,11 @@ export async function generateDonationReceiptPDF(
     });
   }
 
-  // Add subtle footer
+  // Footer
   const footerText = "Thank you for your generous donation";
-  const footerTextWidth = fontItalic.widthOfTextAtSize(footerText, 9);
+  const footerWidth = fontItalic.widthOfTextAtSize(footerText, 9);
   page.drawText(footerText, {
-    x: (width - footerTextWidth) / 2,
+    x: (width - footerWidth) / 2,
     y: margin / 2,
     font: fontItalic,
     size: 9,
