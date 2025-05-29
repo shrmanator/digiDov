@@ -250,11 +250,11 @@ export async function generateDonationReceiptPDF(
     "Amount Donated for Tax Purposes",
     ` ${cryptoAmount} ${blockchainInfo.symbol}`
   );
-  drawField("Eligible Amount Of Gift (CAD)", `$`);
   drawField(
     "Fair Market Value At Time of Donation",
     ` $${fiatAmount.toFixed(2)} CAD`
   );
+  drawField("Eligible Amount Of Gift (CAD)", `$`);
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
