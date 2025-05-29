@@ -182,24 +182,19 @@ export async function generateDonationReceiptPDF(
       lineSpacing: lineHeight.large,
     }
   );
-  drawCenteredText(`Receipt #: ${receiptNumber}`, {
-    font: fontBold,
-    size: 12,
-    color: colors.accent,
-    lineSpacing: lineHeight.normal,
-  });
   drawLine(y + lineHeight.small);
   y -= lineHeight.small;
 
   // Organization
-  drawText("Charitable Information", {
+  drawText("Organization Information", {
     font: fontBold,
     size: 12,
     color: colors.accent,
   });
-  drawField("Charity Name", charityName);
+  drawField("Organization Name", charityName);
   drawField("Address", charityAddress);
   drawField("Registration Number", registrationNumber);
+  drawField("Receipt #", receiptNumber); // <--- moved here, right under registration number
   drawField("Email", charityEmail);
   drawField("Phone", charityPhone);
   y -= lineHeight.small;
