@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import ThirdwebAutoConnect from "@/components/thirdweb-auto-connect";
 import { AuthProvider } from "@/contexts/auth-context";
+import DonorProfileGate from "@/components/donor-profile-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
+              <DonorProfileGate />
               <div className="min-h-screen flex flex-col">
                 <main className="flex-1">{children}</main>
               </div>

@@ -17,7 +17,7 @@ import {
 } from "@/app/actions/auth";
 
 interface AuthContextProps {
-  user: { walletAddress: string } | null;
+  user: { walletAddress: string; role?: "donor" | "charity" } | null;
   donor: any | null;
   loginDonor: (params: VerifyLoginPayloadParams) => Promise<void>;
   loginCharity: (params: VerifyLoginPayloadParams) => Promise<void>;
@@ -28,7 +28,9 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ walletAddress: string } | null>(null);
+  const [user, setUser] = useState<
+    { walletAddress: string; role?: "donor" | "charity" } | null
+  >(null);
   const [donor, setDonor] = useState<any | null>(null);
   const activeAccount = useActiveAccount();
 
@@ -50,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginDonor = async (params: VerifyLoginPayloadParams) => {
     const walletAddress = params.payload.address.toLowerCase();
     await loginDonorServer(params);
-    setUser({ walletAddress });
+    setUser({ walletAddress, role: "donor" });
     const updatedDonor = await getDonorByWallet(walletAddress);
     setDonor(updatedDonor);
   };
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginCharity = async (params: VerifyLoginPayloadParams) => {
     const walletAddress = params.payload.address.toLowerCase();
     await loginCharityServer(params);
-    setUser({ walletAddress });
+    setUser({ walletAddress, role: "charity" });
     // UPDATE CHARITY SPECIFIC STATE HERE
   };
 
