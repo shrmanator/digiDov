@@ -256,6 +256,8 @@ export async function generateDonationReceiptPDF(
   );
   drawField("Eligible Amount Of Gift (CAD)", `$`);
   drawField("Description Of Advantage (if any)", ``);
+  drawField("Fair Market Value Of Advantage (CAD)", `$`);
+
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
