@@ -141,7 +141,7 @@ export function CharityAuthorizedContactInfoStep({
           </div>
 
           <div>
-            <Label htmlFor="contact_phone">Phone Number</Label>
+            <Label htmlFor="contact_phone">Organization Phone Number</Label>
             <Input
               id="contact_phone"
               name="contact_phone"

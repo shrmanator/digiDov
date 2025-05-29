@@ -34,6 +34,7 @@ export async function generateDonationReceiptPDF(
   const donorName =
     (donorFirstName + " " + donorLastName).trim() || "Anonymous";
   const donorAddress = receipt.donor?.address || "Not provided";
+  const donorEmail = receipt.donor?.email || "Not provided";
   const blockchainInfo = getBlockchainInfo(receipt.chainId);
   const cryptoAmount = receipt.crypto_amount_wei
     ? weiToEvm(receipt.crypto_amount_wei)
@@ -211,6 +212,7 @@ export async function generateDonationReceiptPDF(
   });
   drawField("Name", donorName);
   drawField("Address", donorAddress);
+  drawField("Email", donorEmail);
   y -= lineHeight.small;
 
   // Donation details
