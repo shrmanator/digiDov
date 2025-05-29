@@ -169,12 +169,15 @@ export async function generateDonationReceiptPDF(
   };
 
   // Draw header
-  drawCenteredText("OFFICIAL DONATION RECEIPT", {
-    font: fontBold,
-    size: 16,
-    color: colors.accent,
-    lineSpacing: lineHeight.large,
-  });
+  drawCenteredText(
+    "OFFICIAL DONATION RECEIPT FOR INCOME TAX PURPOSES (Non-Cash-Gift-Cryptocurrency)",
+    {
+      font: fontBold,
+      size: 16,
+      color: colors.accent,
+      lineSpacing: lineHeight.large,
+    }
+  );
 
   // Add receipt number prominently near the top
   drawCenteredText(`Receipt #: ${receiptNumber}`, {
