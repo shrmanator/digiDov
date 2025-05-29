@@ -11,6 +11,20 @@ interface ReceiptData extends donation_receipt {
   contact_last_name?: string;
 }
 
+// ----------- NEW: Utility for parsing address -----------
+function extractCityProvince(
+  address: string
+): { city: string; province: string } | null {
+  // Example: "123 Main St, Toronto, ON M5A 1A1, Canada"
+  if (!address) return null;
+  const parts = address.split(",");
+  if (parts.length < 3) return null;
+  const city = parts[1].trim();
+  const provinceMatch = parts[2].trim().match(/^([A-Z]{2})\b/);
+  const province = provinceMatch ? provinceMatch[1] : "";
+  return { city, province };
+}
+
 /**
  * Generates a clean, professional PDF donation receipt for cryptocurrency donations
  * that meets compliance requirements while maintaining readability.
@@ -53,6 +67,15 @@ export async function generateDonationReceiptPDF(
   const signerTitle = receipt.charity?.contact_title;
   const signerFirstName = receipt.charity?.contact_first_name;
   const signerLastName = receipt.charity?.contact_last_name;
+
+  // ----------- NEW: Calculate "receipt_location" -----------
+  const addressToParse =
+    receipt.donor?.address || receipt.charity?.registered_office_address || "";
+  const parsedLocation = extractCityProvince(addressToParse);
+  const receiptLocation = parsedLocation
+    ? `${parsedLocation.city}, ${parsedLocation.province}`
+    : "Unknown";
+  // ---------------------------------------------------------
 
   // Date and time formatting helper
   const formatDateTime = (date: Date) =>
@@ -193,6 +216,9 @@ export async function generateDonationReceiptPDF(
   });
   drawField("Organization Name", charityName);
   drawField("Address", charityAddress);
+  // ----------- NEW: Show receipt location -----------
+  drawField("Receipt Location", receiptLocation);
+  // --------------------------------------------------
   drawField("Registration Number", registrationNumber);
   drawField("Receipt Serial Number", receiptNumber);
   drawField("Email", charityEmail);
