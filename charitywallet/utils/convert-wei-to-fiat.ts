@@ -1,51 +1,63 @@
-import Web3 from "web3";
-
-const web3 = new Web3();
-
-function formatDateForCoinGecko(timestampSec: number): string {
-  const d = new Date(timestampSec * 1000);
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  return `${day}-${month}-${year}`;
-}
+import web3 from "web3";
 
 export async function convertWeiToFiat(
   weiAmount: string,
-  timestampSec: number,
+  tsSeconds: number,
   currency: string
 ): Promise<number> {
   if (!weiAmount) throw new Error("weiAmount is required");
-  if (!timestampSec) throw new Error("timestamp is required");
+  if (tsSeconds == null) throw new Error("timestamp is required");
 
   const ethAmt = parseFloat(web3.utils.fromWei(weiAmount, "ether"));
-  const dateStr = formatDateForCoinGecko(timestampSec);
   const tokenId = "ethereum";
   const curr = currency.toLowerCase();
 
-  // 1) Try historical price
+  // Try the precise range endpoint around the tx moment
   try {
-    const hist = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${tokenId}/history?date=${dateStr}&localization=false`,
-      { next: { revalidate: 3600 } }
+    const from = tsSeconds - 300; // 5 minutes before
+    const to = tsSeconds + 300; // 5 minutes after
+    const url = new URL(
+      `https://api.coingecko.com/api/v3/coins/${tokenId}/market_chart/range`
     );
-    if (!hist.ok) throw new Error(`History API ${hist.status}`);
-    const json = await hist.json();
-    const p = json?.market_data?.current_price?.[curr];
-    if (p != null) return ethAmt * p;
-    throw new Error("no historical price");
-  } catch (e) {
-    console.warn(`History lookup failed for ${dateStr}, falling back`, e);
+    url.searchParams.set("vs_currency", curr);
+    url.searchParams.set("from", String(from));
+    url.searchParams.set("to", String(to));
+
+    const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const json = await res.json();
+      // 'prices' is an array of [ timestamp_ms, price ]
+      const prices: [number, number][] = json.prices;
+      if (prices?.length) {
+        // find the point closest to our tx time
+        const targetMs = tsSeconds * 1_000;
+        let best = prices[0];
+        for (const p of prices) {
+          if (Math.abs(p[0] - targetMs) < Math.abs(best[0] - targetMs)) {
+            best = p;
+          }
+        }
+        return ethAmt * best[1];
+      }
+    } else {
+      console.warn(`Range API returned ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("Range lookup failed, falling back to spot", err);
   }
 
-  // 2) Fallback to current spot price
+  // Fallback to simple spot price
   const spotRes = await fetch(
     `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${curr}`,
     { next: { revalidate: 300 } }
   );
-  if (!spotRes.ok) throw new Error(`Simple-price API ${spotRes.status}`);
+  if (!spotRes.ok) {
+    throw new Error(`Simple-price API ${spotRes.status}`);
+  }
   const spotJson = await spotRes.json();
-  const spot = spotJson?.[tokenId]?.[curr];
-  if (spot == null) throw new Error(`No current price in ${currency}`);
+  const spot = spotJson[tokenId]?.[curr];
+  if (typeof spot !== "number") {
+    throw new Error(`No current price for ${currency}`);
+  }
   return ethAmt * spot;
 }
