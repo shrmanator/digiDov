@@ -244,6 +244,12 @@ export async function generateDonationReceiptPDF(
   drawField("Receipt Serial Number", receiptNumber);
   drawField("Receipt Location", receiptLocation);
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
+  drawField(
+    "Exchange Rate Used",
+    `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
+  );
+  drawField("Transaction Hash", txHash);
+  drawField("Wallet Address Used", walletAddress);
   drawField("Date and Time of Donation Received", formatDateTime(donationDate));
   drawField("Date Tax Receipt Issued ", formatDateTime(issueDate));
   drawField(
@@ -258,12 +264,6 @@ export async function generateDonationReceiptPDF(
   drawField("Description Of Advantage (if any)", ``);
   drawField("Fair Market Value Of Advantage", ` CAD $ `);
 
-  drawField(
-    "Exchange Rate Used",
-    `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
-  );
-  drawField("Transaction Hash", txHash);
-  drawField("Wallet Address Used", walletAddress);
   y -= lineHeight.normal;
   drawLine();
 
