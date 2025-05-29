@@ -254,9 +254,9 @@ export async function generateDonationReceiptPDF(
     "Fair Market Value At Time of Donation",
     ` $${fiatAmount.toFixed(2)} CAD`
   );
-  drawField("Eligible Amount Of Gift (CAD)", `$`);
+  drawField("Eligible Amount Of Gift", `CAD $ `);
   drawField("Description Of Advantage (if any)", ``);
-  drawField("Fair Market Value Of Advantage (CAD)", `$`);
+  drawField("Fair Market Value Of Advantage", ` CAD $ `);
 
   drawField(
     "Exchange Rate Used",
