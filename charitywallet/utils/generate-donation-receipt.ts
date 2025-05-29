@@ -274,7 +274,11 @@ export async function generateDonationReceiptPDF(
     color: colors.accent,
   });
   drawText(
-    "This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes.",
+    "This receipt is provided for your records. Eligibility for tax deductions/credits",
+    { size: 9, lineSpacing: lineHeight.small }
+  );
+  drawText(
+    "depends on your local regulations. Please consult a qualified tax advisor.",
     { size: 9, lineSpacing: lineHeight.small }
   );
 
