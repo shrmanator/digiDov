@@ -226,6 +226,7 @@ export async function generateDonationReceiptPDF(
     "Amount Donated for Tax Purposes",
     `${cryptoAmount} ${blockchainInfo.symbol}`
   );
+  drawField("Eligible Amount Of Gift", ``);
   drawField(
     "Fair Market Value At Time of Donation",
     `$${fiatAmount.toFixed(2)} CAD`
