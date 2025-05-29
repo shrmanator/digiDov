@@ -224,12 +224,12 @@ export async function generateDonationReceiptPDF(
   drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
   drawField(
     "Amount Donated for Tax Purposes",
-    `${cryptoAmount} ${blockchainInfo.symbol}`
+    ` ${cryptoAmount} ${blockchainInfo.symbol}`
   );
   drawField("Eligible Amount Of Gift", ``);
   drawField(
     "Fair Market Value At Time of Donation",
-    `$${fiatAmount.toFixed(2)} CAD`
+    ` $${fiatAmount.toFixed(2)} CAD`
   );
   drawField(
     "Exchange Rate Used",
