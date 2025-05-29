@@ -194,7 +194,7 @@ export async function generateDonationReceiptPDF(
   drawField("Organization Name", charityName);
   drawField("Address", charityAddress);
   drawField("Registration Number", registrationNumber);
-  drawField("Receipt Serial #", receiptNumber);
+  drawField("Receipt Serial Number", receiptNumber);
   drawField("Email", charityEmail);
   drawField("Phone", charityPhone);
   y -= lineHeight.small;
