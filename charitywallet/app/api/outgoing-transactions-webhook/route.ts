@@ -70,8 +70,7 @@ export async function POST(request: Request) {
     const historicalFiatEquivalent = await convertWeiToFiat(
       amountWei,
       transferTimestamp,
-      "cad",
-      chainId
+      "cad"
     );
     console.log("Fiat Equivalent:", historicalFiatEquivalent);
 
