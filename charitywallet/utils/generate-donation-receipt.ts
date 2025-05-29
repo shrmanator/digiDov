@@ -255,6 +255,7 @@ export async function generateDonationReceiptPDF(
     ` $${fiatAmount.toFixed(2)} CAD`
   );
   drawField("Eligible Amount Of Gift (CAD)", `$`);
+  drawField("Description Of Advantage (if any)", ``);
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
@@ -274,10 +275,7 @@ export async function generateDonationReceiptPDF(
     "This receipt is issued under the Income Tax Act of Canada and is valid for tax purposes.",
     { size: 9, lineSpacing: lineHeight.small }
   );
-  drawText("No advantage was received in exchange for this donation.", {
-    size: 9,
-    lineSpacing: lineHeight.small,
-  });
+
   drawText(
     "For verification, visit the CRA website: www.canada.ca/charities-giving",
     { size: 9, lineSpacing: lineHeight.normal }
