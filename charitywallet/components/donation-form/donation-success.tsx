@@ -26,7 +26,7 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
   onReset,
 }) => {
   const url = getTxExplorerLink(txHash);
-  const [secondsLeft, setSecondsLeft] = useState(15);
+  const [secondsLeft, setSecondsLeft] = useState(2);
 
   useEffect(() => {
     if (secondsLeft === 0) return;
@@ -63,7 +63,7 @@ export const DonationSuccess: React.FC<DonationSuccessProps> = ({
         )}
 
         <p className="text-xs text-muted-foreground text-center">
-          We&apos;ll email your tax receipt once the transaction is confirmed.
+          We&apos;ll email you once your transaction is confirmed.
         </p>
       </CardContent>
 

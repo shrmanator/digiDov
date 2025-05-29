@@ -62,9 +62,9 @@ export async function POST(request: Request) {
     // 4. Compute timestamps & parallel fiat conversions
     const ts = parseInt(block.timestamp, 10);
     const [fiat, netFiat, feeFiat] = await Promise.all([
-      convertWeiToFiat(event.fullAmount, ts, "cad", chainId),
-      convertWeiToFiat(event.netAmount, ts, "cad", chainId),
-      convertWeiToFiat(event.fee, ts, "cad", chainId),
+      convertWeiToFiat(event.fullAmount, ts, "cad"),
+      convertWeiToFiat(event.netAmount, ts, "cad"),
+      convertWeiToFiat(event.fee, ts, "cad"),
     ]);
 
     // 5. Load donor & charity from DB
@@ -198,7 +198,7 @@ export async function POST(request: Request) {
     console.error("Webhook error:", err);
     return NextResponse.json(
       { message: "Failed processing webhook", error: (err as Error).message },
-      { status: 500 }
+      { status: 400 }
     );
   }
 }
