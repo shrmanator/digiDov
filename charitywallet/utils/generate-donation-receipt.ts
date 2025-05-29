@@ -245,7 +245,7 @@ export async function generateDonationReceiptPDF(
   drawField("Receipt Location", receiptLocation);
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
   drawField("Date and Time of Donation Received", formatDateTime(donationDate));
-  drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
+  drawField("Date Tax Receipt Issued ", formatDateTime(issueDate));
   drawField(
     "Amount Donated for Tax Purposes",
     ` ${cryptoAmount} ${blockchainInfo.symbol}`
