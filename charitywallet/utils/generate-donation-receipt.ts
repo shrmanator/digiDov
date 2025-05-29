@@ -9,13 +9,12 @@ interface ReceiptData extends donation_receipt {
   issued_by?: string;
   contact_first_name?: string;
   contact_last_name?: string;
+  location_issued?: string;
 }
 
-// ----------- NEW: Utility for parsing address -----------
 function extractCityProvince(
   address: string
 ): { city: string; province: string } | null {
-  // Example: "123 Main St, Toronto, ON M5A 1A1, Canada"
   if (!address) return null;
   const parts = address.split(",");
   if (parts.length < 3) return null;
@@ -25,16 +24,12 @@ function extractCityProvince(
   return { city, province };
 }
 
-/**
- * Generates a clean, professional PDF donation receipt for cryptocurrency donations
- * that meets compliance requirements while maintaining readability.
- */
 export async function generateDonationReceiptPDF(
   receipt: ReceiptData
 ): Promise<Uint8Array> {
   if (!receipt) throw new Error("Invalid donation receipt data");
 
-  // Extract and prepare data with fallbacks
+  // Core info
   const charityName = receipt.charity?.charity_name || "N/A";
   const registrationNumber = receipt.charity?.registration_number || "N/A";
   const charityAddress = receipt.charity?.registered_office_address || "N/A";
@@ -67,40 +62,40 @@ export async function generateDonationReceiptPDF(
   const signerTitle = receipt.charity?.contact_title;
   const signerFirstName = receipt.charity?.contact_first_name;
   const signerLastName = receipt.charity?.contact_last_name;
+  const locationIssued =
+    receipt.location_issued ||
+    extractCityProvince(charityAddress)?.city +
+      ", " +
+      extractCityProvince(charityAddress)?.province ||
+    "Unknown";
 
-  // ----------- NEW: Calculate "receipt_location" -----------
-  const addressToParse =
-    receipt.donor?.address || receipt.charity?.registered_office_address || "";
-  const parsedLocation = extractCityProvince(addressToParse);
-  const receiptLocation = parsedLocation
-    ? `${parsedLocation.city}, ${parsedLocation.province}`
-    : "Unknown";
-  // ---------------------------------------------------------
+  // For "no advantage" receipts
+  const eligibleAmount = fiatAmount;
+  const advantageDescription = "N/A";
+  const advantageFMV = 0.0;
 
-  // Date and time formatting helper
+  // Date/time formatter
   const formatDateTime = (date: Date) =>
-    date.toLocaleString("en-US", {
+    date.toLocaleString("en-CA", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      hour12: true,
+      hour12: false,
+      timeZone: "America/Toronto",
     });
 
-  // Create PDF document
+  // PDF setup
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([612, 792]); // Letter size
+  const page = pdfDoc.addPage([612, 792]);
   const { width, height } = page.getSize();
-
-  // Load fonts
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
   const fontSignature = await pdfDoc.embedFont(StandardFonts.CourierBold);
 
-  // Color palette
   const colors = {
     primary: rgb(0, 0, 0),
     secondary: rgb(0.4, 0.4, 0.4),
@@ -109,7 +104,6 @@ export async function generateDonationReceiptPDF(
     signature: rgb(0.1, 0.2, 0.5),
   };
 
-  // Layout settings
   const margin = 60;
   let y = height - margin;
   const lineHeight = { normal: 16, large: 24, small: 12 };
@@ -197,15 +191,22 @@ export async function generateDonationReceiptPDF(
 
   // Header
   drawCenteredText(
-    "Official Donation Receipt For Income Tax Purposes (Non-Cash-Gift-Cryptocurrency)",
+    "Official Donation Receipt For Income Tax Purposes (Non-Cash Gift – Cryptocurrency)",
     {
       font: fontBold,
-      size: 16,
+      size: 15,
       color: colors.accent,
       lineSpacing: lineHeight.large,
     }
   );
   drawLine(y + lineHeight.small);
+  y -= lineHeight.small;
+
+  // Key receipt info block
+  drawField("Receipt Serial Number", receiptNumber);
+  drawField("Location Where Receipt Issued", locationIssued);
+  drawField("Date Donation Received", formatDateTime(donationDate));
+  drawField("Date Receipt Issued", formatDateTime(issueDate));
   y -= lineHeight.small;
 
   // Organization
@@ -216,9 +217,6 @@ export async function generateDonationReceiptPDF(
   });
   drawField("Organization Name", charityName);
   drawField("Address", charityAddress);
-  // ----------- NEW: Show receipt location -----------
-
-  // --------------------------------------------------
   drawField("Registration Number", registrationNumber);
   drawField("Email", charityEmail);
   drawField("Phone", charityPhone);
@@ -241,28 +239,21 @@ export async function generateDonationReceiptPDF(
     size: 12,
     color: colors.accent,
   });
-  drawField("Receipt Serial Number", receiptNumber);
-  drawField("Receipt Location", receiptLocation);
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
+  drawField("Amount Donated", `${cryptoAmount} ${blockchainInfo.symbol}`);
+  drawField("Fair Market Value at Donation", `$${fiatAmount.toFixed(2)} CAD`);
+  drawField("Eligible Amount Of Gift", `$${eligibleAmount.toFixed(2)} CAD`);
+  drawField("Description Of Advantage (if any)", advantageDescription);
+  drawField(
+    "Fair Market Value Of Advantage",
+    `$${advantageFMV.toFixed(2)} CAD`
+  );
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
   );
   drawField("Transaction Hash", txHash);
   drawField("Wallet Address Used", walletAddress);
-  drawField("Date and Time of Donation Received", formatDateTime(donationDate));
-  drawField("Date Tax Receipt Issued ", formatDateTime(issueDate));
-  drawField(
-    "Amount Donated for Tax Purposes",
-    ` ${cryptoAmount} ${blockchainInfo.symbol}`
-  );
-  drawField(
-    "Fair Market Value At Time of Donation",
-    ` $${fiatAmount.toFixed(2)} CAD`
-  );
-  drawField("Eligible Amount Of Gift", `CAD $ `);
-  drawField("Description Of Advantage (if any)", ``);
-  drawField("Fair Market Value Of Advantage", ` CAD $ `);
 
   y -= lineHeight.normal;
   drawLine();
@@ -281,7 +272,6 @@ export async function generateDonationReceiptPDF(
     "depends on your local regulations. Please consult a qualified tax advisor.",
     { size: 9, lineSpacing: lineHeight.small }
   );
-
   drawText(
     "For verification, visit the CRA website: www.canada.ca/charities-giving",
     { size: 9, lineSpacing: lineHeight.normal }
@@ -343,9 +333,6 @@ export async function generateDonationReceiptPDF(
   return await pdfDoc.save();
 }
 
-/**
- * Helper function to get blockchain information based on chainId.
- */
 function getBlockchainInfo(chainId: string | null): {
   name: string;
   symbol: string;
