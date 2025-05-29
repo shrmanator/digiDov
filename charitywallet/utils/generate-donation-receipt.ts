@@ -217,10 +217,9 @@ export async function generateDonationReceiptPDF(
   drawField("Organization Name", charityName);
   drawField("Address", charityAddress);
   // ----------- NEW: Show receipt location -----------
-  drawField("Receipt Location", receiptLocation);
+
   // --------------------------------------------------
   drawField("Registration Number", registrationNumber);
-  drawField("Receipt Serial Number", receiptNumber);
   drawField("Email", charityEmail);
   drawField("Phone", charityPhone);
   y -= lineHeight.small;
@@ -242,6 +241,8 @@ export async function generateDonationReceiptPDF(
     size: 12,
     color: colors.accent,
   });
+  drawField("Receipt Serial Number", receiptNumber);
+  drawField("Receipt Location", receiptLocation);
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
   drawField("Date and Time of Donation Received", formatDateTime(donationDate));
   drawField("Date Tax Receipt Issued", formatDateTime(issueDate));
