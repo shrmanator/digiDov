@@ -33,7 +33,8 @@ model charity {
     postCode                      String?
     countryCode                   String? // Eg. Canada, United States Of America
     wallet_address                String                  @unique // The SIWE EOA.
-    tx_wallet_address             String?                 @unique // The wallet address used for transactions.
+    advantage_amount              Float? // Optional, in CAD or applicable currency
+    tx_wallet_address             String?                 @unique // The wallet address used for transactions (only useful for eip3774).
     transak_stream_wallet_address String?                 @unique
     is_profile_complete           Boolean                 @default(false)
     slug                          String?                 @unique

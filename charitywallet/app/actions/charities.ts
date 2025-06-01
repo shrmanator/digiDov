@@ -247,3 +247,50 @@ export async function updateCharityProfileAction(
   // Proceed with updating the charity profile.
   await upsertCharity(charityInput);
 }
+
+// 1) Read-only: fetch advantage_amount for a given charity by its wallet_address.
+//    Returns `null` if not set, or throws if charity doesn’t exist.
+export async function getCharityAdvantage(
+  wallet_address: string
+): Promise<number | null> {
+  const wallet = wallet_address.toLowerCase();
+  const charity = await prisma.charity.findUnique({
+    where: { wallet_address: wallet },
+    select: { advantage_amount: true },
+  });
+
+  if (!charity) {
+    throw new Error(`Charity with wallet ${wallet} not found.`);
+  }
+
+  // advantage_amount is Float? in Prisma, so it may be number | null
+  return charity.advantage_amount;
+}
+
+// 2) Mutator: update advantage_amount for a given charity by its wallet_address.
+//    Validates that the amount is ≥ 0; throws if charity not found.
+export async function updateCharityAdvantage(params: {
+  wallet_address: string;
+  advantage_amount: number;
+}): Promise<number> {
+  const wallet = params.wallet_address.toLowerCase();
+  const amount = params.advantage_amount;
+
+  // Simple validation: must be a number and ≥ 0
+  if (typeof amount !== "number" || Number.isNaN(amount)) {
+    throw new Error("advantage_amount must be a valid number.");
+  }
+  if (amount < 0) {
+    throw new Error("advantage_amount must be ≥ 0.");
+  }
+
+  // Perform the update
+  const updated = await prisma.charity.update({
+    where: { wallet_address: wallet },
+    data: { advantage_amount: amount },
+    select: { advantage_amount: true },
+  });
+
+  // If for some reason update fails because no record exists, Prisma throws.
+  return updated.advantage_amount!;
+}
