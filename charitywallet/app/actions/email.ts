@@ -237,3 +237,60 @@ export async function notifyCharityWithCsv(
     };
   }
 }
+
+/**
+ * NEW: Notify donor when advantage exceeds CRA’s de minimis threshold.
+ * This email explains why no tax receipt can be issued.
+ */
+export async function notifyDonorAdvantageTooHigh(
+  receipt: donation_receipt & { donor?: donor; charity?: charity },
+  advantageAmount: number,
+  deMinimisThreshold: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const donorEmail = receipt.donor?.email || "";
+    const donorName =
+      `${receipt.donor?.first_name || ""} ${
+        receipt.donor?.last_name || ""
+      }`.trim() || "Donor";
+    const charityName =
+      receipt.charity?.charity_name || "the charity you supported";
+    const charitySlug = receipt.charity?.slug || "";
+    const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
+    const donationValue = `$${receipt.fiat_amount.toFixed(2)} CAD`;
+    const advantageValue = `$${advantageAmount.toFixed(2)} CAD`;
+    const thresholdValue = `$${deMinimisThreshold.toFixed(2)} CAD`;
+
+    const emailParams = new EmailParams()
+      .setFrom(new Sender("contact@digidov.com", "digiDov Receipts"))
+      .setTo([new Recipient(donorEmail, donorName)])
+      .setSubject("No Tax Receipt: Advantage Exceeds CRA Limit")
+      .setHtml(
+        `<p>Dear ${donorName},</p>
+         <p>Thank you for your generous <strong>${donationValue}</strong> donation to <strong>${charityName}</strong>.</p>
+         <p>We noticed that the fair market value of the benefit (advantage) you received was <strong>${advantageValue}</strong>. 
+            Under CRA rules, because that advantage exceeds the de minimis limit of <strong>${thresholdValue}</strong>, 
+            we are unfortunately unable to issue a tax receipt for this donation.</p>
+         <p>If you have any questions, you can review your donation details here: 
+            <a href="${shortReceiptLink}" target="_blank" rel="noopener noreferrer">
+              ${shortReceiptLink}
+            </a>
+         </p>
+         <p>We appreciate your support and understanding. If you prefer, you can reach out to ${charityName} directly for further clarification.</p>
+         <p>Warm regards,</p>
+         <p>digiDov x ${charityName}</p>`
+      );
+
+    await mailerSend.email.send(emailParams);
+    console.log(
+      `⚠️ Advantage‐too‐high email sent to donor at ${donorEmail} (advantage: ${advantageValue})`
+    );
+    return { success: true };
+  } catch (err) {
+    console.error("❌ Failed to send advantage‐too‐high notification", err);
+    return {
+      success: false,
+      error: "Failed to send advantage‐too‐high notification",
+    };
+  }
+}
