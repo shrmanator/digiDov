@@ -173,9 +173,8 @@ export async function POST(request: Request) {
       try {
         await notifyDonorAdvantageTooHigh(
           receipt,
-          donor.email!,
-          donor.first_name,
-          donor.last_name,
+          donor,
+          charity,
           advantage,
           deMinimisThreshold
         );

@@ -239,19 +239,22 @@ export async function notifyCharityWithCsv(
 }
 
 export async function notifyDonorAdvantageTooHigh(
-  receipt: donation_receipt & { charity?: charity },
-  donorEmail: string,
-  donorFirstName: string | null,
-  donorLastName: string | null,
+  receipt: donation_receipt,
+  donor: donor,
+  charity: charity,
   advantageAmount: number,
   deMinimisThreshold: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Build donorName from donor object:
     const donorName =
-      `${donorFirstName || ""} ${donorLastName || ""}`.trim() || "Donor";
-    const charityName =
-      receipt.charity?.charity_name || "the charity you supported";
-    const charitySlug = receipt.charity?.slug || "";
+      `${donor.first_name || ""} ${donor.last_name || ""}`.trim() || "Donor";
+
+    // Pull charity fields:
+    const charityName = charity.charity_name || "the charity you supported";
+    const charitySlug = charity.slug || "";
+
+    // Other computed values:
     const shortReceiptLink = `https://digidov.com/donate/${charitySlug}`;
     const donationValue = `$${receipt.fiat_amount.toFixed(2)} CAD`;
     const advantageValue = `$${advantageAmount.toFixed(2)} CAD`;
@@ -259,7 +262,7 @@ export async function notifyDonorAdvantageTooHigh(
 
     const emailParams = new EmailParams()
       .setFrom(new Sender("contact@digidov.com", "digiDov Receipts"))
-      .setTo([new Recipient(donorEmail, donorName)])
+      .setTo([new Recipient(donor.email!, donorName)])
       .setSubject("No Tax Receipt: Advantage Exceeds CRA Limit")
       .setHtml(
         `<p>Dear ${donorName},</p>
@@ -279,7 +282,7 @@ export async function notifyDonorAdvantageTooHigh(
 
     await mailerSend.email.send(emailParams);
     console.log(
-      `⚠️ Advantage‐too‐high email sent to donor at ${donorEmail} (advantage: ${advantageValue})`
+      `⚠️ Advantage‐too‐high email sent to donor at ${donor.email} (advantage: ${advantageValue})`
     );
     return { success: true };
   } catch (err) {
