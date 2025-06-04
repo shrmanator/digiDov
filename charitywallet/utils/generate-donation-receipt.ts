@@ -78,8 +78,6 @@ export async function generateDonationReceiptPDF(
   // Assume `receipt.advantage_amount` is a float or null in donation_receipt
   // If it doesn't exist, default to 0
   const advantageFMV = receipt.charity?.advantage_amount ?? 0;
-  // Description of advantage: if provided on receipt, use it; otherwise a generic note
-
   const eligibleAmount = Math.max(fiatAmount - advantageFMV, 0);
 
   // --- Date/time formatter ---
