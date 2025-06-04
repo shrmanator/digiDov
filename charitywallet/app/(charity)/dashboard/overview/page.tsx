@@ -109,6 +109,7 @@ export default async function Overview() {
                 </TabsTrigger>
               </TabsList>
               <AdvantageModalButton
+                className="ml-2"
                 initial={charity.advantage_amount ?? null}
                 walletAddress={charity.wallet_address}
               />
