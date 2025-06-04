@@ -108,11 +108,15 @@ export default async function Overview() {
                   Analytics
                 </TabsTrigger>
               </TabsList>
-              <AdvantageModalButton
-                className="ml-2"
-                initial={charity.advantage_amount ?? null}
-                walletAddress={charity.wallet_address}
-              />
+
+              {/* Only show if charity_sends_receipt is false */}
+              {!charity.charity_sends_receipt && (
+                <AdvantageModalButton
+                  className="ml-2"
+                  initial={charity.advantage_amount ?? null}
+                  walletAddress={charity.wallet_address}
+                />
+              )}
 
               <TabsContent value="transactions">
                 {isCharityComplete ? (
