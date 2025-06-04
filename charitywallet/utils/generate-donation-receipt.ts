@@ -29,7 +29,7 @@ export async function generateDonationReceiptPDF(
 ): Promise<Uint8Array> {
   if (!receipt) throw new Error("Invalid donation receipt data");
 
-  // Core info
+  // --- Core info ---
   const charityName = receipt.charity?.charity_name || "N/A";
   const registrationNumber = receipt.charity?.registration_number || "N/A";
   const charityAddress = receipt.charity?.registered_office_address || "N/A";
@@ -38,12 +38,14 @@ export async function generateDonationReceiptPDF(
   const donationDate = receipt.donation_date
     ? new Date(receipt.donation_date)
     : new Date();
+
   const donorFirstName = receipt.donor?.first_name || "";
   const donorLastName = receipt.donor?.last_name || "";
   const donorName =
     (donorFirstName + " " + donorLastName).trim() || "Anonymous";
   const donorAddress = receipt.donor?.address || "Not provided";
   const donorEmail = receipt.donor?.email || "Not provided";
+
   const blockchainInfo = getBlockchainInfo(receipt.chainId);
   const cryptoAmount = receipt.crypto_amount_wei
     ? weiToEvm(receipt.crypto_amount_wei)
@@ -51,6 +53,7 @@ export async function generateDonationReceiptPDF(
   const fiatAmount = receipt.fiat_amount || 0;
   const exchangeRate =
     cryptoAmount > 0 ? (fiatAmount / cryptoAmount).toFixed(2) : "N/A";
+
   const txHash = receipt.transaction_hash || "N/A";
   const walletAddress = receipt.donor?.wallet_address || "N/A";
   const issuedBy =
@@ -59,22 +62,27 @@ export async function generateDonationReceiptPDF(
     ? new Date(receipt.created_at)
     : new Date();
   const receiptNumber = receipt.receipt_number || "N/A";
+
   const signerTitle = receipt.charity?.contact_title;
   const signerFirstName = receipt.charity?.contact_first_name;
   const signerLastName = receipt.charity?.contact_last_name;
   const locationIssued =
     receipt.location_issued ||
-    extractCityProvince(charityAddress)?.city +
-      ", " +
-      extractCityProvince(charityAddress)?.province ||
-    "Unknown";
+    (extractCityProvince(charityAddress)
+      ? `${extractCityProvince(charityAddress)!.city}, ${
+          extractCityProvince(charityAddress)!.province
+        }`
+      : "Unknown");
 
-  // For "no advantage" receipts
-  const eligibleAmount = fiatAmount;
-  const advantageDescription = "N/A";
-  const advantageFMV = 0.0;
+  // --- Donation Advantage fields ---
+  // Assume `receipt.advantage_amount` is a float or null in donation_receipt
+  // If it doesn't exist, default to 0
+  const advantageFMV = receipt.charity?.advantage_amount ?? 0;
+  // Description of advantage: if provided on receipt, use it; otherwise a generic note
 
-  // Date/time formatter
+  const eligibleAmount = Math.max(fiatAmount - advantageFMV, 0);
+
+  // --- Date/time formatter ---
   const formatDateTime = (date: Date) =>
     date.toLocaleString("en-CA", {
       year: "numeric",
@@ -87,10 +95,11 @@ export async function generateDonationReceiptPDF(
       timeZone: "America/Toronto",
     });
 
-  // PDF setup
+  // --- PDF setup ---
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]);
   const { width, height } = page.getSize();
+
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
@@ -108,7 +117,7 @@ export async function generateDonationReceiptPDF(
   let y = height - margin;
   const lineHeight = { normal: 16, large: 24, small: 12 };
 
-  // Drawing helpers
+  // --- Drawing helpers ---
   const drawText = (
     text: string,
     {
@@ -189,7 +198,7 @@ export async function generateDonationReceiptPDF(
     y -= lineHeight.normal;
   };
 
-  // Header
+  // --- Header ---
   drawCenteredText(
     "Official Donation Receipt For Income Tax Purposes (Non-Cash Gift – Cryptocurrency)",
     {
@@ -202,14 +211,14 @@ export async function generateDonationReceiptPDF(
   drawLine(y + lineHeight.small);
   y -= lineHeight.small;
 
-  // Key receipt info block
+  // --- Key receipt info block ---
   drawField("Receipt Serial Number", receiptNumber);
   drawField("Location Where Receipt Issued", locationIssued);
   drawField("Date Donation Received", formatDateTime(donationDate));
   drawField("Date Receipt Issued", formatDateTime(issueDate));
   y -= lineHeight.small;
 
-  // Organization
+  // --- Organization ---
   drawText("Organization Information", {
     font: fontBold,
     size: 12,
@@ -222,7 +231,7 @@ export async function generateDonationReceiptPDF(
   drawField("Phone", charityPhone);
   y -= lineHeight.small;
 
-  // Donor
+  // --- Donor ---
   drawText("Donor Information", {
     font: fontBold,
     size: 12,
@@ -233,7 +242,7 @@ export async function generateDonationReceiptPDF(
   drawField("Email", donorEmail);
   y -= lineHeight.small;
 
-  // Donation details
+  // --- Donation details ---
   drawText("Donation Details", {
     font: fontBold,
     size: 12,
@@ -242,12 +251,11 @@ export async function generateDonationReceiptPDF(
   drawField("Cryptocurrency Description", blockchainInfo.symbol);
   drawField("Amount Donated", `${cryptoAmount} ${blockchainInfo.symbol}`);
   drawField("Fair Market Value at Donation", `$${fiatAmount.toFixed(2)} CAD`);
-  drawField("Eligible Amount Of Gift", `$${eligibleAmount.toFixed(2)} CAD`);
-  drawField("Description Of Advantage (if any)", advantageDescription);
   drawField(
-    "Fair Market Value Of Advantage",
+    "Fair Market Value of Advantage",
     `$${advantageFMV.toFixed(2)} CAD`
   );
+  drawField("Eligible Amount of Gift", `$${eligibleAmount.toFixed(2)} CAD`);
   drawField(
     "Exchange Rate Used",
     `1 ${blockchainInfo.symbol} = ${exchangeRate} CAD (CoinGecko)`
@@ -258,7 +266,7 @@ export async function generateDonationReceiptPDF(
   y -= lineHeight.normal;
   drawLine();
 
-  // Compliance
+  // --- Compliance ---
   drawText("CRA Compliance", {
     font: fontBold,
     size: 11,
@@ -277,13 +285,13 @@ export async function generateDonationReceiptPDF(
     { size: 9, lineSpacing: lineHeight.normal }
   );
 
-  // Receipt authentication
+  // --- Receipt authentication ---
   y -= lineHeight.small;
   drawLine();
   drawField("This Official Receipt Is Issued By", issuedBy);
   y -= lineHeight.normal;
 
-  // Signature
+  // --- Signature ---
   if (signerTitle && signerFirstName && signerLastName) {
     const signatureText = `Digitally signed by: ${signerFirstName} ${signerLastName}, ${signerTitle}`;
     const dateText = `Date: ${formatDateTime(issueDate)}`;
@@ -319,7 +327,7 @@ export async function generateDonationReceiptPDF(
     });
   }
 
-  // Footer
+  // --- Footer ---
   const footerText = "Thank you for your generous donation";
   const footerWidth = fontItalic.widthOfTextAtSize(footerText, 9);
   page.drawText(footerText, {

@@ -83,9 +83,10 @@ export function AdvantageModalButton({
 
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Charity Advantage</DialogTitle>
+          <DialogTitle>Tax Receipt Advantage</DialogTitle>
           <DialogDescription>
-            Enter how much advantage you want on your tax receipts (in CAD).
+            Enter the value of any benefit or item your donors receive (e.g.,
+            dinner, gift). This amount will be shown on your tax receipts
           </DialogDescription>
         </DialogHeader>
 
