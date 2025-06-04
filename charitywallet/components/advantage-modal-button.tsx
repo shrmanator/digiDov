@@ -100,7 +100,7 @@ export function AdvantageModalButton({
           <DialogTitle>Tax Receipt Advantage</DialogTitle>
           <DialogDescription>
             Enter the value of any benefit or item your donors receive (e.g.,
-            dinner, gift). This amount will be shown on your tax receipts
+            dinner, gift). This amount will be shown on your tax receipts.
           </DialogDescription>
         </DialogHeader>
 
