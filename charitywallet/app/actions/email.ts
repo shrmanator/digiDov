@@ -238,21 +238,17 @@ export async function notifyCharityWithCsv(
   }
 }
 
-/**
- * NEW: Notify donor when advantage exceeds CRA’s de minimis threshold.
- * This email explains why no tax receipt can be issued.
- */
 export async function notifyDonorAdvantageTooHigh(
-  receipt: donation_receipt & { donor?: donor; charity?: charity },
+  receipt: donation_receipt & { charity?: charity },
+  donorEmail: string,
+  donorFirstName: string | null,
+  donorLastName: string | null,
   advantageAmount: number,
   deMinimisThreshold: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const donorEmail = receipt.donor?.email || "";
     const donorName =
-      `${receipt.donor?.first_name || ""} ${
-        receipt.donor?.last_name || ""
-      }`.trim() || "Donor";
+      `${donorFirstName || ""} ${donorLastName || ""}`.trim() || "Donor";
     const charityName =
       receipt.charity?.charity_name || "the charity you supported";
     const charitySlug = receipt.charity?.slug || "";

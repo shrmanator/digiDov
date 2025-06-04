@@ -16,8 +16,9 @@ import { convertWeiToFiat } from "@/utils/convert-wei-to-fiat";
 
 import {
   notifyDonorWithoutReceipt,
-  notifyCharityWithCsv,
   notifyDonorWithReceipt,
+  notifyDonorAdvantageTooHigh,
+  notifyCharityWithCsv,
   notifyCharityAboutDonation,
 } from "@/app/actions/email";
 import { Prisma } from "@prisma/client";
@@ -112,25 +113,20 @@ export async function POST(request: Request) {
       throw e;
     }
 
-    // ─── NEW: de minimis logic ───
-    // donationAmount = total fair-market value in CAD
-    const donationAmount = fiat;
-    // advantage stored on charity.advantage_amount (in CAD). If null → 0.
-    const advantage = charity.advantage_amount ?? 0;
-    // de minimis threshold = lesser of $75 or 10% of donationAmount
+    // 7. de minimis logic
+    const donationAmount = fiat; // total FMV in CAD
+    const advantage = charity.advantage_amount ?? 0; // advantage in CAD
     const deMinimisThreshold = Math.min(75, donationAmount * 0.1);
 
-    // If charity opted out OR advantage exceeds de minimis, skip issuing a PDF/receipt.
     const skipReceipt =
       charity.charity_sends_receipt || advantage > deMinimisThreshold;
-    // ───────────────────────────────
 
-    // 7. Generate PDF only if NOT skipped
+    // 8. Generate PDF only if NOT skipped
     if (!skipReceipt) {
       await generateDonationReceiptPDF(receipt);
     }
 
-    // 8. Build DonationReceipt DTO (for emails/CSV)
+    // 9. Build DonationReceipt DTO (for emails/CSV)
     const donationDto = {
       ...receipt,
       donation_date: receipt.donation_date.toISOString(),
@@ -149,47 +145,74 @@ export async function POST(request: Request) {
       chain: chainId ? String(chainId) : null,
     };
 
-    // 9. Notify donor and charity
-    if (skipReceipt) {
-      // Case A: charity already sends receipts (so we just CSV), OR advantage > de ­minimis
-      const donorRes = await notifyDonorWithoutReceipt({
-        ...receipt,
-        donor,
-        charity,
-      });
-      if (!donorRes.success) throw new Error(donorRes.error);
+    // 10. Notify donor and charity, catching email errors
+    if (charity.charity_sends_receipt) {
+      // Charity sends their own receipt → notify donor “without receipt” + CSV
+      try {
+        await notifyDonorWithoutReceipt({ ...receipt, donor, charity });
+      } catch (e) {
+        console.error("Failed sending donor-without-receipt email", e);
+      }
 
-      // extend row for CSV
       const csvRow = {
         ...donationDto,
         donor_wallet_address: donor.wallet_address,
         donor_address: donor.address,
       };
+      try {
+        await notifyCharityWithCsv(
+          [csvRow],
+          charity.contact_email!,
+          charity.charity_name!
+        );
+      } catch (e) {
+        console.error("Failed sending charity CSV", e);
+      }
+    } else if (advantage > deMinimisThreshold) {
+      // Advantage too high → send “no tax receipt” email + CSV
+      try {
+        await notifyDonorAdvantageTooHigh(
+          receipt,
+          donor.email!,
+          donor.first_name,
+          donor.last_name,
+          advantage,
+          deMinimisThreshold
+        );
+      } catch (e) {
+        console.error("Failed sending advantage-too-high email", e);
+      }
 
-      const csvRes = await notifyCharityWithCsv(
-        [csvRow],
-        charity.contact_email!,
-        charity.charity_name!
-      );
-      if (!csvRes.success) throw new Error(csvRes.error);
+      const csvRow = {
+        ...donationDto,
+        donor_wallet_address: donor.wallet_address,
+        donor_address: donor.address,
+      };
+      try {
+        await notifyCharityWithCsv(
+          [csvRow],
+          charity.contact_email!,
+          charity.charity_name!
+        );
+      } catch (e) {
+        console.error("Failed sending charity CSV", e);
+      }
     } else {
-      // Case B: advantage ≤ de minimis AND charity does not send receipts
-      const donorRes = await notifyDonorWithReceipt({
-        ...receipt,
-        donor,
-        charity,
-      });
-      if (!donorRes.success) throw new Error(donorRes.error);
+      // Advantage ≤ de minimis & charity does not send receipts → send standard receipt
+      try {
+        await notifyDonorWithReceipt({ ...receipt, donor, charity });
+      } catch (e) {
+        console.error("Failed sending donor-with-receipt email", e);
+      }
 
-      const pdfRes = await notifyCharityAboutDonation({
-        ...receipt,
-        donor,
-        charity,
-      });
-      if (!pdfRes.success) throw new Error(pdfRes.error);
+      try {
+        await notifyCharityAboutDonation({ ...receipt, donor, charity });
+      } catch (e) {
+        console.error("Failed sending charity-received-donation email", e);
+      }
     }
 
-    // 10. Respond success — convert BigInt fields to strings, guarding null
+    // 11. Respond success — convert BigInt fields to strings
     const safeReceipt = {
       ...receipt,
       donation_date: receipt.donation_date.toISOString(),
