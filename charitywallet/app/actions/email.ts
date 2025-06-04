@@ -282,14 +282,14 @@ export async function notifyDonorAdvantageTooHigh(
 
     await mailerSend.email.send(emailParams);
     console.log(
-      `⚠️ Advantage‐too‐high email sent to donor at ${donor.email} (advantage: ${advantageValue})`
+      `⚠️ Advantage-too-high email sent to donor at ${donor.email} (advantage: ${advantageValue})`
     );
     return { success: true };
   } catch (err) {
-    console.error("❌ Failed to send advantage‐too‐high notification", err);
+    console.error("❌ Failed to send advantage-too-high notification", err);
     return {
       success: false,
-      error: "Failed to send advantage‐too‐high notification",
+      error: "Failed to send advantage-too-high notification",
     };
   }
 }
