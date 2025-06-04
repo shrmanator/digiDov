@@ -24,6 +24,7 @@ import { getDonationLink } from "@/utils/get-donation-link";
 import DonationHistory from "@/components/transaction-history-via-db";
 import SendingFundsModal from "@/components/sending-funds-modal";
 import TotalUsdcBalance from "@/components/total-usdc-balance";
+import { AdvantageModalButton } from "@/components/advantage-modal-button";
 
 export const revalidate = 60;
 
@@ -107,6 +108,10 @@ export default async function Overview() {
                   Analytics
                 </TabsTrigger>
               </TabsList>
+              <AdvantageModalButton
+                initial={charity.advantage_amount ?? null}
+                walletAddress={charity.wallet_address}
+              />
 
               <TabsContent value="transactions">
                 {isCharityComplete ? (

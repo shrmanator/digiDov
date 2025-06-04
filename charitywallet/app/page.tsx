@@ -15,6 +15,9 @@ import {
 import AboutSection from "./about-us";
 import { getUserEmail } from "thirdweb/wallets/in-app";
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Typewriter } from "react-simple-typewriter";
+
 export default function Home() {
   const router = useRouter();
   const activeAccount = useActiveAccount();
@@ -32,10 +35,12 @@ export default function Home() {
     createWallet("com.zengo"),
   ];
 
+  const bannerText = `Open yourself to CRA-compliant crypto donations!`;
+
   return (
     <div className="overflow-y-auto">
       {/* Login / Connect Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center p-8">
+      <section className="flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-md flex flex-col items-center">
           <div className="flex items-center">
             <Image
@@ -50,9 +55,27 @@ export default function Home() {
               digiDov
             </h1>
           </div>
-          <p className="mb-6 ml-28 text-center text-xs font-tsukimi">
+          <p className="mb-6 ml-28 text-xs font-tsukimi text-gray-300">
             Crypto Donations, Simplified
           </p>
+
+          {/* Banner with react-simple-typewriter */}
+          <Card className="w-full mb-6">
+            <CardContent className="py-4 px-6">
+              <span className="text-sm sm:text-base text-center">
+                <Typewriter
+                  words={[bannerText]}
+                  loop={1}
+                  cursor
+                  cursorStyle="|"
+                  typeSpeed={40}
+                  deleteSpeed={0}
+                  delaySpeed={2000}
+                />
+              </span>
+            </CardContent>
+          </Card>
+
           <ConnectEmbed
             client={client}
             wallets={wallets}
@@ -62,22 +85,13 @@ export default function Home() {
             auth={{
               isLoggedIn: async () => await isLoggedIn(),
               doLogin: async (params) => {
-                // 1. fetch OAuth email from in-app wallet session
                 const email = await getUserEmail({ client });
-
-                // 2. fetch active transaction wallet
                 const txWallet = activeAccount?.address;
-
-                // 3. attach email and txWallet to login payload
                 const enrichedParams = {
                   ...params,
                   context: { email, txWallet },
                 };
-
-                // 4. call server action with enriched payload
                 await charityLogin(enrichedParams);
-
-                // 5. navigate to dashboard
                 router.push("/dashboard/overview");
               },
               getLoginPayload: async ({ address }) =>
@@ -97,7 +111,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section className="mt-[-20] mb-20">
+      <section className="mt-20 mb-20">
         <AboutSection />
       </section>
     </div>
