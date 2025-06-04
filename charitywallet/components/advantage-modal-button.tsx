@@ -19,13 +19,13 @@ import { updateCharityAdvantage } from "@/app/actions/charities";
 type AdvantageModalButtonProps = {
   initial: number | null;
   walletAddress: string;
-  className?: string; // Add className prop
+  className?: string;
 };
 
 export function AdvantageModalButton({
   initial,
   walletAddress,
-  className, // Accept it here
+  className,
 }: AdvantageModalButtonProps) {
   const router = useRouter();
 
@@ -57,12 +57,12 @@ export function AdvantageModalButton({
   }
 
   const triggerLabel =
-    initial === null ? "Set Advantage" : `$${initial.toFixed(2)}`;
+    initial === null ? "Set Advantage" : `Advantage: $${initial.toFixed(2)}`;
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className={className}>
+        <Button variant="outline" size="default" className={className}>
           {triggerLabel}
         </Button>
       </DialogTrigger>
