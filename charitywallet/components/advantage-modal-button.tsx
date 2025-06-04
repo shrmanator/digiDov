@@ -22,6 +22,16 @@ type AdvantageModalButtonProps = {
   className?: string;
 };
 
+// Type guard for error objects with a message
+function hasMessage(error: unknown): error is { message: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  );
+}
+
 export function AdvantageModalButton({
   initial,
   walletAddress,
@@ -61,13 +71,8 @@ export function AdvantageModalButton({
       // Close the modal on successful save
       setOpen(false);
     } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "message" in err &&
-        typeof (err as any).message === "string"
-      ) {
-        setError((err as { message: string }).message);
+      if (hasMessage(err)) {
+        setError(err.message);
       } else {
         setError("Failed to save.");
       }
