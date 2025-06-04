@@ -29,7 +29,13 @@ export function AdvantageModalButton({
 }: AdvantageModalButtonProps) {
   const router = useRouter();
 
-  const [draft, setDraft] = useState<number>(initial ?? 0);
+  // control whether the Dialog is open
+  const [open, setOpen] = useState(false);
+
+  // Store the input as a string so we never pass NaN into the <Input> value
+  const [draft, setDraft] = useState<string>(
+    initial !== null && initial > 0 ? initial.toFixed(2) : ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -37,7 +43,9 @@ export function AdvantageModalButton({
     e.preventDefault();
     setError(null);
 
-    if (draft < 0 || Number.isNaN(draft)) {
+    // If the input is empty, treat it as 0
+    const parsed = draft.trim() === "" ? 0 : parseFloat(draft);
+    if (isNaN(parsed) || parsed < 0) {
       setError("Please enter a valid number ≥ 0.");
       return;
     }
@@ -46,9 +54,12 @@ export function AdvantageModalButton({
     try {
       await updateCharityAdvantage({
         wallet_address: walletAddress,
-        advantage_amount: draft,
+        advantage_amount: parsed,
       });
       router.refresh();
+
+      // Close the modal on successful save
+      setOpen(false);
     } catch (err: any) {
       setError(err.message || "Failed to save.");
     } finally {
@@ -56,11 +67,14 @@ export function AdvantageModalButton({
     }
   }
 
-  const triggerLabel =
-    initial === null ? "Set Advantage" : `Advantage: $${initial.toFixed(2)}`;
+  // If initial is 0 or null, treat as "no advantage"
+  const hasAdvantage = initial !== null && initial > 0;
+  const triggerLabel = hasAdvantage
+    ? `Advantage: $${initial!.toFixed(2)}`
+    : "Set Advantage";
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="default" className={className}>
           {triggerLabel}
@@ -71,7 +85,7 @@ export function AdvantageModalButton({
         <DialogHeader>
           <DialogTitle>Charity Advantage</DialogTitle>
           <DialogDescription>
-            Enter how much advantage you want on your tax receipt (in CAD).
+            Enter how much advantage you want on your tax receipts (in CAD).
           </DialogDescription>
         </DialogHeader>
 
@@ -80,13 +94,19 @@ export function AdvantageModalButton({
             <label className="block text-sm font-medium">
               Advantage Amount (CAD)
             </label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={draft}
-              onChange={(e) => setDraft(parseFloat(e.target.value))}
-            />
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                $
+              </span>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                className="pl-6"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+            </div>
             {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
           </div>
 
