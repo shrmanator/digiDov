@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import Web3 from "web3";
 import prisma from "@/lib/prisma";
@@ -113,8 +112,21 @@ export async function POST(request: Request) {
       throw e;
     }
 
-    // 7. Generate PDF only if charity opts out of their own receipts
-    if (!charity.charity_sends_receipt) {
+    // ─── NEW: de minimis logic ───
+    // donationAmount = total fair-market value in CAD
+    const donationAmount = fiat;
+    // advantage stored on charity.advantage_amount (in CAD). If null → 0.
+    const advantage = charity.advantage_amount ?? 0;
+    // de minimis threshold = lesser of $75 or 10% of donationAmount
+    const deMinimisThreshold = Math.min(75, donationAmount * 0.1);
+
+    // If charity opted out OR advantage exceeds de minimis, skip issuing a PDF/receipt.
+    const skipReceipt =
+      charity.charity_sends_receipt || advantage > deMinimisThreshold;
+    // ───────────────────────────────
+
+    // 7. Generate PDF only if NOT skipped
+    if (!skipReceipt) {
       await generateDonationReceiptPDF(receipt);
     }
 
@@ -138,7 +150,8 @@ export async function POST(request: Request) {
     };
 
     // 9. Notify donor and charity
-    if (charity.charity_sends_receipt) {
+    if (skipReceipt) {
+      // Case A: charity already sends receipts (so we just CSV), OR advantage > de ­minimis
       const donorRes = await notifyDonorWithoutReceipt({
         ...receipt,
         donor,
@@ -160,6 +173,7 @@ export async function POST(request: Request) {
       );
       if (!csvRes.success) throw new Error(csvRes.error);
     } else {
+      // Case B: advantage ≤ de minimis AND charity does not send receipts
       const donorRes = await notifyDonorWithReceipt({
         ...receipt,
         donor,
