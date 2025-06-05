@@ -38,6 +38,8 @@ model charity {
     transak_stream_wallet_address String?                 @unique
     is_profile_complete           Boolean                 @default(false)
     slug                          String?                 @unique
+    kycCompleted                  Boolean                 @default(false)
+    kycCompletedAt                DateTime?
     created_at                    DateTime                @default(now())
     donation_receipts             donation_receipt[]
     charity_fund_transfer         charity_fund_transfer[]
