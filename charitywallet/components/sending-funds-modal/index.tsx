@@ -57,7 +57,8 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
       try {
         const record = await getCharityByWalletAddress(charity.wallet_address);
         setKycDone(!!record?.kycCompleted);
-      } catch (e) {
+      } catch {
+        // Removed the unused "e" parameter here
         setKycDone(false);
       }
     })();
