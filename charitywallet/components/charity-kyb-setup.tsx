@@ -39,8 +39,8 @@ export default function CharityKycCheckStep({
   return (
     <div className="space-y-4 text-center">
       <p className="text-sm text-muted-foreground">
-        Choose and fill out an option then press "I've completed registration"
-        to enable withdrawals:
+        Choose and fill out an option then press &quot;I&#39;ve completed
+        registration&quot; to enable withdrawals:
       </p>
       <div className="flex flex-col gap-2">
         <Button
