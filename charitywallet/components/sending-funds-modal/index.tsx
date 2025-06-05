@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OtpModal from "../opt-modal";
 import { usePayTrieOfframp } from "@/hooks/paytrie/use-paytrie-offramp";
 import { useTotalUsdcBalance } from "@/hooks/use-total-usdc-balance";
@@ -17,6 +17,8 @@ import { Label } from "../ui/label";
 import { Card, CardContent } from "../ui/card";
 import { toast } from "@/hooks/use-toast";
 import PercentageButtons from "./percentage-buttons";
+import { getCharityByWalletAddress } from "@/app/actions/charities";
+import CharityKycCheckStep from "../charity-kyb-setup";
 
 interface SendingFundsModalProps {
   charity: {
@@ -46,6 +48,20 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [kycDone, setKycDone] = useState(false);
+
+  // Fetch KYC status every time the modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      try {
+        const record = await getCharityByWalletAddress(charity.wallet_address);
+        setKycDone(!!record?.kycCompleted);
+      } catch (e) {
+        setKycDone(false);
+      }
+    })();
+  }, [isOpen, charity.wallet_address]);
 
   const reset = () => {
     setIsSendingOtp(false);
@@ -122,68 +138,84 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center space-y-1 py-6">
-              {ethVal > 0 && <div>Ethereum USDC: {ethVal.toFixed(6)}</div>}
-              {totalVal === 0 && (
-                <div className="text-sm text-muted-foreground">
-                  No USDC balance
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-6">
-              <form onSubmit={handleWithdraw} className="w-full space-y-3">
-                <Label htmlFor="amount">Amount To Send</Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground">
-                    $
-                  </span>
-                  <Input
-                    id="amount"
-                    type="text"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) =>
-                      setAmount(e.target.value.replace(/[^\d.]/g, ""))
-                    }
-                    disabled={isSendingOtp}
-                    required
-                    className="pl-7 h-10 w-full"
-                  />
-                </div>
-                <PercentageButtons
-                  onSelect={(pct) =>
-                    setAmount(((totalVal * pct) / 100).toFixed(6))
-                  }
-                  disabled={isSendingOtp || totalVal === 0}
+          {/* KYC Step: Show this until kycDone is true */}
+          {!kycDone ? (
+            <Card>
+              <CardContent className="py-6">
+                <CharityKycCheckStep
+                  walletAddress={charity.wallet_address}
+                  onSuccess={() => setKycDone(true)}
                 />
-                <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
-                  {quoteError && "Error loading conversion"}
-                  {!quoteError &&
-                    cadEstimate &&
-                    `You'll receive ≈ $${cadEstimate} CAD`}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full h-10"
-                  disabled={
-                    isSendingOtp || isSendingOnChain || quoteLoading || !amount
-                  }
-                >
-                  {isSendingOnChain
-                    ? "Broadcasting…"
-                    : isSendingOtp
-                    ? "Sending OTP…"
-                    : amount
-                    ? `Withdraw $${amount}`
-                    : "Withdraw"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center space-y-1 py-6">
+                  {ethVal > 0 && <div>Ethereum USDC: {ethVal.toFixed(6)}</div>}
+                  {totalVal === 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      No USDC balance
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-6">
+                  <form onSubmit={handleWithdraw} className="w-full space-y-3">
+                    <Label htmlFor="amount">Amount To Send</Label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground">
+                        $
+                      </span>
+                      <Input
+                        id="amount"
+                        type="text"
+                        placeholder="0.00"
+                        value={amount}
+                        onChange={(e) =>
+                          setAmount(e.target.value.replace(/[^\d.]/g, ""))
+                        }
+                        disabled={isSendingOtp}
+                        required
+                        className="pl-7 h-10 w-full"
+                      />
+                    </div>
+                    <PercentageButtons
+                      onSelect={(pct) =>
+                        setAmount(((totalVal * pct) / 100).toFixed(6))
+                      }
+                      disabled={isSendingOtp || totalVal === 0}
+                    />
+                    <div className="h-5 w-32 text-sm text-muted-foreground flex items-center justify-center">
+                      {quoteError && "Error loading conversion"}
+                      {!quoteError &&
+                        cadEstimate &&
+                        `You'll receive ≈ $${cadEstimate} CAD`}
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-10"
+                      disabled={
+                        isSendingOtp ||
+                        isSendingOnChain ||
+                        quoteLoading ||
+                        !amount
+                      }
+                    >
+                      {isSendingOnChain
+                        ? "Broadcasting…"
+                        : isSendingOtp
+                        ? "Sending OTP…"
+                        : amount
+                        ? `Withdraw $${amount}`
+                        : "Withdraw"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
