@@ -39,7 +39,8 @@ export default function CharityKycCheckStep({
   return (
     <div className="space-y-4 text-center">
       <p className="text-sm text-muted-foreground">
-        Before you can withdraw, you must complete PayTrie’s KYB/KYC flow.
+        Choose and fill out an option then press "I've completed registration"
+        to enable withdrawals:
       </p>
       <div className="flex flex-col gap-2">
         <Button
@@ -47,7 +48,7 @@ export default function CharityKycCheckStep({
           onClick={() => window.open("https://business.paytrie.com/", "_blank")}
           className="w-full"
         >
-          Go to PayTrie (KYB)
+          For Organizations (KYB)
         </Button>
         <Button
           variant="outline"
@@ -56,10 +57,11 @@ export default function CharityKycCheckStep({
           }
           className="w-full"
         >
-          Go to PayTrie (KYC)
+          For Individuals (KYC)
         </Button>
+
         <Button onClick={handleIveDoneIt} disabled={loading} className="w-full">
-          {loading ? "Saving…" : "I’ve completed PayTrie registration"}
+          {loading ? "Saving…" : "I’ve completed registration"}
         </Button>
       </div>
     </div>
