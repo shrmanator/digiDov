@@ -19,7 +19,7 @@ export default function CharityKycCheckStep({
   const handleIveDoneIt = async () => {
     try {
       setLoading(true);
-      await markCharityKycAction(walletAddress);
+      await markCharityKycAction();
       toast({
         title: "KYC saved!",
         description: "You may now withdraw funds.",
