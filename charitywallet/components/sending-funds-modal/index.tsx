@@ -152,7 +152,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
             <>
               <Card>
                 <CardContent className="flex flex-col items-center justify-center space-y-1 py-6">
-                  {ethVal > 0 && <div>Ethereum USDC: {ethVal.toFixed(6)}</div>}
+                  {ethVal > 0 && <div>You Have USD $ {ethVal.toFixed(6)}</div>}
                   {totalVal === 0 && (
                     <div className="text-sm text-muted-foreground">
                       No USDC balance
