@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import slugify from "slugify";
 import { addWalletAddressToMoralis } from "./moralis";
 import { verifyOtpAction } from "./otp";
+import { getCurrentWallet } from "./wallet-session";
 
 export interface CharityInput {
   charity_name?: string | null;
@@ -270,13 +271,12 @@ export async function getCharityAdvantage(
 // 2) Mutator: update advantage_amount for a given charity by its wallet_address.
 //    Validates that the amount is ≥ 0; throws if charity not found.
 export async function updateCharityAdvantage(params: {
-  wallet_address: string;
   advantage_amount: number;
 }): Promise<number> {
-  const wallet = params.wallet_address.toLowerCase();
+  const wallet = await getCurrentWallet();
   const amount = params.advantage_amount;
 
-  // Simple validation: must be a number and ≥ 0
+  // Validation
   if (typeof amount !== "number" || Number.isNaN(amount)) {
     throw new Error("advantage_amount must be a valid number.");
   }
@@ -284,13 +284,12 @@ export async function updateCharityAdvantage(params: {
     throw new Error("advantage_amount must be ≥ 0.");
   }
 
-  // Perform the update
+  // Perform the update for the **currently authenticated charity**
   const updated = await prisma.charity.update({
     where: { wallet_address: wallet },
     data: { advantage_amount: amount },
     select: { advantage_amount: true },
   });
 
-  // If for some reason update fails because no record exists, Prisma throws.
   return updated.advantage_amount!;
 }

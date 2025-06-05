@@ -63,7 +63,6 @@ export function AdvantageModalButton({
     setSaving(true);
     try {
       await updateCharityAdvantage({
-        wallet_address: walletAddress,
         advantage_amount: parsed,
       });
       router.refresh();

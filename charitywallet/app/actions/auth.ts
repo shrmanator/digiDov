@@ -92,3 +92,4 @@ export async function logout() {
   console.log("logout triggered, clearing JWT cookie");
   (await cookies()).delete("jwt");
 }
+
