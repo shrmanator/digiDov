@@ -55,10 +55,10 @@ export default function AboutSection() {
 
           {/* Section: Compliance */}
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold">Compliance & Security</h3>
+            <h3 className="text-xl font-semibold">Compliance &amp; Security</h3>
             <p className="text-sm md:text-base leading-relaxed">
               digiDov is fully non-custodial and never handles user funds. All
-              donation flows are enforced by open smart contracts. We don't
+              donation flows are enforced by open smart contracts. We don&#39;t
               touch private keys or process withdrawals. All swaps and off-ramps
               are managed by regulated third parties, not by digiDov.
             </p>

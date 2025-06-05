@@ -18,7 +18,6 @@ import { updateCharityAdvantage } from "@/app/actions/charities";
 
 type AdvantageModalButtonProps = {
   initial: number | null;
-  walletAddress: string;
   className?: string;
 };
 
@@ -34,7 +33,6 @@ function hasMessage(error: unknown): error is { message: string } {
 
 export function AdvantageModalButton({
   initial,
-  walletAddress,
   className,
 }: AdvantageModalButtonProps) {
   const router = useRouter();
