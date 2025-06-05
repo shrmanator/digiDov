@@ -143,10 +143,7 @@ export default function SendingFundsModal({ charity }: SendingFundsModalProps) {
           {!kycDone ? (
             <Card>
               <CardContent className="py-6">
-                <CharityKycCheckStep
-                  walletAddress={charity.wallet_address}
-                  onSuccess={() => setKycDone(true)}
-                />
+                <CharityKycCheckStep onSuccess={() => setKycDone(true)} />
               </CardContent>
             </Card>
           ) : (

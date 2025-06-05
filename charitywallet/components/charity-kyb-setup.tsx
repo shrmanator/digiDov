@@ -6,12 +6,10 @@ import { toast } from "@/hooks/use-toast";
 import { markCharityKycAction } from "@/app/actions/kyc/mark-charity-kyc";
 
 interface CharityKycCheckStepProps {
-  walletAddress: string;
   onSuccess: () => void;
 }
 
 export default function CharityKycCheckStep({
-  walletAddress,
   onSuccess,
 }: CharityKycCheckStepProps) {
   const [loading, setLoading] = useState(false);
